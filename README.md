@@ -15,7 +15,11 @@ Los estilos proceden de `Clientes-html/Main.dc.html` y `Reparaciones (gestión d
 
 Esta primera implementación guarda órdenes y seguimiento por orden en `localStorage` (claves `hrl.orders.v1` y `hrl.repair.v1.<folio>`). Conserva los cambios al recargar en el mismo origen y perfil. Es una base de interfaz; la integración definitiva con SQLite todavía está pendiente.
 
-La conexión con Firebase, publicación en el portal, autenticación, impresión y captura/carga de evidencias están pendientes. Sus controles aparecen deshabilitados cuando corresponde. Las cuatro miniaturas de la recepción son ejemplos del mockup.
+Empresa permite configurar datos, logo, cláusulas, folios, garantías sugeridas, región y formatos de impresión. Se generan notas de entrada/salida; falta comprobar la impresión nativa con el equipo acordado. Véase `docs/auditoria-empresa.md`.
+
+La conexión con Firebase, publicación en el portal, autenticación y captura/carga de evidencias están pendientes. Sus controles aparecen deshabilitados cuando corresponde. Las cuatro miniaturas de la recepción son ejemplos del mockup.
+
+Si falla la recuperación de órdenes, se muestra un aviso y se bloquea la escritura de esa sesión para conservar los datos originales. Recupera el almacenamiento y vuelve a abrir la aplicación antes de continuar.
 
 ## Comandos
 

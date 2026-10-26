@@ -1,19 +1,25 @@
 import { computed, ref, watch } from "vue";
 import { initialOrders } from "../data/orders";
+import { restoreOrders } from "../utils/restoreOrders";
 import type { Order, SearchField } from "../types/order";
 
 export function useOrders() {
   const storageError = ref("");
+  let recoveryFailed = false;
   let initial = initialOrders.map(order => ({ ...order }));
   try {
     const stored = localStorage.getItem('hrl.orders.v1');
     if (stored) {
-      const parsed: unknown = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.every(order => order && typeof order.id === 'string' && typeof order.client === 'string' && typeof order.serial === 'string')) initial = parsed.map(order => ({ otherShopReason: "", ...order }));
+      initial = restoreOrders(stored);
     }
-  } catch { /* Keep the initial data if local storage is unavailable. */ }
+  } catch {
+    recoveryFailed = true;
+    initial = [];
+    storageError.value = 'No se pudieron recuperar las órdenes guardadas. No captures cambios hasta recuperar el almacenamiento; los datos originales no se han modificado.';
+  }
   const orders = ref<Order[]>(initial);
   watch(orders, value => {
+    if (recoveryFailed) return;
     try { localStorage.setItem('hrl.orders.v1', JSON.stringify(value)); storageError.value = '';  }
     catch { storageError.value = 'No se pudieron guardar los cambios en este equipo. Mantén la aplicación abierta.'; }
   }, { deep: true, flush: 'sync' });
