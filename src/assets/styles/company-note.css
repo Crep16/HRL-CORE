@@ -1,0 +1,14 @@
+.company-note{background:#fff;color:#12222d;padding:24px;font:12px/1.5 'Instrument Sans',Arial,sans-serif;overflow-wrap:anywhere;max-width:100%;text-align:left}
+.company-note *{box-sizing:border-box}
+.note-company{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #17384a}
+.note-company>div{min-width:0}.note-company h3{margin:0 0 6px;font-size:18px;line-height:1.2}.note-company p{margin:2px 0;font-size:11px}
+.note-company img{width:90px;height:50px;object-fit:contain;flex-shrink:0}
+.note-heading{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-top:14px}.note-heading h4{font-size:14px;margin:0}.note-date{font-size:11px;color:#55656f;margin:4px 0 14px}
+.note-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;margin:12px 0}.note-fields div{min-width:0}.note-fields dt{font-size:10px;color:#55656f}.note-fields dd{margin:0;font-weight:600}
+.note-box{padding:10px 0;border-top:1px solid #d5dde4}.note-box h5,.note-clauses h5{margin:0 0 4px;font-size:12px}.note-box p{margin:0;white-space:pre-wrap}
+.note-totals{margin:12px 0 12px auto;max-width:240px}.note-totals div{display:flex;justify-content:space-between;gap:16px;padding:4px 0}.note-totals dd{margin:0;font-weight:600}.note-totals div:last-child{border-top:1px solid #b3bfc9;font-weight:700}
+.note-reference{font-size:11px}.note-clauses{margin-top:12px;padding-top:10px;border-top:1px solid #b3bfc9;font-size:10px;line-height:1.5}.note-clauses ol{padding-left:18px;margin:6px 0}.note-clauses li{margin-bottom:6px;white-space:pre-wrap}.note-clauses .unnumbered{list-style:none;padding-left:0}
+.note-signature{width:60%;text-align:center;margin:36px auto 12px;border-top:1px solid #55656f;padding-top:4px;font-size:10px}.note-footer{font-size:11px;text-align:center;white-space:pre-wrap;margin:12px 0 0}
+.note-reverse{margin-top:24px;padding-top:20px}.note-ticket{width:302px;margin-inline:auto;padding:16px;font-size:11px}.note-ticket .note-company{flex-direction:column-reverse;gap:8px}.note-ticket .note-fields{grid-template-columns:1fr}.note-ticket .note-heading{flex-wrap:wrap}.note-ticket .note-company h3{font-size:16px}
+.note-ticket60{width:227px;max-width:100%}
+@media print{.company-note{padding:0;width:auto;max-width:none;font-family:Arial,sans-serif}.note-reverse{break-before:page;margin:0}.company-note:not(.note-ticket) .note-front{min-height:0}.note-company,.note-heading,.note-fields div,.note-box,.note-signature{break-inside:avoid}.note-clauses li{break-inside:avoid}.note-ticket{width:100%}}

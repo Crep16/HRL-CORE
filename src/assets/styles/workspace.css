@@ -1,0 +1,136 @@
+﻿.notice{margin:12px 28px 0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;background:var(--acc-soft);color:var(--acc-ink);border-radius:10px;font-size:14px}
+.delete-inline{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:16px;padding:20px;background:white;border:1px solid var(--line2);border-radius:14px;box-shadow:0 8px 40px #12222d33}
+.empty-work{padding:36px}button:disabled{cursor:default;opacity:.5}.fld input:not([readonly]),.fld textarea:not([readonly]){border-bottom-style:solid;background:#f3f8fc}.fld input:focus,.fld textarea:focus{outline:2px solid var(--acc);outline-offset:3px}.fld textarea{resize:vertical}.tabs{min-height:78px}.top .ghost:disabled{opacity:.55}.repa .tag{font-size:11px}
+@media(max-width:1100px){.work{flex-wrap:nowrap}.rail{flex-basis:310px;min-width:270px;padding-left:16px}.sheet{margin-right:16px}.side{flex:1;border-left:0;border-radius:0 0 22px 22px}}
+@media(max-width:760px){.top{padding:0 16px}.logo-tile{margin-right:8px}.tab{padding:0 12px}.work{flex-wrap:wrap}.rail{flex-basis:100%;min-width:0;padding:20px 16px 0}.olist{max-height:260px;overflow:auto}.sheet{flex-basis:100%;margin:20px 16px}.sh-h,.form{padding:24px}.navgrp button{width:34px}.g3,.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.side{min-width:0}.delete-inline{width:calc(100% - 32px);flex-wrap:wrap}.notice{margin:12px 16px 0}}
+@media print{.top,.rail,.aside,.notice,.sh-act,.repa,.delete-inline{display:none!important}.sheet{margin:0!important;box-shadow:none}.work{display:block}.sheet,.form{width:100%}}
+/* Recepción compacta: lista paginada y ficha en columnas. */
+.order-pagination{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}
+.order-pagination span{font-size:12px;color:var(--muted);text-align:center}.order-pagination .btn{min-height:34px;padding:0 12px;font-size:22px}
+.sort-icon{transition:transform .2s}.sort-icon.reversed{transform:rotate(180deg)}.eye{transition:background .2s,color .2s}.eye.revealed{background:var(--acc-soft);color:var(--acc)}#pass{padding-right:44px}.yn button{transition:background .15s,color .15s,box-shadow .15s}.yn button.on{box-shadow:0 1px 3px #12222d22}
+@media(min-width:1101px){
+  .top{padding:0 18px;flex-wrap:nowrap;gap:2px}.logo-tile{margin:8px 12px 8px 0;padding:4px 10px;border-radius:10px}.logo-tile img{height:34px}.tabs{min-height:58px}.tab{padding:0 12px;font-size:13px}.ghost{padding:0 8px;gap:5px;font-size:11px;min-height:36px}.ghost .i{width:15px;height:15px}.top .sp{flex-basis:0}
+  .reception{flex-wrap:nowrap;align-items:stretch;max-width:1920px;min-height:calc(100dvh - 62px)}
+  .reception>.rail{flex:0 0 280px;min-width:0;padding:18px 12px 18px 18px;gap:12px;max-height:calc(100dvh - 62px)}
+  .reception .rail-h{align-items:center;gap:6px}.reception .h-disp{font-size:23px}.reception .rail-h .btn{padding:0 10px;font-size:12px;gap:4px;min-height:36px}.reception .subt{font-size:12px}.reception .search input{height:38px;font-size:13px}.reception .search .i{top:10px;width:16px;height:16px}.reception .seg button{min-height:32px;font-size:12px}.reception .lnk{min-height:28px;font-size:12px}
+  .reception .olist{gap:3px;max-height:none;overflow:visible}.reception .orow{min-height:66px;padding:12px 10px}.reception .o-name{font-size:13px}.reception .o-top,.reception .o-bot{gap:6px}.reception .o-id,.reception .o-sn{font-size:10px}.reception .st{font-size:11px;gap:5px}
+  .reception>.sheet{flex:1 1 0;margin:14px 18px 18px 6px;border-radius:16px;align-self:flex-start}.reception .sh-h{padding:16px 20px;gap:10px;align-items:center}.reception .num{font-size:32px}.reception .who{margin-top:4px;font-size:15px}.reception .sh-act{gap:6px}.reception .btn{min-height:34px;padding:0 10px;font-size:12px;gap:5px}.reception .navgrp button{height:34px;width:28px}.reception .navgrp span{font-size:11px;padding:0 4px}
+  .reception .sh-b{flex-wrap:nowrap}.reception .form{flex:1 1 0;padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);grid-template-rows:auto auto 1fr;gap:16px 22px;align-content:start;align-items:start}.reception .form>.block:nth-child(2){grid-column:2;grid-row:1 / 4}.reception .form>.block:nth-child(3){grid-column:1;grid-row:2}.reception .form>.block:nth-child(4){grid-column:1;grid-row:3}
+  .reception .block{gap:8px}.reception .sec{font-size:15px;gap:8px}.reception .sec small{font-size:10px}.reception .g2,.reception .g3{gap:5px 14px;grid-template-columns:repeat(2,minmax(0,1fr))}.reception .fld{gap:1px}.reception .fld label{font-size:10.5px}.reception .fld input{min-height:32px;padding:5px 0;font-size:13px}.reception .fld textarea{min-height:58px;padding:7px 9px;font-size:13px;line-height:1.35;resize:none}.reception .ask{gap:8px;min-height:40px}.reception .ask b{font-size:12px;line-height:1.35}.reception .yn{padding:2px;flex-shrink:0}.reception .yn button{min-width:34px;min-height:28px;font-size:12px}.reception .eye{height:30px;width:30px;bottom:1px}
+  .reception .side{flex:0 0 230px;min-width:0;padding:18px 16px;gap:18px;border-radius:0 0 16px 0}.reception .combo input{height:38px;font-size:12px;padding-left:28px;padding-right:32px}.reception .combo .dot{left:10px;top:15px}.reception .combo>button{width:30px;height:30px}.reception .combo-menu{top:42px}.reception .help{font-size:11px;line-height:1.4}.reception .swrow{min-height:36px;font-size:12px}.reception .mosaic{grid-auto-rows:48px;gap:6px}.reception .m{border-radius:9px}.reception .m.more{font-size:11px}.reception .pair{gap:6px}.reception .repa{padding:14px;gap:8px;border-radius:12px}.reception .repa h3{font-size:22px}.reception .repa p{font-size:12px}.reception .tag{height:23px;padding:0 8px;font-size:10px}
+}
+@media(min-width:1101px) and (max-height:740px){
+ .reception .form{padding:12px 16px;gap:10px 16px}.reception .side{padding:12px;gap:12px}.reception .block{gap:5px}.reception .sh-h{padding:12px 18px}.reception .fld input{min-height:28px}.reception .ask{min-height:36px}.reception .rail{gap:9px}.reception .orow{min-height:56px;padding:8px}.reception .repa p{font-size:11px}.reception .facts{gap:4px}.reception .repa{padding:12px}.reception .mosaic{grid-auto-rows:40px}
+}
+@media(max-width:760px){.reception .olist{max-height:none;overflow:visible}.reception .order-pagination{margin-top:0}.reception .orow{min-height:54px}}
+.order-pagination{flex-direction:column;align-items:stretch;gap:10px}.pagination-summary{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.pagination-summary strong{font-size:12px;color:var(--ink);white-space:nowrap}.order-pagination .pagination-summary span{font-size:11px;text-align:right}.pagination-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.order-pagination .pagination-buttons .btn{display:flex;gap:6px;min-height:34px;padding:0 8px;font-size:12px}.pagination-buttons .btn:disabled{background:var(--tint);box-shadow:none;opacity:.45}
+
+/* Keep the order readable at laptop widths before adding another column. */
+.o-top,.o-bot,.sh-h>div,.block,.repa{min-width:0}
+.o-top,.o-bot{width:100%}
+.o-sn{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.o-id,.st{flex-shrink:0}
+.who,.subt,.help,.ask b{overflow-wrap:anywhere}
+.reception .yn button:disabled{opacity:1}
+.reception .yn button:disabled:not(.on){color:var(--muted)}
+.reception .fld textarea{resize:vertical}
+.reception .fld input:not([readonly]){padding-inline:8px;border-radius:4px 4px 0 0}
+.reception .num{font-size:clamp(28px,2.4vw,38px)}
+.top{row-gap:0}
+.evidence-section{min-width:0}
+.evidence-section summary{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-height:44px;font:600 15px var(--body);cursor:pointer;list-style:none}
+.evidence-section summary::-webkit-details-marker{display:none}
+.evidence-section summary::before{content:'▸';color:var(--acc-ink)}
+.evidence-section[open] summary::before{content:'▾'}
+.evidence-section summary span{margin-left:auto;font-size:11px;font-weight:500;color:var(--muted)}
+.evidence-section .mosaic{margin-block:8px 12px}
+.perf::before,.perf::after{display:none}
+
+@media screen and (min-width:1101px){
+  .app{min-height:100dvh}
+  .reception{min-height:0;flex:1}
+  .reception>.rail{max-height:none;gap:10px}
+  .reception .order-pagination{margin-top:8px}
+  .reception .fld label{font-size:12px}
+  .reception .fld input,.reception .fld textarea{font-size:14px}
+  .reception .sec small,.reception .o-id,.reception .o-sn{font-size:11px}
+  .reception .repa .btn{white-space:normal}
+}
+
+@media screen and (min-width:1101px) and (max-width:1200px){
+  .reception>.rail{flex-basis:250px;padding-left:14px}
+  .reception .rail-h{flex-wrap:wrap}
+  .reception .form{grid-template-columns:1fr 1fr;padding:16px;gap:16px}
+  .reception .sh-b{flex-wrap:wrap}
+  .reception .side{flex:1 1 100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;border-left:0;border-top:1px solid var(--line);border-radius:0 0 16px 16px}
+  .reception .side .block{gap:8px}
+  .reception .side .mosaic{grid-auto-rows:34px}
+  .reception .side .repa{justify-content:space-between}
+  .reception .side .facts{display:none}
+  .top{flex-wrap:wrap}
+  .top .ghost{font-size:11px;padding-inline:6px}
+}
+
+@media screen and (min-width:1201px) and (max-width:1399px){
+  .reception>.rail{flex-basis:250px;padding-left:14px}
+  .reception .rail-h{flex-wrap:wrap;gap:8px}
+  .reception .side{flex-basis:215px;padding:16px 12px}
+  .reception .form{padding:16px;gap:14px 18px}
+  .reception .repa{padding:12px}
+}
+
+@media screen and (min-width:761px) and (max-width:1100px){
+  .top{padding-inline:16px}
+  .logo-tile{margin:8px 12px 8px 0}
+  .logo-tile img{height:32px}
+  .tabs{min-height:56px}
+  .top .ghost{font-size:12px;min-height:36px;padding-inline:8px}
+  .reception>.rail{flex-basis:250px;min-width:230px;gap:12px}
+  .reception .rail-h{align-items:flex-start;flex-direction:column;gap:10px}
+  .reception>.sheet{margin:16px 16px 20px 0}
+  .reception .sh-h{padding:20px}
+  .reception .num{font-size:30px}
+  .reception .who{font-size:17px}
+  .reception .form{flex-basis:100%;padding:20px;gap:20px}
+  .reception .side{flex-basis:100%;display:grid;grid-template-columns:1fr 1fr;padding:20px;gap:20px;border-top:1px solid var(--line)}
+  .reception .repa{grid-column:1 / -1}
+  .reception .mosaic{grid-auto-rows:54px}
+}
+
+@media screen and (max-width:760px){
+  .top{padding:8px 12px;gap:4px}
+  .logo-tile{margin:0 8px 0 0;padding:4px 8px;border-radius:8px}
+  .logo-tile img{height:30px}
+  .tabs{min-height:44px;flex:1}
+  .tab{padding-inline:10px;font-size:13px}
+  .top>.sp{display:none}
+  .top>.ghost{min-height:44px;flex:1 1 45%;font-size:11px;justify-content:center;padding-inline:6px;margin:0}
+  .reception .rail{padding-top:16px;gap:12px}
+  .reception .h-disp{font-size:24px}
+  .reception .orow{padding:10px 12px}
+  .reception .sh-h,.reception .form,.reception .side{padding:20px}
+  .reception .form{gap:24px}
+  .reception .sh-act{gap:8px;width:100%}
+  .reception .navgrp{width:100%;justify-content:space-between}
+  .reception .navgrp button{width:44px;height:44px}
+  .reception .side{flex-basis:100%;border-top:1px solid var(--line)}
+  .reception .sec{font-size:18px}
+  .reception .sec small{font-size:12px}
+  .reception .ask{gap:8px}
+  .reception .ask b{font-size:14px}
+  .reception .yn button{min-width:44px;min-height:44px}
+  .reception .eye{height:44px;width:44px}
+  .reception .fld input,.reception .fld textarea{font-size:16px}
+  .reception .order-pagination .btn,.reception .seg button{min-height:44px}
+  .delete-inline{bottom:max(16px,env(safe-area-inset-bottom))}
+}
+
+@media screen and (max-width:420px){
+  .reception .g2,.reception .g3{grid-template-columns:1fr}
+  .reception .sh-h,.reception .form,.reception .side{padding:16px}
+  .reception .sheet{margin-inline:12px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}

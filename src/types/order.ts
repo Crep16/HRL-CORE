@@ -13,6 +13,7 @@ export type Order = {
   brand: string;
   model: string;
   otherShop: boolean;
+  otherShopReason: string;
   dropped: boolean;
   dropReason: string;
   password: string;

@@ -1,36 +1,27 @@
-# HRL-CORE
+﻿# HRL-CORE
 
-Directorio de clientes de HRL (Tauri + Vue 3 + TypeScript).
+Aplicación de escritorio de HRL, con Vue 3, TypeScript y Tauri.
+
+## Flujo actual
+
+- **Clientes** es la recepción de órdenes del mockup: lista a la izquierda, ficha central y estado/evidencias a la derecha.
+- **Nueva orden** y **Editar** permiten escribir directamente en la ficha central. **Guardar cambios** confirma la captura y **Cancelar** descarta el borrador.
+- **Reparaciones → Abrir gestión** abre el seguimiento de la orden seleccionada. **Volver a clientes** guarda el seguimiento y regresa a la recepción.
+- Reparaciones incluye etapas, notas públicas e internas, línea de tiempo, abonos, garantías y refacciones con formularios dentro de la pantalla.
+
+Los estilos proceden de `Clientes-html/Main.dc.html` y `Reparaciones (gestión detallada)-html/Reparaciones.dc.html`, compartidos en la carpeta de mockups. No se implementan otras ventanas por ahora.
+
+## Almacenamiento y alcance
+
+Esta primera implementación guarda órdenes y seguimiento por orden en `localStorage` (claves `hrl.orders.v1` y `hrl.repair.v1.<folio>`). Conserva los cambios al recargar en el mismo origen y perfil. Es una base de interfaz; la integración definitiva con SQLite todavía está pendiente.
+
+La conexión con Firebase, publicación en el portal, autenticación, impresión y captura/carga de evidencias están pendientes. Sus controles aparecen deshabilitados cuando corresponde. Las cuatro miniaturas de la recepción son ejemplos del mockup.
 
 ## Comandos
 
-- `npm install` — instala dependencias.
-- `npm run dev` — modo desarrollo en el navegador.
-- `npm run build` — revisa tipos y compila.
-- `npm run tauri dev` — abre la app de escritorio.
+- `npm install`
+- `npm run dev`
+- `npm run build` — comprueba TypeScript y genera la compilación.
+- `npm run tauri dev`
 
-## Estructura
-
-```text
-HRL-CORE/
-├── index.html            Página de entrada
-├── src/
-│   ├── main.ts           Arranque de la app
-│   ├── App.vue           Une las piezas y guarda el estado general
-│   ├── components/       Piezas de la pantalla
-│   │   ├── AppTopbar.vue         Barra superior con logo
-│   │   ├── ClientDirectory.vue   Lista, búsqueda y filtro de clientes
-│   │   ├── ClientProfile.vue     Ficha del cliente seleccionado
-│   │   └── NewClientDialog.vue   Formulario "Nuevo cliente"
-│   ├── data/clients.ts   Clientes de ejemplo
-│   ├── types/client.ts   Tipos de datos (Client, Activity...)
-│   ├── utils/text.ts     Funciones auxiliares
-│   └── assets/
-│       ├── images/       Imágenes (logo)
-│       └── styles/       app.css (estilos por secciones) y tailwind.css
-└── src-tauri/            Parte de escritorio (Rust)
-```
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Vue - Official](https://marketplace.visualstudio.com/items?itemName=Vue.volar) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+En PowerShell con scripts deshabilitados, usa `npm.cmd`.

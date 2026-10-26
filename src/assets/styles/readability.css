@@ -1,0 +1,97 @@
+@media screen {
+  :root{--muted:#435664;--line2:#81939f}
+  .top .tabs{min-height:64px}
+  .top .tab{font-size:15px;padding-inline:14px}
+  .top .ghost{font-size:13px;min-height:44px;padding-inline:10px;gap:6px}
+  .top .logo-tile img{height:38px}
+  .reception .h-disp{font-size:26px}
+  .reception .subt{font-size:14px}
+  .reception .o-name{font-size:15px}
+  .reception .o-id,.reception .o-sn{font-size:12px}
+  .reception .st{font-size:13px;line-height:1.4}
+  .reception .orow{min-height:68px;padding:10px 12px}
+  .reception .btn{font-size:14px;min-height:40px;padding-inline:12px}
+  .reception .search input{font-size:15px;height:44px}
+  .reception .search .i{top:14px}
+  .reception .seg button{font-size:14px;min-height:40px}
+  .reception .lnk{font-size:13px;min-height:36px}
+  .reception .who{font-size:18px;line-height:1.4}
+  .reception .sec{font-size:18px}
+  .reception .sec small{font-size:12px}
+  .reception .fld label{font-size:13px;line-height:1.4}
+  .reception .fld input{font-size:16px;min-height:40px;line-height:1.4;padding-block:7px}
+  .reception .fld textarea{font-size:16px;line-height:1.5;min-height:72px;padding:10px 12px}
+  .reception .ask{min-height:48px}
+  .reception .ask b{font-size:14px}
+  .reception .yn button{font-size:14px;min-width:40px;min-height:36px}
+  .reception .eye{width:40px;height:40px;bottom:0}
+  .reception .navgrp button{height:40px;width:36px}
+  .reception .navgrp span{font-size:13px}
+  .reception .side{gap:16px}
+  .reception .combo input{height:44px;font-size:15px}
+  .reception .combo .dot{top:18px}
+  .reception .combo>button{width:36px;height:36px}
+  .reception .combo-menu{top:48px}
+  .reception .swrow{font-size:14px;min-height:44px}
+  .reception .help,.reception .repa p{font-size:13px;line-height:1.5}
+  .reception .repa h3{font-size:24px}
+  .reception .tag{font-size:12px;height:auto;min-height:26px;white-space:normal}
+  .reception .evidence-section summary{font-size:16px}
+  .reception .evidence-section summary span{font-size:12px}
+  .reception .order-pagination .pagination-summary strong,.reception .order-pagination .pagination-summary span{font-size:12px}
+  .company-heading p{font-size:15px;line-height:1.5}
+  .company-nav button strong{font-size:15px}
+  .company-nav button span,.company-nav>p{font-size:13px;line-height:1.5}
+  .company-nav button{gap:6px;padding-block:10px}
+  .company-panel-heading p,.company-help,.company-save-state{font-size:14px;line-height:1.5}
+  .company-field label{font-size:13px}
+  .company-field input,.company-field textarea,.company-field select{font-size:16px;min-height:44px;padding:10px 12px}
+  .company-panel .btn{font-size:14px;min-height:44px}
+  .company-panel legend{font-size:16px}
+  .company-check{font-size:15px;min-height:44px}
+  .company-count{font-size:12px}
+  .company-preview-heading h2{font-size:19px}
+  .company-preview-heading p,.company-preview-meta{font-size:13px}
+  .company-note-toggle button{font-size:14px;min-height:40px}
+  .company-preview .company-note{font-size:14px;line-height:1.5}
+  .company-preview .note-company h3{font-size:20px}
+  .company-preview .note-company p,.company-preview .note-date,.company-preview .note-fields dt{font-size:12px}
+  .company-preview .note-heading h4{font-size:16px}
+  .company-preview .note-box h5,.company-preview .note-clauses h5{font-size:14px}
+  .company-preview .note-clauses,.company-preview .note-signature,.company-preview .note-footer{font-size:12px;line-height:1.5}
+  .company-preview .note-ticket{font-size:13px;padding:14px}
+  .company-preview .note-ticket60{padding:10px}
+  .company-preview .note-ticket .note-company h3{font-size:18px}
+  .clause-select strong{font-size:15px}
+  .clause-select span,.company-section-toolbar p{font-size:13px}
+  .company-clause-list li{padding:10px}
+  .company-icon-button,.clause-row-actions .company-icon-button{min-width:36px;min-height:40px}
+  .company-calculation{font-size:14px}
+}
+@media screen and (min-width:1201px){
+  .reception>.rail{flex-basis:280px;padding-left:18px}
+  .reception .rail-h{flex-wrap:wrap;gap:8px}
+  .reception .side{flex-basis:240px;padding:18px 16px}
+  .reception .form{gap:14px 22px}
+  .reception>.sheet{margin-block:12px}
+  .reception>.rail{padding-bottom:12px}
+  .company-layout{grid-template-columns:210px minmax(380px,1.15fr) minmax(340px,1fr);gap:20px}
+}
+@media screen and (min-width:1600px){
+  .company-layout{grid-template-columns:230px minmax(440px,1.1fr) minmax(420px,1fr);gap:28px}
+}
+@media screen and (min-width:1101px){
+  .company-panel{max-height:calc(100dvh - 180px)}
+  .company-preview-paper{max-height:calc(100dvh - 326px)}
+}
+@media screen and (max-width:760px){
+  .top .tabs{min-height:48px}
+  .top .tab{font-size:14px;padding-inline:10px}
+  .top .logo-tile img{height:30px}
+  .top .ghost{font-size:12px;padding-inline:6px}
+  .reception .btn,.reception .seg button,.reception .lnk,.reception .yn button{min-height:44px}
+  .reception .navgrp button{width:44px;height:44px}
+  .reception .eye{width:44px;height:44px}
+  .company-icon-button,.clause-row-actions .company-icon-button{min-width:44px;min-height:44px}
+  .company-note-toggle button{min-height:44px}
+}

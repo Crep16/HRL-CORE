@@ -1,10 +1,23 @@
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { initialOrders } from "../data/orders";
 import type { Order, SearchField } from "../types/order";
 
 export function useOrders() {
-  const orders = ref<Order[]>(initialOrders);
-  const selectedId = ref(initialOrders[0].id);
+  const storageError = ref("");
+  let initial = initialOrders.map(order => ({ ...order }));
+  try {
+    const stored = localStorage.getItem('hrl.orders.v1');
+    if (stored) {
+      const parsed: unknown = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.every(order => order && typeof order.id === 'string' && typeof order.client === 'string' && typeof order.serial === 'string')) initial = parsed.map(order => ({ otherShopReason: "", ...order }));
+    }
+  } catch { /* Keep the initial data if local storage is unavailable. */ }
+  const orders = ref<Order[]>(initial);
+  watch(orders, value => {
+    try { localStorage.setItem('hrl.orders.v1', JSON.stringify(value)); storageError.value = '';  }
+    catch { storageError.value = 'No se pudieron guardar los cambios en este equipo. Mantén la aplicación abierta.'; }
+  }, { deep: true, flush: 'sync' });
+  const selectedId = ref(initial[0]?.id ?? "");
   const query = ref("");
   const field = ref<SearchField>("all");
   const ascending = ref(true);
@@ -42,5 +55,5 @@ export function useOrders() {
     goTo(position);
   }
 
-  return { orders, selectedId, query, field, ascending, visible, index, selected, goTo, removeSelected };
+  return { storageError, orders, selectedId, query, field, ascending, visible, index, selected, goTo, removeSelected };
 }

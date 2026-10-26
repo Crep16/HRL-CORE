@@ -9,6 +9,7 @@ const defaults = {
   brand: "HP",
   model: "Pavilion 14",
   otherShop: false,
+  otherShopReason: "",
   dropped: false,
   dropReason: "",
   password: "",
