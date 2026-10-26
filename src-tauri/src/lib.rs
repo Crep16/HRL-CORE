@@ -7,7 +7,14 @@ fn greet(name: &str) -> String {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_sql::Builder::new().build())
+        .plugin(tauri_plugin_sql::Builder::new()
+            .add_migrations("sqlite:hrl_datos.db", vec![tauri_plugin_sql::Migration {
+                version: 1,
+                description: "users_and_permissions",
+                sql: include_str!("../migrations/001_access.sql"),
+                kind: tauri_plugin_sql::MigrationKind::Up,
+            }])
+            .build())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![greet])
         .run(tauri::generate_context!())
