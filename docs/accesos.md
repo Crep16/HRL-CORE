@@ -7,7 +7,7 @@ La base SQLite reside en una sola computadora. No se implementa servidor compart
 | Acceso | Regla confirmada |
 | --- | --- |
 | Completo | Acceso sin restricciones. El primer inicio debe crear un usuario completo con contraseña maestra. Siempre debe conservarse al menos uno activo. |
-| Limitado | Agregar y trabajar en Reparaciones. Falta detallar acciones y el acceso de consulta a las órdenes necesarias. |
+| Limitado | Notas, etapas, garantías y refacciones en Reparaciones; añadir registros de clientes. Sin pagos, edición ni borrado. Decisión del 27 de octubre de 2026; ver precisión abajo. |
 | Personalizado | Selección individual de apartados y acciones: visualizar, crear, editar y borrar. Clientes, Reparaciones, Bitácora y Empresa. |
 
 ## Implementación actual
@@ -20,4 +20,18 @@ Comprobaciones: `node --test tests/access-schema.test.mjs` prueba restricciones,
 
 ## Siguientes entregas
 
-Alta inicial y acceso con hash de contraseña en el backend; sesión local y comprobación de permisos en cada operación; administración de usuarios y permisos; migración transaccional de órdenes. Confirmar recuperación de la contraseña maestra y acciones exactas del acceso limitado antes de implementarlas.
+Alta inicial y acceso con hash de contraseña en el backend; sesión local y comprobación de permisos en cada operación; administración de usuarios y permisos; migración transaccional de órdenes. Confirmar recuperación de la contraseña maestra antes de implementarla.
+
+## Precisión del acceso limitado, 27 de octubre de 2026
+
+El usuario confirmó: «notas etapas garantias refacciones añadir registros de clientes, sin pagos ni editar o borrar».
+
+Se conservan como operaciones autorizadas el registro de notas, avance de etapas,
+garantías, refacciones y alta de clientes. No se concede permiso genérico de
+edición por permitir estas operaciones. Pagos, edición y borrado permanecen
+restringidos. Falta precisar el alcance de consulta de registros existentes y
+cómo distinguir agregar notas/avanzar etapas de editar contenido ya registrado.
+
+La tabla SQLite actual solo distingue acciones genéricas de visualizar, crear,
+editar y borrar. Esta decisión aún no se aplica en el backend ni en las vistas;
+se necesitarán operaciones con permisos específicos para respetarla.
