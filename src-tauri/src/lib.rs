@@ -13,6 +13,11 @@ pub fn run() {
                 description: "users_and_permissions",
                 sql: include_str!("../migrations/001_access.sql"),
                 kind: tauri_plugin_sql::MigrationKind::Up,
+            }, tauri_plugin_sql::Migration {
+                version: 2,
+                description: "workshop_records",
+                sql: include_str!("../migrations/002_workshop.sql"),
+                kind: tauri_plugin_sql::MigrationKind::Up,
             }])
             .build())
         .plugin(tauri_plugin_opener::init())
