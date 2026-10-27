@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue';
+import AccessWorkspace from './components/access/AccessWorkspace.vue';
+const accessPreview = ref(true);
 import AppHeader from './components/layout/AppHeader.vue';
 import OrderList from './components/orders/OrderList.vue';
 import OrderSheet from './components/orders/OrderSheet.vue';
@@ -74,7 +76,8 @@ function select(id: string) {
 </script>
 
 <template>
-  <div class="app">
+  <AccessWorkspace v-if="accessPreview" @preview="accessPreview=false" />
+  <div v-else class="app">
     <AppHeader :tabs="['Clientes', 'Bitácora', 'Empresa']" :active="page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty" @change="navigate" @print="printOrder" />
     <div v-if="storageError" class="notice" role="alert">{{ storageError }}</div>
     <div v-if="notice" class="notice" role="status">{{ notice }}<button class="lnk" type="button" aria-label="Cerrar aviso" @click="notice = ''">×</button></div>

@@ -13,9 +13,12 @@
     "windows": [
       {
         "title": "hrl-core",
-        "width": 1366,
-        "height": 768,
-        "maximized": true
+        "width": 880,
+        "height": 720,
+        "minWidth": 360,
+        "minHeight": 520,
+        "center": true,
+        "maximized": false
       }
     ],
     "security": {
