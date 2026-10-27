@@ -48,8 +48,9 @@ la configuración de Empresa al importar, pues antes no se guardaba por orden.
 
 El abono inicial nuevo requiere permiso de pagos. No se corrige un pago ni
 se reduce un precio editando la ficha, mientras se resuelven las reglas de
-devoluciones y correcciones. El seguimiento de Reparaciones aún guarda sus
-abonos en localStorage y no se ha trasladado al libro de pagos SQLite.
+devoluciones y correcciones. La migración 006 incorpora el seguimiento y
+sus abonos adicionales al mismo libro de pagos, con importación administrativa
+del origen anterior sin duplicación; véase `reparaciones-permisos.md`.
 
 El historial de alta y cambios de campos compatibles se confirma junto con
 la orden y excluye la clave del equipo. La clave del equipo se conserva en la

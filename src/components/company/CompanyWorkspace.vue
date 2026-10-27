@@ -40,6 +40,7 @@ const readingLogo = ref(false);
 const printing = ref(false);
 const confirmDiscard = ref(false);
 const preview = ref<HTMLElement>();
+const notePreview = ref<InstanceType<typeof CompanyNote>>();
 const errorSummary = ref<HTMLElement>();
 const fileInput = ref<HTMLInputElement>();
 const dirty = computed(() => JSON.stringify(draft.value) !== JSON.stringify(company.value));
@@ -118,7 +119,7 @@ async function printTest() {
   errors.value=companyErrors(draft.value);
   if(errors.value.length) {nextTick(()=>errorSummary.value?.focus());return;}
   printing.value=true; message.value='';
-  try {await printCompanyNote(note,draft.value);message.value='Se solicitó el diálogo de impresión. Elige ahí la impresora o Guardar como PDF.';}
+  try {await notePreview.value?.prepare();await nextTick();await printCompanyNote(note,draft.value);message.value='Se solicitó el diálogo de impresión. Elige ahí la impresora o Guardar como PDF.';}
   catch(error) {message.value=error instanceof Error ? error.message : 'No se pudo preparar la impresión.';}
   finally {printing.value=false;}
 }
@@ -222,7 +223,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
       <aside class="company-preview" aria-labelledby="company-preview-title">
         <div class="company-preview-heading"><div><h2 id="company-preview-title">Así sale en la nota</h2><p>Vista previa · {{ order?.id || 'sin orden seleccionada' }}</p></div><div class="company-note-toggle" role="group" aria-label="Nota a previsualizar"><button type="button" :aria-pressed="noteKind==='entry'" :class="{active:noteKind==='entry'}" @click="noteKind='entry'">Entrada</button><button type="button" :aria-pressed="noteKind==='exit'" :class="{active:noteKind==='exit'}" @click="noteKind='exit'">Salida</button></div></div>
         <div class="company-preview-meta"><span>{{ paperLabels[draft.paper] }} · {{ draft.paper!=='letter' ? 'Vertical' : draft.orientation==='portrait' ? 'Vertical' : 'Horizontal' }}</span><span>{{ draft.copies }} {{ draft.copies===1 ? 'copia' : 'copias' }}</span></div>
-        <div ref="preview" class="company-preview-paper" :class="{'preview-landscape':draft.orientation==='landscape' && draft.paper==='letter','preview-letter':draft.paper==='letter'}"><CompanyNote :settings="draft" :kind="noteKind" :order="order" :folio="section==='folios' ? nextFolio : undefined" /></div>
+        <div ref="preview" class="company-preview-paper" :class="{'preview-landscape':draft.orientation==='landscape' && draft.paper==='letter','preview-letter':draft.paper==='letter'}"><CompanyNote ref="notePreview" :settings="draft" :kind="noteKind" :order="order" :folio="section==='folios' ? nextFolio : undefined" /></div>
         <p class="company-help">Se actualiza mientras editas. La paginación final depende del contenido y del papel; confirma los márgenes en la vista de impresión.</p>
       </aside>
     </div>

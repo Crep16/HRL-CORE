@@ -1,6 +1,7 @@
 mod access;
 mod orders;
 mod permissions;
+mod repairs;
 mod users;
 mod windowing;
 
@@ -44,6 +45,12 @@ pub fn run() {
                             sql: include_str!("../migrations/005_order_visibility.sql"),
                             kind: tauri_plugin_sql::MigrationKind::Up,
                         },
+                        tauri_plugin_sql::Migration {
+                            version: 6,
+                            description: "authorized_repair_records",
+                            sql: include_str!("../migrations/006_repair_records.sql"),
+                            kind: tauri_plugin_sql::MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),
@@ -62,7 +69,10 @@ pub fn run() {
             orders::save_order,
             orders::import_orders,
             orders::next_order_number,
-            orders::set_order_deleted
+            orders::set_order_deleted,
+            repairs::load_repair,
+            repairs::save_repair,
+            repairs::repair_print_summary
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,13 +1,16 @@
 ﻿<script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { Order } from '../../types/order';
-import { useRepair } from '../../composables/useRepair';
+import { useRepairWorkspace } from '../../composables/useRepairWorkspace';
+import { useAccess } from '../../composables/useAccess';
 import { useCompany } from '../../composables/useCompany';
 import { companyDateTime } from '../../utils/companyDate';
 import { orderAmount } from '../../utils/orderAmount';
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ back: [] }>();
-const { repair, save, message } = useRepair(props.order.id);
+const { repair, save, commit, message, busy, ready, dirty } = useRepairWorkspace(props.order.id);
+const { can } = useAccess();
+const newNote = ref('');
 const { company } = useCompany();
 defineExpose({ save });
 const stages = ['Recibido', 'Diagnóstico', 'Autorización', 'Refacciones', 'Reparación', 'Pruebas', 'Entrega'];
@@ -32,33 +35,39 @@ const money = (value: number) => new Intl.NumberFormat(company.value.locale, { s
 const number = orderAmount;
 const deposited = computed(() => number(props.order.deposit) + repair.value.payments.reduce((sum, item) => sum + item.amount, 0));
 const balance = computed(() => Math.max(0, number(props.order.cost) - deposited.value));
-function addEvent() {
-  if (!title.value.trim()) return;
-  repair.value.events.unshift({ id:Date.now(), date: date.value, title:title.value.trim(), detail:detail.value, stage:stage.value, public:publicEvent.value });
-  title.value = ''; detail.value = ''; save();
+const nextEventId = () => repair.value.events.reduce((id, event) => Math.max(id, event.id), Date.now() - 1) + 1;
+async function addEvent() {
+  if (!title.value.trim() || !can('notes.add')) return;
+  if (await commit(next => next.events.unshift({ id:nextEventId(), date:date.value, title:title.value.trim(), detail:detail.value, stage:stage.value, public:publicEvent.value }))) { title.value = ''; detail.value = ''; }
 }
-function complete() {
-  if (repair.value.completed >= stages.length) return;
-  repair.value.events.unshift({ id:Date.now(), date:now(), title:`${stages[repair.value.completed]}: etapa completada`, detail:'', stage:stages[repair.value.completed]!, public:true });
-  repair.value.completed++; save();
+async function complete() {
+  if (repair.value.completed >= stages.length || !can('stages.advance')) return;
+  await commit(next => { next.events.unshift({ id:nextEventId(), date:now(), title:`${stages[next.completed]}: etapa completada`, detail:'', stage:stages[next.completed]!, public:true }); next.completed++; });
 }
-function addPayment() {
+async function addPayment() {
+  if (!can('payments.add')) return;
   if (amount.value <= 0 || amount.value > balance.value) { message.value = 'El abono debe ser mayor a cero y no superar el saldo.'; return; }
-  repair.value.payments.push({ date:now(), amount:amount.value }); amount.value = 0; paymentOpen.value = false; save();
+  if (await commit(next => next.payments.push({ date:now(), amount:amount.value }))) { amount.value = 0; paymentOpen.value = false; }
 }
-function addWarranty() {
-  if (!warranty.value.trim()) return;
-  repair.value.warranties.push({ name:warranty.value.trim(), days:days.value }); warranty.value=''; addingWarranty.value=false; save();
+async function addWarranty() {
+  if (!warranty.value.trim() || !can('warranties.add')) return;
+  if (await commit(next => next.warranties.push({ name:warranty.value.trim(), days:days.value }))) { warranty.value=''; addingWarranty.value=false; }
 }
-function addPart() {
-  if (!part.value.trim()) return;
-  repair.value.parts.push({ name:part.value.trim(), price:price.value }); part.value=''; price.value=0; addingPart.value=false; save();
+async function addPart() {
+  if (!part.value.trim() || !can('parts.add')) return;
+  if (await commit(next => next.parts.push({ name:part.value.trim(), price:price.value }))) { part.value=''; price.value=0; addingPart.value=false; }
 }
-function back() { if (save()) emit('back'); }
+async function appendNote() {
+  if (!newNote.value.trim() || !can('notes.add')) return;
+  const text = newNote.value.trim();
+  if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
+}
+async function back() { if (await save()) emit('back'); }
 </script>
 
 <template>
   <div class="repair-page">
+    <p v-if="busy" class="notice" role="status">Consultando o guardando el seguimiento…</p>
     <p v-if="message" class="notice" role="status">{{ message }}</p>
     <div class="work">
       <aside class="rail" aria-label="Contexto de la orden">
@@ -69,7 +78,7 @@ function back() { if (save()) emit('back'); }
             <summary>Datos del equipo</summary>
             <div v-for="(value, label) in { Serie:order.serial, Marca:order.brand, Modelo:order.model, 'Fecha de entrada':order.received }" :key="label" class="kv"><span class="k">{{ label }}</span><span class="v">{{ value || 'Sin registrar' }}</span></div>
           </details>
-          <div class="fld"><label for="technician">Técnico</label><input id="technician" v-model="repair.technician" placeholder="Asignar responsable" /></div>
+          <div class="fld"><label for="technician">Técnico</label><input id="technician" v-model="repair.technician" :readonly="!can('repairs.edit') || !ready || busy" placeholder="Sin asignar" /></div>
         </section>
         <section class="block"><h2 class="sec">Pago</h2>
           <div class="line"><span class="k">Total</span><strong>{{ order.cost }}</strong></div>
@@ -77,12 +86,13 @@ function back() { if (save()) emit('back'); }
           <div class="bar"><i :style="{ width: `${Math.min(100, deposited / (number(order.cost) || 1) * 100)}%` }"></i></div>
           <div class="line"><span>Saldo pendiente</span><strong style="font:800 30px var(--disp)">{{ money(balance) }}</strong></div>
           <div v-for="(payment, i) in repair.payments" :key="i" class="line"><span>{{ payment.date.replace('T',' ') }}</span><strong>{{ money(payment.amount) }}</strong></div>
-          <button class="btn btn-s" @click="paymentOpen = !paymentOpen">+ Registrar abono</button>
-          <form v-if="paymentOpen" class="compose" @submit.prevent="addPayment"><div class="fld"><label for="payment">Importe</label><input id="payment" v-model.number="amount" type="number" min="0.01" step="0.01" :max="balance" required /></div><button class="btn btn-p">Guardar abono</button></form>
+          <button class="btn btn-s" :disabled="!can('payments.add') || !ready || busy" @click="paymentOpen = !paymentOpen">+ Registrar abono</button>
+          <p v-if="!can('payments.add')" class="help">Tu acceso permite consultar los pagos, pero no registrar abonos.</p>
+          <form v-if="paymentOpen" class="compose" :inert="busy || !ready" @submit.prevent="addPayment"><div class="fld"><label for="payment">Importe</label><input id="payment" v-model.number="amount" type="number" min="0.01" step="0.01" :max="balance" required /></div><button class="btn btn-p">Guardar abono</button></form>
         </section>
       </aside>
       <section class="sheet" aria-label="Gestión de la reparación">
-        <div class="sh-h"><div><h1 class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" @click="save">Guardar cambios</button></div></div>
+        <div class="sh-h"><div><h1 class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" :disabled="!ready || busy || !dirty" @click="save">Guardar cambios</button></div></div>
         <div class="perf" aria-hidden="true"></div>
         <div class="workspace-tabs" role="group" aria-label="Vista de reparación">
           <button class="btn" :class="workspaceTab === 'work' ? 'btn-p' : 'btn-s'" :aria-pressed="workspaceTab === 'work'" @click="workspaceTab = 'work'">Trabajo y notas</button>
@@ -92,14 +102,14 @@ function back() { if (save()) emit('back'); }
           <div v-show="workspaceTab === 'work'" class="repair-work">
           <section class="block" style="gap:18px"><h2 class="sec">Avance del trabajo<small>{{ Math.round(repair.completed / 7 * 100) }}%</small></h2>
             <ol class="steps"><li v-for="(item, i) in stages" :key="item" class="step" :class="{ done:i < repair.completed, cur:i === repair.completed }"><span class="st-c"><span v-if="i < repair.completed">✓</span><i v-else-if="i === repair.completed"></i></span><span class="st-l">{{ item }}</span></li></ol>
-            <div class="actions"><p class="help">Completaste {{ repair.completed }} de 7 etapas. {{ repair.completed < 7 ? `Ahora: ${stages[repair.completed]}.` : 'Trabajo completado.' }}</p><button class="btn btn-p" :disabled="repair.completed === 7" @click="complete">Completar etapa</button></div>
+            <div class="actions"><p class="help">Completaste {{ repair.completed }} de 7 etapas. {{ repair.completed < 7 ? `Ahora: ${stages[repair.completed]}.` : 'Trabajo completado.' }}</p><button class="btn btn-p" :disabled="repair.completed === 7 || !can('stages.advance') || busy || !ready" @click="complete">Completar etapa</button></div>
           </section>
-          <section class="block"><h2 class="sec">Notas del técnico</h2><div class="seg" style="max-width:340px"><button :class="{on:noteType === 'publicNote'}" :aria-pressed="noteType === 'publicNote'" @click="noteType = 'publicNote'">Para el cliente</button><button :class="{on:noteType === 'internalNote'}" :aria-pressed="noteType === 'internalNote'" @click="noteType = 'internalNote'">Internas</button></div><div class="fld note"><label class="sr" for="technical-note">Nota del técnico</label><textarea id="technical-note" v-model="repair[noteType]" rows="4" placeholder="Escribe directamente aquí…"></textarea></div><p class="help">{{ noteType === 'publicNote' ? 'Nota preparada para el seguimiento del cliente.' : 'Nota interna del taller. No se comparte con el cliente.' }}</p></section>
+          <section class="block"><h2 class="sec">Notas del técnico</h2><div class="seg" style="max-width:340px"><button :class="{on:noteType === 'publicNote'}" :aria-pressed="noteType === 'publicNote'" @click="noteType = 'publicNote'">Para el cliente</button><button :class="{on:noteType === 'internalNote'}" :aria-pressed="noteType === 'internalNote'" @click="noteType = 'internalNote'">Internas</button></div><div class="fld note"><label class="sr" for="technical-note">Nota del técnico</label><textarea id="technical-note" v-model="repair[noteType]" :readonly="!can('repairs.edit') || !ready || busy" rows="4" placeholder="Sin notas registradas"></textarea></div><p class="help">{{ noteType === 'publicNote' ? 'Nota preparada para el seguimiento del cliente.' : 'Nota interna del taller. No se comparte con el cliente.' }}</p><form v-if="can('notes.add') && !can('repairs.edit')" class="compose" :inert="busy || !ready" @submit.prevent="appendNote"><div class="fld"><label for="append-note">Agregar nota {{ noteType === 'publicNote' ? 'para el cliente' : 'interna' }}</label><textarea id="append-note" v-model="newNote" rows="3" required placeholder="Se añadirá después de las notas existentes"></textarea></div><button class="btn btn-p" :disabled="busy || !ready">Agregar nota</button></form></section>
           </div>
           <section v-show="workspaceTab === 'history'" class="block" style="gap:18px"><h2 class="sec">Línea de tiempo<small>{{ repair.events.length }} avances</small></h2>
-            <details class="event-composer">
+            <details v-if="can('notes.add')" class="event-composer">
               <summary>Agregar avance</summary>
-              <form class="compose" @submit.prevent="addEvent">
+              <form class="compose" :inert="busy || !ready" @submit.prevent="addEvent">
                 <div class="g2">
                   <div class="fld"><label for="stage">Etapa</label><select id="stage" v-model="stage"><option v-for="item in stages" :key="item">{{ item }}</option></select></div>
                   <div class="fld"><label for="event-date">Fecha y hora</label><input id="event-date" v-model="date" type="datetime-local" required /><button class="lnk" type="button" @click="date = now()">Ahora</button></div>
@@ -114,13 +124,13 @@ function back() { if (save()) emit('back'); }
         </div>
       </section>
       <aside class="aside" aria-label="Publicación, garantías y refacciones">
-        <section class="card block"><h2 class="h3">Publicación en la web</h2><span class="pill amber" style="align-self:flex-start">Sin configurar</span><div class="seg"><button :class="{on:repair.syncMode === 'auto'}" @click="repair.syncMode = 'auto'">Automática</button><button :class="{on:repair.syncMode === 'manual'}" @click="repair.syncMode = 'manual'">Manual</button></div><p class="help">Los cambios se guardan en este equipo. La conexión con el portal web está pendiente.</p><button class="btn btn-p" disabled>Publicar cambios</button><div class="sep"></div><b>Qué ve el cliente</b><div v-for="option in repair.visibility" :key="option.label" class="swrow"><span>{{ option.label }}</span><button class="sw" :class="{on:option.enabled}" role="switch" :aria-checked="option.enabled" :aria-label="option.label" @click="option.enabled = !option.enabled"><span></span></button></div></section>
+        <section class="card block"><h2 class="h3">Publicación en la web</h2><span class="pill amber" style="align-self:flex-start">Sin configurar</span><div class="seg"><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'auto'}" @click="repair.syncMode = 'auto'">Automática</button><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'manual'}" @click="repair.syncMode = 'manual'">Manual</button></div><p class="help">Los cambios se guardan en este equipo. La conexión con el portal web está pendiente.</p><button class="btn btn-p" disabled>Publicar cambios</button><div class="sep"></div><b>Qué ve el cliente</b><div v-for="option in repair.visibility" :key="option.label" class="swrow"><span>{{ option.label }}</span><button class="sw" :disabled="!can('publication.edit') || busy || !ready" :class="{on:option.enabled}" role="switch" :aria-checked="option.enabled" :aria-label="option.label" @click="option.enabled = !option.enabled"><span></span></button></div></section>
         <section class="block">
-          <h2 class="sec">Garantías<button class="lnk" @click="addingWarranty = !addingWarranty">+ Agregar</button></h2>
+          <h2 class="sec">Garantías<button class="lnk" :disabled="!can('warranties.add') || busy || !ready" @click="addingWarranty = !addingWarranty">+ Agregar</button></h2>
           <p v-if="repair.warranties.length || addingWarranty" class="help">La garantía de esta orden empieza a contar el día de la entrega.</p>
           <div v-for="(item, i) in repair.warranties" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ item.days }} días de cobertura</div></div><span class="pill amber">{{ order.delivered ? 'Entrega registrada' : 'Empieza al entregar' }}</span></div>
           <p v-if="!repair.warranties.length" class="help">Sin garantías registradas.</p>
-          <form v-if="addingWarranty" class="compose" @submit.prevent="addWarranty">
+          <form v-if="addingWarranty" class="compose" :inert="busy || !ready" @submit.prevent="addWarranty">
             <div class="fld"><label for="warranty-type">Tipo de garantía sugerida</label><select id="warranty-type" v-model="warrantyType" @change="days = warrantyType === 'labor' ? company.laborDays : company.partsDays"><option value="parts">Refacciones</option><option value="labor">Mano de obra</option></select></div>
             <div class="fld"><label for="warranty">Concepto</label><input id="warranty" v-model="warranty" required /></div>
             <div class="fld"><label for="days">Días de cobertura</label><input id="days" v-model.number="days" type="number" min="1" max="3650" required /></div>
@@ -128,7 +138,7 @@ function back() { if (save()) emit('back'); }
             <button class="btn btn-p">Guardar garantía</button>
           </form>
         </section>
-        <section class="block"><h2 class="sec">Refacciones usadas<button class="lnk" @click="addingPart = !addingPart">+ Agregar</button></h2><div v-for="(item, i) in repair.parts" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ money(item.price) }}</div></div><span class="pill teal">Registrada</span></div><p v-if="!repair.parts.length" class="help">Sin refacciones registradas.</p><form v-if="addingPart" class="compose" @submit.prevent="addPart"><div class="fld"><label for="part">Refacción</label><input id="part" v-model="part" required /></div><div class="fld"><label for="price">Costo</label><input id="price" v-model.number="price" type="number" min="0" step="0.01" required /></div><button class="btn btn-p">Guardar refacción</button></form></section>
+        <section class="block"><h2 class="sec">Refacciones usadas<button class="lnk" :disabled="!can('parts.add') || busy || !ready" @click="addingPart = !addingPart">+ Agregar</button></h2><div v-for="(item, i) in repair.parts" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ money(item.price) }}</div></div><span class="pill teal">Registrada</span></div><p v-if="!repair.parts.length" class="help">Sin refacciones registradas.</p><form v-if="addingPart" class="compose" :inert="busy || !ready" @submit.prevent="addPart"><div class="fld"><label for="part">Refacción</label><input id="part" v-model="part" required /></div><div class="fld"><label for="price">Costo</label><input id="price" v-model.number="price" type="number" min="0" step="0.01" required /></div><button class="btn btn-p">Guardar refacción</button></form></section>
       </aside>
     </div>
   </div>

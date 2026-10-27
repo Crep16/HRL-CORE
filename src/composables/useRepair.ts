@@ -1,5 +1,5 @@
 ﻿import { ref } from 'vue';
-type Repair = {
+export type Repair = {
   completed: number; technician: string; publicNote: string; internalNote: string; syncMode: 'auto' | 'manual';
   events: { id:number; date:string; title:string; detail:string; stage:string; public:boolean }[];
   warranties: { name:string; days:number }[]; parts: { name:string; price:number }[];

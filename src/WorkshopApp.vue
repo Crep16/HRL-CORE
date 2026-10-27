@@ -3,7 +3,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useAccess } from './composables/useAccess';
 import UsersWorkspace from './components/access/UsersWorkspace.vue';
 const { can } = useAccess();
-const tabs = computed(() => ['Clientes', 'Bitácora', 'Empresa', ...(can('users.manage') ? ['Usuarios'] : [])]);
+const tabs = computed(() => ['Clientes', ...(can('repairs.view') ? ['Reparaciones'] : []), 'Bitácora', 'Empresa', ...(can('users.manage') ? ['Usuarios'] : [])]);
 const emit = defineEmits<{ logout: [] }>();
 import AppHeader from './components/layout/AppHeader.vue';
 import OrderList from './components/orders/OrderList.vue';
@@ -23,22 +23,29 @@ const { company, saveCompany } = useCompany();
 const companyDirty = ref(false);
 const repairWorkspace = ref<InstanceType<typeof RepairWorkspace>>();
 const printSource = ref<HTMLElement>();
+const printNote = ref<InstanceType<typeof CompanyNote>>();
 const printKind = ref<NoteKind>('entry');
 const printVersion = ref(0);
 const reservedNumber = ref<number>();
-function navigate(tab: string) {
-  const destination = tab === 'Usuarios' ? 'users' : tab === 'Empresa' ? 'company' : 'clients';
+async function navigate(tab: string) {
+  const destination = tab === 'Reparaciones' ? 'repairs' : tab === 'Usuarios' ? 'users' : tab === 'Empresa' ? 'company' : 'clients';
+  if (destination === 'repairs' && (!can('repairs.view') || !selected.value || showDeleted.value)) { notice.value = 'Selecciona una orden activa para abrir Reparaciones.'; return; }
   if (destination === 'users' && !can('users.manage')) return;
   if (destination === 'company' && !can('company.view')) { notice.value = 'Tu acceso no permite consultar Empresa.'; return; }
   if (destination === page.value) return;
   if (draft.value || companyDirty.value) { notice.value='Guarda o descarta los cambios pendientes antes de cambiar de sección.'; return; }
-  if (page.value === 'repairs' && repairWorkspace.value && !repairWorkspace.value.save()) return;
+  if (page.value === 'repairs' && repairWorkspace.value && !await repairWorkspace.value.save()) return;
   deleteTarget.value=undefined; notice.value=''; page.value=destination;
 }
 async function printOrder(kind: NoteKind) {
   if (!selected.value || draft.value || showDeleted.value || busy.value) return;
+  if (page.value === 'repairs' && repairWorkspace.value && !await repairWorkspace.value.save()) return;
+  const orderId = selected.value.id;
   if (companyDirty.value) { notice.value='Guarda o descarta los cambios de Empresa antes de imprimir una orden.'; return; }
   printKind.value=kind; printVersion.value++; await nextTick();
+  try { await printNote.value?.prepare(); await nextTick(); }
+  catch (cause) { notice.value = String(cause); return; }
+  if (selected.value?.id !== orderId) { notice.value = 'La selección cambió. Vuelve a solicitar la nota de la orden actual.'; return; }
   const note=printSource.value?.querySelector<HTMLElement>('.company-note');
   if (!note) return;
   try { await printCompanyNote(note,company.value); }
@@ -91,12 +98,11 @@ function select(id: string) {
 function openRepairs() {
   if (showDeleted.value) { notice.value = 'Restaura la orden para continuar su reparación.'; return; }
   if (!can('repairs.view')) { notice.value = 'Tu acceso no permite consultar Reparaciones.'; return; }
-  if (!can('users.manage')) { notice.value = 'El seguimiento está disponible por ahora para el acceso Completo.'; return; }
   page.value = 'repairs';
 }
-function requestLogout() {
+async function requestLogout() {
   if (draft.value || companyDirty.value) { notice.value = 'Guarda o descarta los cambios pendientes antes de cerrar sesión.'; return; }
-  if (page.value === 'repairs' && repairWorkspace.value && !repairWorkspace.value.save()) return;
+  if (page.value === 'repairs' && repairWorkspace.value && !await repairWorkspace.value.save()) return;
   emit('logout');
 }
 function requestDelete() {
@@ -130,7 +136,7 @@ async function toggleTrash() {
 
 <template>
   <div class="app">
-    <AppHeader :tabs="tabs" :active="page === 'users' ? 'Usuarios' : page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty && !showDeleted" @change="navigate" @print="printOrder" @logout="requestLogout" />
+    <AppHeader :tabs="tabs" :active="page === 'repairs' ? 'Reparaciones' : page === 'users' ? 'Usuarios' : page === 'company' ? 'Empresa' : 'Clientes'" :can-repair="!!selected && !draft && !showDeleted && !busy" :can-print="!!selected && !draft && !companyDirty && !showDeleted" @change="navigate" @print="printOrder" @logout="requestLogout" />
     <div v-if="storageError" class="notice" role="alert">{{ storageError }}</div>
     <div v-if="busy" class="notice" role="status">Consultando o guardando órdenes…</div>
     <div v-if="needsImport" class="notice" role="status">Hay órdenes guardadas antes de configurar esta base. Un administrador debe importarlas para continuar; se conservará el original.<button v-if="can('users.manage')" class="btn btn-s" :disabled="busy" @click="importLegacy">Importar órdenes guardadas</button></div>
@@ -143,9 +149,9 @@ async function toggleTrash() {
     </div>
     <UsersWorkspace v-else-if="page === 'users' && can('users.manage')" />
     <CompanyWorkspace v-else-if="page === 'company' && can('company.view')" :orders="orders" :order="selected" @dirty-change="companyDirty=$event" />
-    <RepairWorkspace v-else-if="page === 'repairs' && selected && can('users.manage') && can('repairs.view')" ref="repairWorkspace" :key="selected.id" :order="selected" @back="page = 'clients'" />
+    <RepairWorkspace v-else-if="page === 'repairs' && selected && can('repairs.view')" ref="repairWorkspace" :key="selected.id" :order="selected" @back="page = 'clients'" />
     <section v-else class="sheet empty-work" role="alert"><h1>Sección no disponible</h1><p>Tu acceso no permite consultar esta sección.</p><button class="btn btn-s" type="button" @click="navigate('Clientes')">Volver a Clientes</button></section>
-    <div ref="printSource" class="sr" aria-hidden="true"><CompanyNote :key="printVersion" :settings="company" :kind="printKind" :order="selected" /></div>
+    <div ref="printSource" class="sr" aria-hidden="true"><CompanyNote ref="printNote" :key="printVersion" :settings="company" :kind="printKind" :order="selected" /></div>
     <OrderDeleteDialog :order="deleteTarget" :busy="busy" :error="storageError" @confirm="confirmDelete" @cancel="busy ? undefined : deleteTarget = undefined" />
   </div>
 </template>

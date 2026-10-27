@@ -11,8 +11,8 @@ test('header renders the active account and order actions reflect backend permis
   const previousTauri = globalThis.isTauri;
   let role = 'complete';
   const permissions = {
-    complete: ['clients.view', 'orders.create', 'orders.edit', 'orders.delete', 'payments.add'],
-    limited: ['clients.view', 'orders.create'],
+    complete: ['clients.view', 'orders.create', 'orders.edit', 'orders.delete', 'payments.add', 'repairs.view'],
+    limited: ['clients.view', 'orders.create', 'repairs.view', 'notes.add'],
     custom: ['clients.view', 'orders.delete'],
   };
   globalThis.isTauri = true;
@@ -26,6 +26,7 @@ test('header renders the active account and order actions reflect backend permis
     const { useAccess } = await server.ssrLoadModule('/src/composables/useAccess.ts');
     const { default: Header } = await server.ssrLoadModule('/src/components/layout/AppHeader.vue');
     const { default: Sheet } = await server.ssrLoadModule('/src/components/orders/OrderSheet.vue');
+    const { default: Workshop } = await server.ssrLoadModule('/src/WorkshopApp.vue');
     const order = { id: 'TEST-001', client: 'Cliente de prueba', phone: '', received: '', status: 'Diagnóstico', serial: '', item: 'Laptop', brand: '', model: '', otherShop: false, otherShopReason: '', dropped: false, dropReason: '', password: '', work: '', cost: '$0.00', deposit: '$0.00', notes: '', paid: false, delivered: false };
     const render = (component, props) => renderToString(createSSRApp({ render: () => h(component, props) }));
     const buttons = html => [...html.matchAll(/<button\b([^>]*)>([\s\S]*?)<\/button>/g)];
@@ -43,6 +44,10 @@ test('header renders the active account and order actions reflect backend permis
       const trash = await render(Sheet, { order, position: 1, total: 1, editing: false, trashed: true });
       assert.ok(buttons(trash).some(button => button[2].includes('Restaurar orden')));
       assert.ok(!buttons(trash).some(button => button[2].includes('Eliminar') || /\bEditar\b/.test(button[2])));
+      if (level === 'limited') {
+        const workshop = await render(Workshop, {});
+        assert.ok(buttons(workshop).some(button => button[2].includes('Reparaciones')), 'Limited access must have the Repairs menu');
+      }
     }
   } finally {
     await server.close();

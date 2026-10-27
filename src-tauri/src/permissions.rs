@@ -4,6 +4,8 @@ pub const OPERATIONS: &[(&str, &str, &str)] = &[
     ("orders.edit", "clients", "edit"),
     ("orders.delete", "clients", "delete"),
     ("repairs.view", "repairs", "view"),
+    ("repairs.edit", "repairs", "edit"),
+    ("publication.edit", "repairs", "edit"),
     ("notes.add", "repairs", "create"),
     ("stages.advance", "repairs", "create"),
     ("warranties.add", "repairs", "create"),

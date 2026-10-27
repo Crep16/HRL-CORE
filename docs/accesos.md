@@ -29,9 +29,11 @@ necesita revisión manual; no se renombra ni elimina ninguna cuenta automáticam
 
 La recepción ya usa SQLite con autorización por operación. La importación
 de órdenes antiguas requiere acceso Completo y conserva los originales.
-Empresa y seguimiento siguen en localStorage; la integración completa de
-sus permisos y almacenamiento está pendiente. El seguimiento antiguo no se
-abre con usuarios restringidos para evitar conceder edición o pagos por error.
+El seguimiento ya usa SQLite y permisos por operación. Limitado puede entrar
+a Reparaciones y agregar trabajo técnico sin editar lo anterior ni registrar
+pagos. Si hay datos antiguos sin importar debe abrirlos primero un administrador;
+los originales se conservan. Empresa continúa en localStorage y su integración
+de almacenamiento y autorización en Rust sigue pendiente.
 
 Decisión explícita del 27 de octubre: sin recuperación automática de la clave
 maestra; procedimiento manual por definir. No hay cuenta, contraseña o puerta
@@ -73,7 +75,7 @@ consulta de nuevo el usuario activo y sus permisos en SQLite, sin confiar
 en el rol de la interfaz. Desactivar una cuenta conserva su autoría histórica.
 
 HRL-14 conecta consulta, creación y edición de órdenes con este catálogo.
-La integración de seguimiento continúa en HRL-21. Los permisos personalizados
+La integración del seguimiento se documenta en `reparaciones-permisos.md`. Los permisos personalizados
 de Empresa se aplican a sus controles y guardado de interfaz; todavía no son
 una autorización de persistencia en Rust porque su almacenamiento sigue en
 localStorage. HRL-13 permanece abierto hasta completar esos flujos.

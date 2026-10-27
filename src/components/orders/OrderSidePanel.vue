@@ -61,7 +61,7 @@ const evidence = [
       <h3><AppIcon name="repair" />Reparaciones</h3>
       <p>Avances, notas del técnico y garantías de esta orden.</p>
       <div class="facts"><span class="tag">Seguimiento técnico</span><span class="tag">Garantías</span></div>
-      <button class="btn btn-w" type="button" :disabled="editing || unavailable" @click="emit('repairs')"><AppIcon name="repair" />Abrir gestión</button>
+      <button class="btn btn-w" type="button" :disabled="editing || unavailable || !can('repairs.view')" @click="emit('repairs')"><AppIcon name="repair" />Abrir gestión</button>
     </div>
   </aside>
 </template>

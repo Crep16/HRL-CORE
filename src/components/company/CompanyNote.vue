@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { invoke, isTauri } from '@tauri-apps/api/core';
 import brandLogo from '../../assets/images/brand/hrl-symbol-original.svg';
 import type { CompanySettings, NoteKind } from '../../types/company';
 import type { Order } from '../../types/order';
@@ -7,21 +8,35 @@ import { orderAmount } from '../../utils/orderAmount';
 const props = defineProps<{ settings: CompanySettings; kind: NoteKind; order?: Order; folio?: string }>();
 const clauses = computed(() => props.settings.clauses.filter(c => props.kind === 'entry' ? c.entry : c.exit));
 const total = computed(() => orderAmount(props.order?.cost || ''));
-const repairSummary = computed(() => {
-  // Only public note fields are allowed on printed customer documents.
-  const empty = {technician:'', publicNote:'', warranties:[] as {name:string;days:number}[]};
-  if (!props.order) return empty;
+const emptySummary = () => ({technician:'', publicNote:'', warranties:[] as {name:string;days:number}[]});
+const repairSummary = ref(emptySummary());
+const summaryError = ref('');
+let summaryRequest = 0;
+function legacySummary() {
   try {
-    const data=JSON.parse(localStorage.getItem(`hrl.repair.v1.${props.order.id}`) || '{}');
+    const data=JSON.parse(localStorage.getItem(`hrl.repair.v1.${props.order?.id}`) || '{}');
     return {technician:typeof data.technician==='string' ? data.technician : '', publicNote:typeof data.publicNote==='string' ? data.publicNote : '',
       warranties:Array.isArray(data.warranties) ? data.warranties.filter((w:unknown):w is {name:string;days:number}=>!!w && typeof w==='object' && typeof (w as {name?:unknown}).name==='string' && typeof (w as {days?:unknown}).days==='number') : []};
-  } catch {return empty;}
-});
+  } catch {return emptySummary();}
+}
+async function prepare() {
+  const request = ++summaryRequest;
+  summaryError.value = '';
+  const id = props.order?.id;
+  if (!id) {repairSummary.value=emptySummary(); return;}
+  try {
+  const summary = isTauri() ? await invoke<ReturnType<typeof emptySummary> & {exists:boolean}>('repair_print_summary',{orderId:id}) : null;
+  if (request === summaryRequest && props.order?.id === id) repairSummary.value = summary?.exists ? summary : legacySummary();
+  } catch (cause) { if (request === summaryRequest) summaryError.value = 'No se pudo recuperar el seguimiento para la nota. Vuelve a intentar.'; throw cause; }
+}
+watch(() => props.order?.id, () => {repairSummary.value=emptySummary();void prepare().catch(() => {});},{immediate:true});
+defineExpose({prepare});
 const subtotal = computed(() => total.value / (1 + (Number(props.settings.taxRate) || 0) / 100));
 const money = (value: number) => new Intl.NumberFormat(props.settings.locale, {style:'currency',currency:props.order?.currency ?? props.settings.currency}).format(value);
 </script>
 
 <template>
+  <p v-if="summaryError" role="alert">{{ summaryError }}</p>
   <article class="company-note" :class="{ 'note-ticket':settings.paper !== 'letter', 'note-ticket60':settings.paper==='ticket60', 'note-landscape':settings.paper==='letter' && settings.orientation === 'landscape', 'clauses-back':settings.clausePosition === 'back' }" :aria-label="`Nota de ${kind === 'entry' ? 'entrada' : 'salida'}`">
     <div class="note-front">
       <header class="note-company">

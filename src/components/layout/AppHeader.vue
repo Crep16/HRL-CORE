@@ -4,9 +4,9 @@ import AppIcon from '../ui/AppIcon.vue';
 import { useAccess } from '../../composables/useAccess';
 const { user } = useAccess();
 const levels = { complete: 'Acceso completo', limited: 'Acceso limitado', custom: 'Acceso personalizado' };
-const tabIcons: Record<string, string> = { Clientes: 'clients', Bitácora: 'logbook', Empresa: 'company', Usuarios: 'users' };
+const tabIcons: Record<string, string> = { Clientes: 'clients', Reparaciones: 'repair', Bitácora: 'logbook', Empresa: 'company', Usuarios: 'users' };
 
-defineProps<{ tabs: string[]; active: string; canPrint?: boolean }>();
+defineProps<{ tabs: string[]; active: string; canPrint?: boolean; canRepair?: boolean }>();
 const emit = defineEmits<{ change: [tab: string]; print: [kind: 'entry' | 'exit']; logout: [] }>();
 
 const printIcon = "M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2";
@@ -16,7 +16,7 @@ const printIcon = "M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 
   <header class="top">
     <div class="logo-tile"><img :src="brandLogo" alt="HRL – Héctor Refacciones Laptop" /></div>
     <nav class="tabs" aria-label="Secciones">
-      <button v-for="tab in tabs" :key="tab" class="tab" :disabled="tab === 'Bitácora'" :title="tab === 'Bitácora' ? 'Bitácora pendiente de implementar' : undefined" :class="{ on: tab === active }" type="button" :aria-current="tab === active ? 'page' : undefined" @click="emit('change', tab)"><AppIcon v-if="tabIcons[tab]" :name="tabIcons[tab]" />{{ tab }}</button>
+      <button v-for="tab in tabs" :key="tab" class="tab" :disabled="tab === 'Bitácora' || (tab === 'Reparaciones' && !canRepair)" :title="tab === 'Bitácora' ? 'Bitácora pendiente de implementar' : tab === 'Reparaciones' && !canRepair ? 'Selecciona una orden activa' : undefined" :class="{ on: tab === active }" type="button" :aria-current="tab === active ? 'page' : undefined" @click="emit('change', tab)"><AppIcon v-if="tabIcons[tab]" :name="tabIcons[tab]" />{{ tab }}</button>
     </nav>
     <div class="header-actions" role="group" aria-label="Impresión y herramientas">
     <button class="ghost" type="button" :disabled="!canPrint" title="Imprimir con la configuración guardada de Empresa" @click="emit('print','entry')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path :d="printIcon" /><rect x="6" y="14" width="12" height="8" /></svg>Imprimir nota entrada</button>

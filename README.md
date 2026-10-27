@@ -30,13 +30,16 @@ Si hay órdenes antiguas en `hrl.orders.v1`, el acceso Completo muestra
 **Importar órdenes guardadas**. La importación se hace una sola vez sobre
 una base sin órdenes, conserva el original de localStorage y revierte todos
 los cambios si falla un registro. No combina ni sobrescribe bases existentes.
-El seguimiento por orden (`hrl.repair.v1.<folio>`) y Empresa siguen en
-localStorage; su migración a SQLite está pendiente.
+El seguimiento de Reparaciones también usa SQLite con autorización por
+operación. El seguimiento anterior (`hrl.repair.v1.<folio>`) se importa al
+abrirlo con un administrador, conservando el original. Empresa sigue en
+localStorage y su migración está pendiente.
 
 El acceso Limitado consulta todas las órdenes y crea recepciones sin pagos.
 La administración de usuarios requiere acceso Completo y clave maestra.
-Reparaciones conserva por ahora su implementación anterior, disponible solo
-para el acceso Completo mientras se conectan sus operaciones al backend.
+Reparaciones está disponible para el acceso Limitado: consulta, nuevas notas,
+avances de etapa, garantías y refacciones, sin pagos ni edición de registros
+anteriores. También tiene una pestaña propia con la orden activa seleccionada.
 Eliminar requiere el permiso correspondiente y una confirmación. La orden
 pasa a **Papelera**, desde donde puede restaurarse; se conservan su folio,
 historial y cobros. El acceso Limitado no puede eliminar ni restaurar.
@@ -55,10 +58,11 @@ borrador; una edición desactualizada se rechaza para evitar sobrescribir cambio
 
 ## Comandos
 
-La ventana de escritorio abre a 1280 × 760 píxeles lógicos y permite reducirla
-hasta 1120 × 680. Usuarios utiliza paneles independientes para lista y editor;
-la acción de guardar permanece visible aunque el contenido necesite desplazarse.
-Los cambios de tamaño inicial y mínimo se aplican al volver a abrir la app.
+El acceso tiene tamaño fijo de 1000 × 680 píxeles lógicos. Configurar el primer
+administrador usa 1000 × 760. Al entrar, el taller abre a 1280 × 760 y permite
+reducirse hasta 1120 × 680. Al cerrar sesión vuelve al tamaño fijo de acceso.
+Usuarios utiliza paneles independientes para lista y editor; su guardado
+permanece visible aunque el contenido necesite desplazarse.
 
 - `npm install`
 - `npm run dev`
