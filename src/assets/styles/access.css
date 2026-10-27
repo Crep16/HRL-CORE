@@ -1,5 +1,6 @@
 .access-shell{--access-ink:#12222d;--access-muted:#55656f;--access-accent:#1b72ad;--access-border:#7c8d99;color:var(--access-ink);background:#f3f6f8;min-height:100dvh;font:16px/1.5 'Segoe UI',system-ui,sans-serif;box-sizing:border-box}
 .access-shell *{box-sizing:border-box}
+.access-fields{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}.access-shell button:disabled{cursor:wait;opacity:.65}
 .access-brand{height:82px;padding:16px 28px;display:flex;align-items:center;gap:18px;border-bottom:1px solid #d5dde4;background:#fff}
 .access-brand img{object-fit:contain}.access-brand strong,.access-brand span{display:block}.access-brand span{font-size:14px;color:var(--access-muted)}
 .access-layout{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:calc(100dvh - 82px)}
