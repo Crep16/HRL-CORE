@@ -8,6 +8,7 @@ const user = ref<AccessUser | null>(null);
 const setupComplete = ref(false);
 const loading = ref(false);
 const error = ref('');
+const permissions = ref<string[]>([]);
 const available = isTauri();
 
 async function run<T>(operation: () => Promise<T>): Promise<T | undefined> {
@@ -24,17 +25,19 @@ export function useAccess() {
   async function refresh() {
     await run(async () => {
       const status = await invoke<AccessStatus>('access_status');
+      permissions.value = status.user ? await invoke<string[]>('access_permissions') : [];
       user.value = status.user; setupComplete.value = status.setupComplete;
     });
   }
   async function firstSetup(input: FirstSetup) {
-    return run(async () => { user.value = await invoke<AccessUser>('first_setup', { input }); setupComplete.value = true; return true; });
+    return run(async () => { const account = await invoke<AccessUser>('first_setup', { input }); permissions.value = await invoke<string[]>('access_permissions'); user.value = account; setupComplete.value = true; return true; });
   }
   async function login(name: string, password: string) {
-    return run(async () => { user.value = await invoke<AccessUser>('login', { name, password }); return true; });
+    return run(async () => { const account = await invoke<AccessUser>('login', { name, password }); permissions.value = await invoke<string[]>('access_permissions'); user.value = account; return true; });
   }
   async function logout() {
-    return run(async () => { await invoke('logout'); user.value = null; return true; });
+    return run(async () => { await invoke('logout'); user.value = null; permissions.value = []; return true; });
   }
-  return { user: readonly(user), setupComplete: readonly(setupComplete), loading: readonly(loading), error: readonly(error), available, refresh, firstSetup, login, logout };
+  const can = (operation: string) => permissions.value.includes(operation);
+  return { user: readonly(user), setupComplete: readonly(setupComplete), loading: readonly(loading), error: readonly(error), can, available, refresh, firstSetup, login, logout };
 }

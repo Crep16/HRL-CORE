@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import { useAccess } from './composables/useAccess';
+import UsersWorkspace from './components/access/UsersWorkspace.vue';
+const { can } = useAccess();
+const tabs = computed(() => ['Clientes', 'Bitácora', 'Empresa', ...(can('users.manage') ? ['Usuarios'] : [])]);
 const emit = defineEmits<{ logout: [] }>();
 import AppHeader from './components/layout/AppHeader.vue';
 import OrderList from './components/orders/OrderList.vue';
@@ -13,7 +17,7 @@ import type { NoteKind } from './types/company';
 import { useOrders } from './composables/useOrders';
 import type { Order } from './types/order';
 const { storageError, orders, selectedId, query, field, ascending, visible, index, selected, goTo, removeSelected } = useOrders();
-const page = ref<'clients' | 'repairs' | 'company'>('clients');
+const page = ref<'clients' | 'repairs' | 'company' | 'users'>('clients');
 const { company, saveCompany } = useCompany();
 const companyDirty = ref(false);
 const repairWorkspace = ref<InstanceType<typeof RepairWorkspace>>();
@@ -22,7 +26,9 @@ const printKind = ref<NoteKind>('entry');
 const printVersion = ref(0);
 const reservedNumber = ref<number>();
 function navigate(tab: string) {
-  const destination = tab === 'Empresa' ? 'company' : 'clients';
+  const destination = tab === 'Usuarios' ? 'users' : tab === 'Empresa' ? 'company' : 'clients';
+  if (destination === 'users' && !can('users.manage')) return;
+  if (destination === 'company' && !can('company.view')) { notice.value = 'Tu acceso no permite consultar Empresa.'; return; }
   if (destination === page.value) return;
   if (draft.value || companyDirty.value) { notice.value='Guarda o descarta los cambios pendientes antes de cambiar de sección.'; return; }
   if (page.value === 'repairs' && repairWorkspace.value && !repairWorkspace.value.save()) return;
@@ -43,9 +49,10 @@ watch(companyDirty, value => {
   if (!value && (notice.value === 'Guarda o descarta los cambios pendientes antes de cambiar de sección.' || notice.value === 'Guarda o descarta los cambios de Empresa antes de imprimir una orden.')) notice.value='';
 });
 const deleting = ref(false);
-function edit() { if (selected.value) { draft.value = { ...selected.value }; focusClient(); } }
+function edit() { if (!can('orders.edit')) { notice.value = 'Tu acceso no permite editar órdenes.'; return; } if (selected.value) { draft.value = { ...selected.value }; focusClient(); } }
 function focusClient() { nextTick(() => document.getElementById('cliente')?.focus()); }
 function create() {
+  if (!can('orders.create')) { notice.value = 'Tu acceso no permite crear órdenes.'; return; }
   if (draft.value) { notice.value = 'Guarda o cancela la captura actual antes de crear otra orden.'; return; }
   const next = nextAvailableNumber(company.value, orders.value);
   reservedNumber.value = next;
@@ -54,6 +61,7 @@ function create() {
 }
 function save() {
   if (!draft.value) return;
+  if (!can(orders.value.some(order => order.id === draft.value!.id) ? 'orders.edit' : 'orders.create')) { notice.value = 'Tu acceso no permite guardar esta orden.'; return; }
   const order = { ...draft.value, client: draft.value.client.trim() };
   if (!order.client || !order.phone.trim() || !order.item.trim()) { notice.value = 'Completa cliente, teléfono y artículo.'; return; }
   const position = orders.value.findIndex(item => item.id === order.id);
@@ -81,7 +89,7 @@ function requestLogout() {
 
 <template>
   <div class="app">
-    <AppHeader :tabs="['Clientes', 'Bitácora', 'Empresa']" :active="page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty" @change="navigate" @print="printOrder" @logout="requestLogout" />
+    <AppHeader :tabs="tabs" :active="page === 'users' ? 'Usuarios' : page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty" @change="navigate" @print="printOrder" @logout="requestLogout" />
     <div v-if="storageError" class="notice" role="alert">{{ storageError }}</div>
     <div v-if="notice" class="notice" role="status">{{ notice }}<button class="lnk" type="button" aria-label="Cerrar aviso" @click="notice = ''">×</button></div>
     <div v-if="page === 'clients'" class="work reception">
@@ -90,7 +98,8 @@ function requestLogout() {
       <section v-else class="sheet empty-work"><h1>No hay órdenes</h1><p>Crea una nueva orden para comenzar.</p><button class="btn btn-p" @click="create">Nueva orden</button></section>
       <div v-if="deleting && selected" class="delete-inline" role="alert">¿Eliminar {{ selected.id }}?<button class="btn btn-s" @click="deleting = false">Cancelar</button><button class="btn btn-p" @click="removeSelected(); deleting = false; notice = 'Orden eliminada.'">Eliminar orden</button></div>
     </div>
-    <CompanyWorkspace v-else-if="page === 'company'" :orders="orders" :order="selected" @dirty-change="companyDirty=$event" />
+    <UsersWorkspace v-else-if="page === 'users' && can('users.manage')" />
+    <CompanyWorkspace v-else-if="page === 'company' && can('company.view')" :orders="orders" :order="selected" @dirty-change="companyDirty=$event" />
     <RepairWorkspace v-else-if="selected" ref="repairWorkspace" :key="selected.id" :order="selected" @back="page = 'clients'" />
     <div ref="printSource" class="sr" aria-hidden="true"><CompanyNote :key="printVersion" :settings="company" :kind="printKind" :order="selected" /></div>
   </div>

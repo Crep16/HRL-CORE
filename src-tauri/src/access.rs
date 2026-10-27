@@ -49,7 +49,7 @@ pub struct FirstSetup {
     master_confirmation: String,
 }
 
-async fn pool(instances: &DbInstances) -> Result<SqlitePool, String> {
+pub(crate) async fn pool(instances: &DbInstances) -> Result<SqlitePool, String> {
     let databases = instances.0.read().await;
     let Some(DbPool::Sqlite(pool)) = databases.get("sqlite:hrl_datos.db") else {
         return Err("La base local no está disponible. Vuelve a abrir la aplicación.".into());
@@ -57,7 +57,7 @@ async fn pool(instances: &DbInstances) -> Result<SqlitePool, String> {
     Ok(pool.clone())
 }
 
-fn validate_password(password: &str, confirmation: &str) -> Result<(), String> {
+pub(crate) fn validate_password(password: &str, confirmation: &str) -> Result<(), String> {
     if password.chars().count() < 8 || password.len() > 1024 {
         return Err("La clave debe tener al menos 8 caracteres y no superar 1024 bytes.".into());
     }
@@ -67,7 +67,7 @@ fn validate_password(password: &str, confirmation: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn login_name(name: &str) -> Result<String, String> {
+pub(crate) fn login_name(name: &str) -> Result<String, String> {
     let name = name.trim();
     if name.is_empty() || name.chars().count() > 100 || name.chars().any(char::is_control) {
         return Err("Escribe un usuario de 1 a 100 caracteres, sin saltos de línea.".into());
@@ -75,13 +75,13 @@ fn login_name(name: &str) -> Result<String, String> {
     Ok(name.to_lowercase())
 }
 
-fn random_id() -> String {
+pub(crate) fn random_id() -> String {
     let mut bytes = [0_u8; 16];
     OsRng.fill_bytes(&mut bytes);
     bytes.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
-async fn hash_password(password: String) -> Result<String, String> {
+pub(crate) async fn hash_password(password: String) -> Result<String, String> {
     tauri::async_runtime::spawn_blocking(move || {
         let salt = SaltString::generate(&mut OsRng);
         Argon2::default()
@@ -93,7 +93,7 @@ async fn hash_password(password: String) -> Result<String, String> {
     .map_err(|_| "No se pudo proteger la clave.".to_string())?
 }
 
-async fn verify_password(password: String, hash: String) -> Result<bool, String> {
+pub(crate) async fn verify_password(password: String, hash: String) -> Result<bool, String> {
     tauri::async_runtime::spawn_blocking(move || {
         PasswordHash::new(&hash)
             .map(|parsed| {
@@ -143,6 +143,53 @@ async fn current_user(pool: &SqlitePool, session: &mut Session) -> Result<Option
 }
 
 impl AccessState {
+    pub(crate) async fn authorize(
+        &self,
+        db: &mut sqlx::SqliteConnection,
+        operation: &str,
+    ) -> Result<User, String> {
+        let session = self.0.lock().await;
+        let id = &session
+            .user
+            .as_ref()
+            .ok_or("Inicia sesión para continuar.")?
+            .id;
+        let row = sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
+            .bind(id)
+            .fetch_optional(&mut *db)
+            .await
+            .map_err(|_| DATABASE_ERROR)?
+            .ok_or("La sesión ya no está activa. Vuelve a iniciar sesión.")?;
+        let user = User {
+            id: row.get("id"),
+            name: row.get("name"),
+            access_level: row.get("access_level"),
+        };
+        let (_, section, action) = crate::permissions::OPERATIONS
+            .iter()
+            .find(|(id, _, _)| *id == operation)
+            .ok_or("Operación desconocida.")?;
+        let allowed = match user.access_level.as_str() {
+            "complete" => true,
+            "limited" => crate::permissions::limited_allows(operation),
+            "custom" if operation != "users.manage" => sqlx::query_scalar::<_, i64>(
+                "SELECT count(*) FROM user_permissions WHERE user_id=? AND section=? AND action=?",
+            )
+            .bind(id)
+            .bind(section)
+            .bind(action)
+            .fetch_one(&mut *db)
+            .await
+            .map_err(|_| DATABASE_ERROR)?
+                > 0,
+            _ => false,
+        };
+        if !allowed {
+            return Err("Tu acceso no permite realizar esta acción.".into());
+        }
+        Ok(user)
+    }
+
     async fn status(&self, pool: &SqlitePool) -> Result<AccessStatus, String> {
         let mut session = self.0.lock().await;
         Ok(AccessStatus {
@@ -261,6 +308,22 @@ pub async fn login(
 pub async fn logout(state: State<'_, AccessState>) -> Result<(), String> {
     state.0.lock().await.user = None;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn access_permissions(
+    instances: State<'_, DbInstances>,
+    state: State<'_, AccessState>,
+) -> Result<Vec<String>, String> {
+    let pool = pool(&instances).await?;
+    let mut db = pool.acquire().await.map_err(|_| DATABASE_ERROR)?;
+    let mut result = Vec::new();
+    for (id, _, _) in crate::permissions::OPERATIONS {
+        if state.authorize(&mut db, id).await.is_ok() {
+            result.push(id.to_string());
+        }
+    }
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -408,6 +471,97 @@ mod tests {
             );
             reopened.close().await;
             std::fs::remove_dir_all(directory).unwrap();
+        });
+    }
+
+    #[test]
+    fn permission_checks_reject_unauthenticated_limited_and_revoked_operations() {
+        tauri::async_runtime::block_on(async {
+            let pool = database().await;
+            let state = AccessState::default();
+            {
+                let mut db = pool.acquire().await.unwrap();
+                assert!(state.authorize(&mut db, "clients.view").await.is_err());
+            }
+            let admin = state.first_setup(&pool, input()).await.unwrap();
+            let account = |name: &str, role: &str| crate::users::UserInput {
+                id: None,
+                name: name.into(),
+                password: "test-account-123".into(),
+                confirmation: "test-account-123".into(),
+                access_level: role.into(),
+                active: true,
+                permissions: vec![],
+                master_password: "test-master-123".into(),
+            };
+            let mut wrong = account("Wrong", "limited");
+            wrong.master_password = "wrong".into();
+            assert!(crate::users::save(&pool, &state, wrong).await.is_err());
+            crate::users::save(&pool, &state, account("Técnico", "limited"))
+                .await
+                .unwrap();
+            assert!(
+                crate::users::save(&pool, &state, account("TÉCNICO", "limited"))
+                    .await
+                    .is_err()
+            );
+            let mut custom = account("Consulta", "custom");
+            custom.permissions.push(crate::users::Grant {
+                section: "clients".into(),
+                action: "view".into(),
+            });
+            crate::users::save(&pool, &state, custom).await.unwrap();
+            state
+                .login(&pool, "Técnico".into(), "test-account-123".into())
+                .await
+                .unwrap();
+            {
+                let mut db = pool.acquire().await.unwrap();
+                for (id, _, _) in crate::permissions::OPERATIONS {
+                    assert_eq!(
+                        state.authorize(&mut db, id).await.is_ok(),
+                        crate::permissions::limited_allows(id),
+                        "{id}"
+                    );
+                }
+            }
+            assert!(
+                crate::users::save(&pool, &state, account("Escalation", "complete"))
+                    .await
+                    .is_err()
+            );
+            let custom = state
+                .login(&pool, "Consulta".into(), "test-account-123".into())
+                .await
+                .unwrap();
+            {
+                let mut db = pool.acquire().await.unwrap();
+                assert!(state.authorize(&mut db, "clients.view").await.is_ok());
+                assert!(state.authorize(&mut db, "orders.edit").await.is_err());
+                assert!(state.authorize(&mut db, "users.manage").await.is_err());
+            }
+            sqlx::query("DELETE FROM user_permissions WHERE user_id=?")
+                .bind(&custom.id)
+                .execute(&pool)
+                .await
+                .unwrap();
+            {
+                let mut db = pool.acquire().await.unwrap();
+                assert!(state.authorize(&mut db, "clients.view").await.is_err());
+            }
+            state
+                .login(&pool, "Héctor".into(), "test-user-123".into())
+                .await
+                .unwrap();
+            let mut deactivate = account("Héctor", "complete");
+            deactivate.id = Some(admin.id);
+            deactivate.active = false;
+            deactivate.password.clear();
+            assert!(
+                crate::users::save(&pool, &state, deactivate).await.is_err(),
+                "Last administrator must remain active"
+            );
+            pool.close().await;
         });
     }
 

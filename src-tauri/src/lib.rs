@@ -1,4 +1,6 @@
 mod access;
+mod permissions;
+mod users;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -36,7 +38,10 @@ pub fn run() {
             access::access_status,
             access::first_setup,
             access::login,
-            access::logout
+            access::logout,
+            access::access_permissions,
+            users::save_user,
+            users::list_users
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

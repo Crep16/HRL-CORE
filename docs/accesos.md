@@ -40,7 +40,9 @@ Comprobaciones: `node --test tests/access-schema.test.mjs` prueba restricciones,
 
 ## Siguientes entregas
 
-Alta inicial y acceso con hash de contraseña en el backend; sesión local y comprobación de permisos en cada operación; administración de usuarios y permisos; migración transaccional de órdenes. Confirmar recuperación de la contraseña maestra antes de implementarla.
+Completar la integración de permisos en las operaciones locales y la migración
+transaccional de órdenes. El usuario decidió que no habrá recuperación automática
+de la clave maestra; el procedimiento manual sigue por definir.
 
 ## Precisión del acceso limitado, 27 de octubre de 2026
 
@@ -49,9 +51,25 @@ El usuario confirmó: «notas etapas garantias refacciones añadir registros de 
 Se conservan como operaciones autorizadas el registro de notas, avance de etapas,
 garantías, refacciones y alta de clientes. No se concede permiso genérico de
 edición por permitir estas operaciones. Pagos, edición y borrado permanecen
-restringidos. Falta precisar el alcance de consulta de registros existentes y
-cómo distinguir agregar notas/avanzar etapas de editar contenido ya registrado.
+restringidos. Después confirmó que puede consultar todas las órdenes y sus datos
+de cliente y equipo. Agregar notas y avanzar etapas son operaciones específicas;
+no autorizan la edición del contenido ya registrado.
 
-La tabla SQLite actual solo distingue acciones genéricas de visualizar, crear,
-editar y borrar. Esta decisión aún no se aplica en el backend ni en las vistas;
-se necesitarán operaciones con permisos específicos para respetarla.
+La tabla de permisos personalizados distingue visualizar, crear, editar y borrar.
+El backend añade un catálogo específico: consulta/alta/edición de órdenes,
+consulta de reparaciones, agregar notas, avanzar etapas, agregar garantías,
+agregar refacciones y agregar pagos. El acceso limitado se comprueba por esa
+lista específica; no recibe un permiso genérico de editar Reparaciones.
+
+## Administración de usuarios
+
+El acceso completo puede crear, editar y desactivar cuentas desde Usuarios,
+con confirmación de clave maestra. La cuenta y sus permisos se guardan en una
+transacción. Se rechazan nombres duplicados y la desactivación del último
+administrador. Las respuestas excluyen hashes y claves. Cada autorización
+consulta de nuevo el usuario activo y sus permisos en SQLite, sin confiar
+en el rol de la interfaz. Desactivar una cuenta conserva su autoría histórica.
+
+La integración de órdenes y reparaciones con este catálogo continúa en HRL-14
+y HRL-21. El catálogo por sí solo no acredita que los flujos antiguos de
+localStorage ya tengan autorización transaccional.
