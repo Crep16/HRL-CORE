@@ -1,5 +1,18 @@
 .access-shell{--access-ink:#12222d;--access-muted:#55656f;--access-accent:#1b72ad;--access-border:#7c8d99;color:var(--access-ink);background:#f3f6f8;min-height:100dvh;font:16px/1.5 'Segoe UI',system-ui,sans-serif;box-sizing:border-box}
 .access-shell *{box-sizing:border-box}
+.access-shell{max-width:none;margin:0;border:0;min-height:100dvh}
+.access-shell .access-brand{height:72px;padding:12px 24px}
+.access-shell .access-layout{min-height:calc(100dvh - 72px)}
+.access-shell .access-main{padding:20px 30px}
+.access-shell .access-main h1{margin:16px 0 8px;font-size:25px}
+.access-shell .access-lead{margin-bottom:16px;font-size:14px}
+.access-shell .access-fields{gap:12px}
+.access-shell .access-field{gap:4px}
+.access-shell .access-field label{font-size:14px}
+.access-shell .access-field input{min-height:44px;padding:9px 11px}
+.access-shell .access-field p{font-size:12px}
+.access-shell .access-role{padding:8px 12px}
+.access-shell .access-prototype{padding-top:12px;margin-top:16px;font-size:12px}
 .access-fields{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}.access-shell button:disabled{cursor:wait;opacity:.65}
 .company-permission-fields{display:contents}
 .access-brand{height:82px;padding:16px 28px;display:flex;align-items:center;gap:18px;border-bottom:1px solid #d5dde4;background:#fff}

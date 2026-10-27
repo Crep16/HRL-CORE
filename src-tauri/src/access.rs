@@ -315,6 +315,21 @@ impl AccessState {
 }
 
 #[tauri::command]
+pub async fn sync_window_profile(
+    window: tauri::WebviewWindow,
+    instances: State<'_, DbInstances>,
+    state: State<'_, AccessState>,
+    layout: State<'_, crate::windowing::WindowProfileState>,
+) -> Result<(), String> {
+    let _gate = state.1.lock().await;
+    let status = state.status(&pool(&instances).await?).await?;
+    layout.apply(
+        &window,
+        crate::windowing::Profile::for_session(status.user.is_some(), status.setup_complete),
+    )
+}
+
+#[tauri::command]
 pub async fn access_status(
     instances: State<'_, DbInstances>,
     state: State<'_, AccessState>,

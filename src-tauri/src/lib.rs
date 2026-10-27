@@ -2,11 +2,13 @@ mod access;
 mod orders;
 mod permissions;
 mod users;
+mod windowing;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .manage(access::AccessState::default())
+        .manage(windowing::WindowProfileState::default())
         .plugin(
             tauri_plugin_sql::Builder::new()
                 .add_migrations(
@@ -49,6 +51,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             access::access_status,
+            access::sync_window_profile,
             access::first_setup,
             access::login,
             access::logout,
