@@ -25,3 +25,21 @@ No hay cuentas ni cifras inventadas: los recuentos proceden de la consulta.
 Validación: compilación TypeScript/Vite y revisión de espacios. No había una
 ventana nativa de HRL abierta para recorrer el formulario. No se crearon ni
 editaron cuentas reales. La revisión visual completa sigue pendiente.
+
+## Tamaño de la aplicación
+
+Rama `fix/HRL-13-minimum-window-size`.
+
+La ventana principal establece 1280 × 760 como tamaño inicial y 1120 × 680
+como mínimo, en píxeles lógicos de Tauri. Antes permitía 360 × 520, que
+comprimía los paneles de trabajo. El límite se aplica al volver a abrir
+la aplicación nativa.
+
+Una cantidad grande de cuentas o texto ampliado puede necesitar desplazarse.
+La lista y el cuerpo del editor lo permiten dentro de sus paneles; la barra
+para autorizar y guardar queda fuera de esa área.
+
+PASS: 22 pruebas Node, compilación TypeScript/Vite, `cargo check --offline`
+y revisión de espacios. Los campos `minWidth` y `minHeight` se verificaron
+contra el esquema instalado de Tauri. Falta comprobar el tamaño mínimo y
+la disposición mediante un recorrido de una ventana nativa abierta.

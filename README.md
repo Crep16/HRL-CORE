@@ -55,6 +55,11 @@ borrador; una edición desactualizada se rechaza para evitar sobrescribir cambio
 
 ## Comandos
 
+La ventana de escritorio abre a 1280 × 760 píxeles lógicos y permite reducirla
+hasta 1120 × 680. Usuarios utiliza paneles independientes para lista y editor;
+la acción de guardar permanece visible aunque el contenido necesite desplazarse.
+Los cambios de tamaño inicial y mínimo se aplican al volver a abrir la app.
+
 - `npm install`
 - `npm run dev`
 - `npm run build` — comprueba TypeScript y genera la compilación.
