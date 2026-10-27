@@ -143,6 +143,32 @@ async fn current_user(pool: &SqlitePool, session: &mut Session) -> Result<Option
 }
 
 impl AccessState {
+    #[cfg(test)]
+    pub(crate) async fn test_admin(pool: &SqlitePool) -> Self {
+        let state = Self::default();
+        state
+            .first_setup(
+                pool,
+                FirstSetup {
+                    name: "Test admin".into(),
+                    password: "test-user-123".into(),
+                    confirmation: "test-user-123".into(),
+                    master_password: "test-master-123".into(),
+                    master_confirmation: "test-master-123".into(),
+                },
+            )
+            .await
+            .unwrap();
+        state
+    }
+
+    #[cfg(test)]
+    pub(crate) async fn test_login(&self, pool: &SqlitePool, name: &str) {
+        self.login(pool, name.into(), "test-user-123".into())
+            .await
+            .unwrap();
+    }
+
     pub(crate) async fn authorize(
         &self,
         db: &mut sqlx::SqliteConnection,

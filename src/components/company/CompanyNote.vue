@@ -18,7 +18,7 @@ const repairSummary = computed(() => {
   } catch {return empty;}
 });
 const subtotal = computed(() => total.value / (1 + (Number(props.settings.taxRate) || 0) / 100));
-const money = (value: number) => new Intl.NumberFormat(props.settings.locale, {style:'currency',currency:props.settings.currency}).format(value);
+const money = (value: number) => new Intl.NumberFormat(props.settings.locale, {style:'currency',currency:props.order?.currency ?? props.settings.currency}).format(value);
 </script>
 
 <template>

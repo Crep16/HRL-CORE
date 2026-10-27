@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
 import type { Order } from "../../types/order";
+import { useAccess } from '../../composables/useAccess';
+const { can } = useAccess();
 
-const props = defineProps<{ order: Order; editing: boolean }>();
+const props = defineProps<{ order: Order; editing: boolean; initialPayment?: boolean }>();
 
 const showPassword = ref(false);
 watch(() => props.order.id, () => { showPassword.value = false; });
@@ -58,7 +60,7 @@ watch(() => props.order.id, () => { showPassword.value = false; });
       <div class="fld"><label for="trabajo">Trabajo a realizar</label><textarea id="trabajo" :readonly="!editing" rows="2" v-model="order.work"></textarea></div>
       <div class="g3">
         <div class="fld"><label for="costo">Costo aproximado</label><input id="costo" :readonly="!editing" v-model="order.cost" /></div>
-        <div class="fld"><label for="abono">Abono</label><input id="abono" :readonly="!editing" v-model="order.deposit" /></div>
+        <div class="fld"><label for="abono">Abono inicial</label><input id="abono" :readonly="!editing || !initialPayment || !can('payments.add')" v-model="order.deposit" /></div>
       </div>
     </div>
 

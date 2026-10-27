@@ -27,9 +27,11 @@ estado. Las cuentas usan un nombre de acceso normalizado, único e insensible
 a mayúsculas para las altas nuevas. Una base antigua con nombres duplicados
 necesita revisión manual; no se renombra ni elimina ninguna cuenta automáticamente.
 
-La interfaz sigue usando localStorage para órdenes, Empresa y seguimiento;
-no se migraron datos del usuario. Los permisos almacenados todavía no se
-aplican a esas operaciones. HRL-13 y HRL-14 completarán esa integración.
+La recepción ya usa SQLite con autorización por operación. La importación
+de órdenes antiguas requiere acceso Completo y conserva los originales.
+Empresa y seguimiento siguen en localStorage; la integración completa de
+sus permisos y almacenamiento está pendiente. El seguimiento antiguo no se
+abre con usuarios restringidos para evitar conceder edición o pagos por error.
 
 Decisión explícita del 27 de octubre: sin recuperación automática de la clave
 maestra; procedimiento manual por definir. No hay cuenta, contraseña o puerta
@@ -70,6 +72,8 @@ administrador. Las respuestas excluyen hashes y claves. Cada autorización
 consulta de nuevo el usuario activo y sus permisos en SQLite, sin confiar
 en el rol de la interfaz. Desactivar una cuenta conserva su autoría histórica.
 
-La integración de órdenes y reparaciones con este catálogo continúa en HRL-14
-y HRL-21. El catálogo por sí solo no acredita que los flujos antiguos de
-localStorage ya tengan autorización transaccional.
+HRL-14 conecta consulta, creación y edición de órdenes con este catálogo.
+La integración de seguimiento continúa en HRL-21. Los permisos personalizados
+de Empresa se aplican a sus controles y guardado de interfaz; todavía no son
+una autorización de persistencia en Rust porque su almacenamiento sigue en
+localStorage. HRL-13 permanece abierto hasta completar esos flujos.

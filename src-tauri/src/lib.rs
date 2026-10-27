@@ -1,4 +1,5 @@
 mod access;
+mod orders;
 mod permissions;
 mod users;
 
@@ -29,6 +30,12 @@ pub fn run() {
                             sql: include_str!("../migrations/003_authentication.sql"),
                             kind: tauri_plugin_sql::MigrationKind::Up,
                         },
+                        tauri_plugin_sql::Migration {
+                            version: 4,
+                            description: "order_records_and_legacy_import",
+                            sql: include_str!("../migrations/004_order_records.sql"),
+                            kind: tauri_plugin_sql::MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),
@@ -41,7 +48,11 @@ pub fn run() {
             access::logout,
             access::access_permissions,
             users::save_user,
-            users::list_users
+            users::list_users,
+            orders::list_orders,
+            orders::save_order,
+            orders::import_orders,
+            orders::next_order_number
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

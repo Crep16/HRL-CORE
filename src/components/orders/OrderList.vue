@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useAccess } from '../../composables/useAccess';
+const { can } = useAccess();
 import { statusTone } from "../../data/orderStatuses";
 import type { Order, SearchField } from "../../types/order";
 
@@ -36,7 +38,7 @@ const fields: { value: SearchField; label: string }[] = [
         <h2 class="h-disp">Órdenes</h2>
         <p class="subt">{{ total }} en total</p>
       </div>
-      <button class="btn btn-p" type="button" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
+      <button class="btn btn-p" type="button" :disabled="!can('orders.create')" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
     </div>
     <div class="search">
       <label class="sr" for="q">Buscar órdenes</label>

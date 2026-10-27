@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAccess } from '../../composables/useAccess';
+const { can } = useAccess();
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import CompanyClauses from './CompanyClauses.vue';
 import CompanyNote from './CompanyNote.vue';
@@ -78,6 +80,7 @@ function selectSection(event:Event) {
   select.value=section.value;
 }
 function save() {
+  if (!can('company.edit')) { message.value = 'Tu acceso permite consultar Empresa, pero no modificarla.'; return; }
   errors.value=companyErrors(draft.value);
   if (errors.value.length) {nextTick(()=>errorSummary.value?.focus()); return;}
   if (saveCompany(draft.value)) {draft.value=cloneCompany(company.value); message.value='Configuración guardada en este equipo.';}
@@ -136,6 +139,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
         <p>Guardado en este equipo.<br />Web pendiente de conectar.</p>
       </nav>
       <form class="company-panel" novalidate aria-labelledby="company-section-title" @submit.prevent="save">
+        <fieldset class="company-permission-fields" :disabled="!can('company.edit')">
         <div class="company-panel-heading"><h2 id="company-section-title" tabindex="-1">{{ current.title }}</h2><p>{{ descriptions[section] }}</p></div>
         <div v-if="errors.length" ref="errorSummary" class="company-error" tabindex="-1" role="alert"><strong>Revisa la configuración antes de guardar:</strong><ul><li v-for="error in errors" :key="error"><button class="company-error-link" type="button" @click="focusError(error)">{{ error }}</button></li></ul></div>
         <div class="company-fields">
@@ -213,6 +217,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
           <div v-if="confirmDiscard" class="company-discard-confirm" role="alert"><span>¿Descartar todos los cambios de Empresa?</span><button class="btn btn-s" type="button" @click="confirmDiscard=false">Seguir editando</button><button class="btn btn-s" type="button" @click="discard">Sí, descartar</button></div>
           <div v-else class="company-save-actions"><button class="btn btn-s" type="button" :disabled="!dirty || clauseEditing || readingLogo" @click="confirmDiscard=true">Descartar cambios</button><button class="btn btn-p" type="submit" :disabled="!dirty || clauseEditing || readingLogo">Guardar cambios</button></div>
         </footer>
+        </fieldset>
       </form>
       <aside class="company-preview" aria-labelledby="company-preview-title">
         <div class="company-preview-heading"><div><h2 id="company-preview-title">Así sale en la nota</h2><p>Vista previa · {{ order?.id || 'sin orden seleccionada' }}</p></div><div class="company-note-toggle" role="group" aria-label="Nota a previsualizar"><button type="button" :aria-pressed="noteKind==='entry'" :class="{active:noteKind==='entry'}" @click="noteKind='entry'">Entrada</button><button type="button" :aria-pressed="noteKind==='exit'" :class="{active:noteKind==='exit'}" @click="noteKind='exit'">Salida</button></div></div>

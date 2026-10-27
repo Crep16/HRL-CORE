@@ -28,7 +28,7 @@ const part = ref('');
 const price = ref(0);
 const paymentOpen = ref(false);
 const amount = ref(0);
-const money = (value: number) => new Intl.NumberFormat(company.value.locale, { style:'currency', currency:company.value.currency }).format(value);
+const money = (value: number) => new Intl.NumberFormat(company.value.locale, { style:'currency', currency:props.order.currency ?? company.value.currency }).format(value);
 const number = orderAmount;
 const deposited = computed(() => number(props.order.deposit) + repair.value.payments.reduce((sum, item) => sum + item.amount, 0));
 const balance = computed(() => Math.max(0, number(props.order.cost) - deposited.value));

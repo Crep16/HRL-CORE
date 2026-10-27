@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useAccess } from '../../composables/useAccess';
+const { can } = useAccess();
 import { ref } from "vue";
 import { orderStatuses, statusTone } from "../../data/orderStatuses";
 import type { Order } from "../../types/order";
 
-defineProps<{ order: Order; editing: boolean }>();
+defineProps<{ order: Order; editing: boolean; initialPayment?: boolean }>();
 
 const emit = defineEmits<{ repairs: [] }>();
 const menuOpen = ref(false);
@@ -31,7 +33,7 @@ const evidence = [
       </div>
       <p class="help">Escribe el estado o elige uno de la lista.</p>
       <div>
-        <div class="swrow"><span>Pagado</span><button :disabled="!editing" class="sw" :class="{ on: order.paid }" type="button" role="switch" :aria-checked="order.paid" aria-label="Pagado" @click="order.paid = !order.paid"><span></span></button></div>
+        <div class="swrow"><span>Pagado</span><button :disabled="!editing || !initialPayment || !can('payments.add')" class="sw" :class="{ on: order.paid }" type="button" role="switch" :aria-checked="order.paid" aria-label="Pagado" @click="order.paid = !order.paid"><span></span></button></div>
         <div class="swrow"><span>Entregado</span><button :disabled="!editing" class="sw" :class="{ on: order.delivered }" type="button" role="switch" :aria-checked="order.delivered" aria-label="Entregado" @click="order.delivered = !order.delivered"><span></span></button></div>
       </div>
     </div>
