@@ -121,3 +121,4 @@ function requestLogout() {
 <style src="./assets/styles/orders.css"></style>
 <style src="./assets/styles/workspace.css"></style>
 <style src="./assets/styles/readability.css"></style>
+<style src="./assets/styles/app-header.css"></style>

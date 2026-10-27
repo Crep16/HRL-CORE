@@ -66,7 +66,7 @@ watch(() => props.order.id, () => { showPassword.value = false; });
 
     <div class="block">
       <h2 class="sec">Notas</h2>
-      <div class="fld"><label class="sr" for="notas">Notas</label><textarea id="notas" :readonly="!editing" rows="3" v-model="order.notes"></textarea></div>
+      <div class="fld"><label class="sr" for="notas">Notas</label><textarea id="notas" :readonly="!editing" :placeholder="editing ? 'Agrega notas de recepción' : 'Sin notas registradas'" rows="3" v-model="order.notes"></textarea></div>
     </div>
   </div>
 </template>
