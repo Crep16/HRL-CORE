@@ -41,6 +41,7 @@ fn order_and_audit_survive_reopen_and_reject_stale_updates() {
         save(&pool, &state, original.clone(), None).await.unwrap();
         assert!(save(&pool, &state, original.clone(), None).await.is_err());
         pool.close().await;
+        drop(pool);
         let pool = sqlx::sqlite::SqlitePoolOptions::new()
             .max_connections(1)
             .connect_with(options)
@@ -95,6 +96,7 @@ fn order_and_audit_survive_reopen_and_reject_stale_updates() {
             50000
         );
         pool.close().await;
+        drop(pool);
         std::fs::remove_dir_all(directory).unwrap();
     });
 }

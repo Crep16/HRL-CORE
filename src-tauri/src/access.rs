@@ -30,7 +30,7 @@ struct Session {
 }
 
 #[derive(Default)]
-pub struct AccessState(Mutex<Session>);
+pub struct AccessState(Mutex<Session>, Mutex<()>);
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -125,23 +125,6 @@ async fn setup_complete(pool: &SqlitePool) -> Result<bool, String> {
     Ok(users > 0)
 }
 
-async fn current_user(pool: &SqlitePool, session: &mut Session) -> Result<Option<User>, String> {
-    let Some(user) = &session.user else {
-        return Ok(None);
-    };
-    let row = sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
-        .bind(&user.id)
-        .fetch_optional(pool)
-        .await
-        .map_err(|_| DATABASE_ERROR)?;
-    session.user = row.map(|row| User {
-        id: row.get("id"),
-        name: row.get("name"),
-        access_level: row.get("access_level"),
-    });
-    Ok(session.user.clone())
-}
-
 impl AccessState {
     #[cfg(test)]
     pub(crate) async fn test_admin(pool: &SqlitePool) -> Self {
@@ -174,14 +157,17 @@ impl AccessState {
         db: &mut sqlx::SqliteConnection,
         operation: &str,
     ) -> Result<User, String> {
-        let session = self.0.lock().await;
-        let id = &session
+        let id = self
+            .0
+            .lock()
+            .await
             .user
             .as_ref()
             .ok_or("Inicia sesión para continuar.")?
-            .id;
+            .id
+            .clone();
         let row = sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
-            .bind(id)
+            .bind(&id)
             .fetch_optional(&mut *db)
             .await
             .map_err(|_| DATABASE_ERROR)?
@@ -201,7 +187,7 @@ impl AccessState {
             "custom" if operation != "users.manage" => sqlx::query_scalar::<_, i64>(
                 "SELECT count(*) FROM user_permissions WHERE user_id=? AND section=? AND action=?",
             )
-            .bind(id)
+            .bind(&id)
             .bind(section)
             .bind(action)
             .fetch_one(&mut *db)
@@ -217,10 +203,29 @@ impl AccessState {
     }
 
     async fn status(&self, pool: &SqlitePool) -> Result<AccessStatus, String> {
+        let setup_complete = setup_complete(pool).await?;
+        let previous = self.0.lock().await.user.clone();
+        let refreshed = if let Some(user) = &previous {
+            sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
+                .bind(&user.id)
+                .fetch_optional(pool)
+                .await
+                .map_err(|_| DATABASE_ERROR)?
+                .map(|row| User {
+                    id: row.get("id"),
+                    name: row.get("name"),
+                    access_level: row.get("access_level"),
+                })
+        } else {
+            None
+        };
         let mut session = self.0.lock().await;
+        if session.user == previous {
+            session.user = refreshed;
+        }
         Ok(AccessStatus {
-            setup_complete: setup_complete(pool).await?,
-            user: current_user(pool, &mut session).await?,
+            setup_complete,
+            user: session.user.clone(),
         })
     }
 
@@ -228,7 +233,7 @@ impl AccessState {
         let key = login_name(&input.name)?;
         validate_password(&input.password, &input.confirmation)?;
         validate_password(&input.master_password, &input.master_confirmation)?;
-        let mut session = self.0.lock().await;
+        let _gate = self.1.lock().await;
         if setup_complete(pool).await? {
             return Err("El primer administrador ya está configurado.".into());
         }
@@ -250,6 +255,7 @@ impl AccessState {
         sqlx::query("INSERT INTO users(id,name,password_hash,access_level,login_name) VALUES (?,?,?,'complete',?)")
             .bind(&user.id).bind(&user.name).bind(password_hash).bind(key).execute(&mut *tx).await.map_err(|_| DATABASE_ERROR)?;
         tx.commit().await.map_err(|_| DATABASE_ERROR)?;
+        let mut session = self.0.lock().await;
         session.user = Some(user.clone());
         session.failures = 0;
         session.retry_at = None;
@@ -266,11 +272,14 @@ impl AccessState {
         if password.is_empty() || password.len() > 1024 {
             return Err(INVALID_LOGIN.into());
         }
-        let mut session = self.0.lock().await;
-        if session.retry_at.is_some_and(|time| time > Instant::now()) {
-            return Err("Espera unos segundos antes de volver a intentar el acceso.".into());
+        let _gate = self.1.lock().await;
+        {
+            let mut session = self.0.lock().await;
+            if session.retry_at.is_some_and(|time| time > Instant::now()) {
+                return Err("Espera unos segundos antes de volver a intentar el acceso.".into());
+            }
+            session.user = None;
         }
-        session.user = None;
         let row = sqlx::query(
             "SELECT id,name,password_hash,access_level FROM users WHERE login_name=? AND active=1",
         )
@@ -284,6 +293,7 @@ impl AccessState {
             false
         };
         if !valid {
+            let mut session = self.0.lock().await;
             session.failures += 1;
             if session.failures >= 5 {
                 session.retry_at = Some(Instant::now() + Duration::from_secs(5));
@@ -296,6 +306,7 @@ impl AccessState {
             name: row.get("name"),
             access_level: row.get("access_level"),
         };
+        let mut session = self.0.lock().await;
         session.user = Some(user.clone());
         session.failures = 0;
         session.retry_at = None;
@@ -332,6 +343,7 @@ pub async fn login(
 
 #[tauri::command]
 pub async fn logout(state: State<'_, AccessState>) -> Result<(), String> {
+    let _gate = state.1.lock().await;
     state.0.lock().await.user = None;
     Ok(())
 }
@@ -379,6 +391,30 @@ mod tests {
             master_confirmation: "test-master-123".into(),
         }
     }
+    #[test]
+    fn session_refresh_does_not_block_authorization_on_a_busy_single_connection_pool() {
+        tauri::async_runtime::block_on(async {
+            let pool = database().await;
+            let state = AccessState::test_admin(&pool).await;
+            let mut db = pool.acquire().await.unwrap();
+            let mut refresh = Box::pin(state.status(&pool));
+            std::future::poll_fn(|context| {
+                assert!(std::future::Future::poll(refresh.as_mut(), context).is_pending());
+                std::task::Poll::Ready(())
+            })
+            .await;
+            let authorized = tokio::time::timeout(
+                Duration::from_secs(2),
+                state.authorize(&mut db, "clients.view"),
+            )
+            .await;
+            assert!(authorized.unwrap().is_ok());
+            drop(db);
+            assert!(refresh.await.unwrap().user.is_some());
+            pool.close().await;
+        });
+    }
+
     #[test]
     fn setup_login_logout_and_revocation() {
         tauri::async_runtime::block_on(async {
@@ -478,6 +514,7 @@ mod tests {
                 .await
                 .unwrap();
             pool.close().await;
+            drop(pool);
             let reopened = sqlx::sqlite::SqlitePoolOptions::new()
                 .max_connections(1)
                 .connect_with(options)
@@ -496,6 +533,7 @@ mod tests {
                 "complete"
             );
             reopened.close().await;
+            drop(reopened);
             std::fs::remove_dir_all(directory).unwrap();
         });
     }

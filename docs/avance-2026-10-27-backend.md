@@ -25,7 +25,7 @@ permisos y recepción. Cada tarea conserva su commit y su rama.
 ## Validación realizada
 
 - PASS: 21 pruebas Node (`node --experimental-strip-types --test tests/*.test.mjs`).
-- PASS: 8 pruebas Rust (`cargo test --offline --manifest-path src-tauri/Cargo.toml --lib`).
+- PASS: 9 pruebas Rust (`cargo test --offline --manifest-path src-tauri/Cargo.toml --lib`).
 - PASS: TypeScript y Vite (`npm.cmd run build`).
 - PASS: revisión de espacios (`git diff --check`).
 
@@ -33,6 +33,9 @@ Las pruebas Rust comprueban cuentas y órdenes tras reabrir bases temporales,
 rechazo sin sesión o permiso, desactivación/revocación, protección del último
 administrador, rollback de alta/importación/orden, folios duplicados, edición
 desactualizada, conservación de moneda y exclusión de claves del historial.
+Una prueba adicional comprueba que consultar la sesión mientras SQLite está
+ocupado no bloquea la autorización de otra operación. El estado en memoria
+no se mantiene bloqueado mientras se espera una conexión de la base.
 No se usan credenciales reales ni se importa el almacenamiento del usuario
 durante estas pruebas.
 
