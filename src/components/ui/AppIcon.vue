@@ -1,6 +1,9 @@
 <script setup lang="ts">
 defineProps<{ name: string }>();
 const paths: Record<string, string> = {
+  search: 'M18 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM16 16l5 5',
+  add: 'M12 5v14M5 12h14',
+  save: 'M4 3h13l4 4v14H3V3h1ZM7 3v6h10V3M7 21v-8h10v8',
   clients: 'M5 3h14v18H5zM2 7h4M2 12h4M2 17h4M9 17v-1a3 3 0 0 1 6 0v1M14 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z',
   logbook: 'M4 3h16v18H4zM8 3v18M11 8h6M11 12h6M11 16h4',
   company: 'M4 21V3h12v18M16 10h4v11M2 21h20M8 7h4M8 11h4M8 15h4M9 21v-3h2v3',
