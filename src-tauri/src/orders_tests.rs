@@ -1,17 +1,18 @@
 use crate::{access::AccessState, orders::*};
 use sqlx::SqlitePool;
 
-async fn migrate(pool: &SqlitePool) {
+pub(super) async fn migrate(pool: &SqlitePool) {
     for schema in [
         include_str!("../migrations/001_access.sql"),
         include_str!("../migrations/002_workshop.sql"),
         include_str!("../migrations/003_authentication.sql"),
         include_str!("../migrations/004_order_records.sql"),
+        include_str!("../migrations/005_order_visibility.sql"),
     ] {
         sqlx::raw_sql(schema).execute(pool).await.unwrap();
     }
 }
-fn order() -> Order {
+pub(super) fn order() -> Order {
     serde_json::from_value(serde_json::json!({
         "id":"ORD-001", "client":"Cliente", "phone":"9980000000", "received":"27/10/2026", "status":"Diagnóstico",
         "serial":"SERIE", "item":"Laptop", "brand":"HP", "model":"14", "otherShop":false, "otherShopReason":"", "dropped":false, "dropReason":"",

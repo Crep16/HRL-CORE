@@ -12,6 +12,7 @@ export function useOrders() {
   const busy = ref(false);
   const ready = ref(false);
   const needsImport = ref(false);
+  const showDeleted = ref(false);
   const orders = ref<Order[]>([]);
   const selectedId = ref('');
   const query = ref('');
@@ -22,8 +23,9 @@ export function useOrders() {
   async function load() {
     if (busy.value) return;
     busy.value = true; ready.value = false; storageError.value = '';
+    orders.value = [];
     try {
-      const result = await invoke<{ orders: Order[]; legacyImported: boolean }>('list_orders');
+      const result = await invoke<{ orders: Order[]; legacyImported: boolean }>('list_orders', { deleted: showDeleted.value });
       orders.value = result.orders;
       if (!orders.value.some(order => order.id === selectedId.value)) selectedId.value = orders.value[0]?.id ?? '';
       legacyRaw = localStorage.getItem('hrl.orders.v1');
@@ -72,6 +74,17 @@ export function useOrders() {
   const index = computed(() => sorted.value.findIndex(order => order.id === selectedId.value));
   const selected = computed<Order | undefined>(() => sorted.value[index.value]);
   function goTo(position: number) { if (sorted.value.length) selectedId.value = sorted.value[Math.min(Math.max(position, 0), sorted.value.length - 1)].id; }
-  function removeSelected() { storageError.value = 'El borrado está deshabilitado para conservar el historial de las órdenes.'; }
-  return { storageError, busy, ready, needsImport, load, importLegacy, saveOrder, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo, removeSelected };
+  async function setDeleted(order: Order, deleted: boolean) {
+    if (busy.value || !ready.value || !can('orders.delete')) return false;
+    busy.value = true; storageError.value = '';
+    try {
+      await invoke('set_order_deleted', { order, deleted });
+      const position = index.value;
+      orders.value = orders.value.filter(item => item.id !== order.id);
+      selectedId.value = sorted.value[Math.min(Math.max(position, 0), sorted.value.length - 1)]?.id ?? '';
+      return true;
+    } catch (cause) { storageError.value = typeof cause === 'string' ? cause : 'No se pudo cambiar el estado de la orden. Vuelve a intentar.'; return false; }
+    finally { busy.value = false; }
+  }
+  return { storageError, busy, ready, needsImport, showDeleted, load, importLegacy, saveOrder, setDeleted, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo };
 }

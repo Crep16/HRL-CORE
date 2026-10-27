@@ -6,7 +6,7 @@ import { ref } from "vue";
 import { orderStatuses, statusTone } from "../../data/orderStatuses";
 import type { Order } from "../../types/order";
 
-defineProps<{ order: Order; editing: boolean; initialPayment?: boolean }>();
+defineProps<{ order: Order; editing: boolean; initialPayment?: boolean; unavailable?: boolean }>();
 
 const emit = defineEmits<{ repairs: [] }>();
 const menuOpen = ref(false);
@@ -61,7 +61,7 @@ const evidence = [
       <h3><AppIcon name="repair" />Reparaciones</h3>
       <p>Avances, notas del técnico y garantías de esta orden.</p>
       <div class="facts"><span class="tag">Seguimiento técnico</span><span class="tag">Garantías</span></div>
-      <button class="btn btn-w" type="button" :disabled="editing" @click="emit('repairs')"><AppIcon name="repair" />Abrir gestión</button>
+      <button class="btn btn-w" type="button" :disabled="editing || unavailable" @click="emit('repairs')"><AppIcon name="repair" />Abrir gestión</button>
     </div>
   </aside>
 </template>

@@ -8,6 +8,7 @@ const emit = defineEmits<{ logout: [] }>();
 import AppHeader from './components/layout/AppHeader.vue';
 import OrderList from './components/orders/OrderList.vue';
 import OrderSheet from './components/orders/OrderSheet.vue';
+import OrderDeleteDialog from './components/orders/OrderDeleteDialog.vue';
 import RepairWorkspace from './components/repairs/RepairWorkspace.vue';
 import CompanyWorkspace from './components/company/CompanyWorkspace.vue';
 import CompanyNote from './components/company/CompanyNote.vue';
@@ -16,7 +17,7 @@ import { printCompanyNote } from './utils/printCompanyNote';
 import type { NoteKind } from './types/company';
 import { useOrders } from './composables/useOrders';
 import type { Order } from './types/order';
-const { storageError, busy, ready, needsImport, load, importLegacy, saveOrder, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo, removeSelected } = useOrders();
+const { storageError, busy, ready, needsImport, showDeleted, load, importLegacy, saveOrder, setDeleted, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo } = useOrders();
 const page = ref<'clients' | 'repairs' | 'company' | 'users'>('clients');
 const { company, saveCompany } = useCompany();
 const companyDirty = ref(false);
@@ -32,10 +33,10 @@ function navigate(tab: string) {
   if (destination === page.value) return;
   if (draft.value || companyDirty.value) { notice.value='Guarda o descarta los cambios pendientes antes de cambiar de sección.'; return; }
   if (page.value === 'repairs' && repairWorkspace.value && !repairWorkspace.value.save()) return;
-  deleting.value=false; notice.value=''; page.value=destination;
+  deleteTarget.value=undefined; notice.value=''; page.value=destination;
 }
 async function printOrder(kind: NoteKind) {
-  if (!selected.value || draft.value) return;
+  if (!selected.value || draft.value || showDeleted.value || busy.value) return;
   if (companyDirty.value) { notice.value='Guarda o descarta los cambios de Empresa antes de imprimir una orden.'; return; }
   printKind.value=kind; printVersion.value++; await nextTick();
   const note=printSource.value?.querySelector<HTMLElement>('.company-note');
@@ -49,10 +50,11 @@ const notice = ref('');
 watch(companyDirty, value => {
   if (!value && (notice.value === 'Guarda o descarta los cambios pendientes antes de cambiar de sección.' || notice.value === 'Guarda o descarta los cambios de Empresa antes de imprimir una orden.')) notice.value='';
 });
-const deleting = ref(false);
-function edit() { if (!can('orders.edit') || !ready.value || busy.value) { notice.value = 'No puedes editar esta orden en este momento.'; return; } if (selected.value) { originalOrder.value = { ...selected.value }; draft.value = { ...selected.value }; focusClient(); } }
+const deleteTarget = ref<Order>();
+function edit() { if (showDeleted.value || !can('orders.edit') || !ready.value || busy.value) { notice.value = 'No puedes editar esta orden en este momento.'; return; } if (selected.value) { originalOrder.value = { ...selected.value }; draft.value = { ...selected.value }; focusClient(); } }
 function focusClient() { nextTick(() => document.getElementById('cliente')?.focus()); }
 async function create() {
+  if (showDeleted.value) { notice.value = 'Vuelve a las órdenes activas para crear una nueva.'; return; }
   if (!can('orders.create')) { notice.value = 'Tu acceso no permite crear órdenes.'; return; }
   if (!ready.value || busy.value) { notice.value = 'Espera a que se recuperen o importen las órdenes antes de crear otra.'; return; }
   if (draft.value) { notice.value = 'Guarda o cancela la captura actual antes de crear otra orden.'; return; }
@@ -83,10 +85,11 @@ async function save() {
 }
 function select(id: string) {
   if (draft.value) { notice.value = 'Guarda o cancela los cambios antes de cambiar de orden.'; return; }
-  deleting.value = false;
+  deleteTarget.value = undefined;
   selectedId.value = id;
 }
 function openRepairs() {
+  if (showDeleted.value) { notice.value = 'Restaura la orden para continuar su reparación.'; return; }
   if (!can('repairs.view')) { notice.value = 'Tu acceso no permite consultar Reparaciones.'; return; }
   if (!can('users.manage')) { notice.value = 'El seguimiento está disponible por ahora para el acceso Completo.'; return; }
   page.value = 'repairs';
@@ -96,26 +99,54 @@ function requestLogout() {
   if (page.value === 'repairs' && repairWorkspace.value && !repairWorkspace.value.save()) return;
   emit('logout');
 }
+function requestDelete() {
+  if (selected.value && can('orders.delete') && ready.value && !busy.value && !draft.value && !showDeleted.value) {
+    storageError.value = ''; deleteTarget.value = { ...selected.value };
+  }
+}
+async function confirmDelete() {
+  const order = deleteTarget.value;
+  if (!order || !await setDeleted(order, true)) return;
+  deleteTarget.value = undefined;
+  notice.value = `${order.id} se envió a la papelera. Su historial y sus cobros se conservan.`;
+  await focusOrderList();
+}
+async function restoreSelected() {
+  if (!showDeleted.value || !selected.value) return;
+  const order = { ...selected.value };
+  if (await setDeleted(order, false)) { notice.value = `${order.id} se restauró en las órdenes activas.`; await focusOrderList(); }
+}
+async function focusOrderList() {
+  await nextTick();
+  (document.querySelector<HTMLElement>('.sheet .num') ?? document.querySelector<HTMLElement>('.rail .h-disp'))?.focus();
+}
+async function toggleTrash() {
+  if (draft.value) { notice.value = 'Guarda o cancela el borrador antes de cambiar de listado.'; return; }
+  if (busy.value) return;
+  if (!showDeleted.value && (!can('orders.delete') || !can('clients.view'))) return;
+  showDeleted.value = !showDeleted.value; query.value = ''; notice.value = ''; await load();
+}
 </script>
 
 <template>
   <div class="app">
-    <AppHeader :tabs="tabs" :active="page === 'users' ? 'Usuarios' : page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty" @change="navigate" @print="printOrder" @logout="requestLogout" />
+    <AppHeader :tabs="tabs" :active="page === 'users' ? 'Usuarios' : page === 'company' ? 'Empresa' : 'Clientes'" :can-print="!!selected && !draft && !companyDirty && !showDeleted" @change="navigate" @print="printOrder" @logout="requestLogout" />
     <div v-if="storageError" class="notice" role="alert">{{ storageError }}</div>
     <div v-if="busy" class="notice" role="status">Consultando o guardando órdenes…</div>
     <div v-if="needsImport" class="notice" role="status">Hay órdenes guardadas antes de configurar esta base. Un administrador debe importarlas para continuar; se conservará el original.<button v-if="can('users.manage')" class="btn btn-s" :disabled="busy" @click="importLegacy">Importar órdenes guardadas</button></div>
     <button v-if="storageError && !draft" class="btn btn-s" :disabled="busy" @click="load">Volver a consultar órdenes</button>
     <div v-if="notice" class="notice" role="status">{{ notice }}<button class="lnk" type="button" aria-label="Cerrar aviso" @click="notice = ''">×</button></div>
     <div v-if="page === 'clients'" class="work reception">
-      <OrderList v-model:query="query" v-model:field="field" :orders="visible" :total="orders.length" :selected-id="selectedId" @select="select" @toggle-sort="ascending = !ascending" @create="create" />
-      <OrderSheet v-if="draft || selected" :key="draft ? 'draft' : selectedId" :order="(draft || selected)!" :editing="!!draft" :busy="busy" :initial-payment="!originalOrder" :position="index + 1" :total="orders.length" @go-to="draft ? notice = 'Guarda o cancela los cambios antes de navegar.' : goTo($event)" @edit="edit" @save="save" @cancel="busy ? undefined : draft = undefined" @remove="removeSelected" @repairs="openRepairs" />
-      <section v-else class="sheet empty-work"><h1>No hay órdenes</h1><p>Crea una nueva orden para comenzar.</p><button class="btn btn-p" @click="create">Nueva orden</button></section>
-      <div v-if="deleting && selected" class="delete-inline" role="alert">¿Eliminar {{ selected.id }}?<button class="btn btn-s" @click="deleting = false">Cancelar</button><button class="btn btn-p" @click="removeSelected(); deleting = false; notice = 'Orden eliminada.'">Eliminar orden</button></div>
+      <OrderList v-model:query="query" v-model:field="field" :orders="visible" :total="orders.length" :selected-id="selectedId" :trashed="showDeleted" :busy="busy" @select="select" @toggle-sort="ascending = !ascending" @create="create" @toggle-trash="toggleTrash" />
+      <OrderSheet v-if="draft || selected" :key="draft ? 'draft' : selectedId" :order="(draft || selected)!" :editing="!!draft" :busy="busy || !ready" :trashed="showDeleted" :initial-payment="!originalOrder" :position="index + 1" :total="orders.length" @go-to="draft ? notice = 'Guarda o cancela los cambios antes de navegar.' : goTo($event)" @edit="edit" @save="save" @cancel="busy ? undefined : draft = undefined" @remove="requestDelete" @restore="restoreSelected" @repairs="openRepairs" />
+      <section v-else class="sheet empty-work"><h1>{{ busy ? 'Recuperando órdenes' : storageError ? 'Órdenes no disponibles' : showDeleted ? 'Papelera vacía' : 'No hay órdenes' }}</h1><p>{{ storageError ? 'Vuelve a consultar el listado para recuperar sus registros.' : showDeleted ? 'Las órdenes eliminadas aparecerán aquí para que puedas restaurarlas.' : 'Crea una nueva orden para comenzar.' }}</p><button v-if="showDeleted" class="btn btn-s" :disabled="busy" @click="toggleTrash">Volver a órdenes</button><button v-else class="btn btn-p" :disabled="busy || !ready || !can('orders.create')" @click="create">Nueva orden</button></section>
     </div>
     <UsersWorkspace v-else-if="page === 'users' && can('users.manage')" />
     <CompanyWorkspace v-else-if="page === 'company' && can('company.view')" :orders="orders" :order="selected" @dirty-change="companyDirty=$event" />
-    <RepairWorkspace v-else-if="selected" ref="repairWorkspace" :key="selected.id" :order="selected" @back="page = 'clients'" />
+    <RepairWorkspace v-else-if="page === 'repairs' && selected && can('users.manage') && can('repairs.view')" ref="repairWorkspace" :key="selected.id" :order="selected" @back="page = 'clients'" />
+    <section v-else class="sheet empty-work" role="alert"><h1>Sección no disponible</h1><p>Tu acceso no permite consultar esta sección.</p><button class="btn btn-s" type="button" @click="navigate('Clientes')">Volver a Clientes</button></section>
     <div ref="printSource" class="sr" aria-hidden="true"><CompanyNote :key="printVersion" :settings="company" :kind="printKind" :order="selected" /></div>
+    <OrderDeleteDialog :order="deleteTarget" :busy="busy" :error="storageError" @confirm="confirmDelete" @cancel="busy ? undefined : deleteTarget = undefined" />
   </div>
 </template>
 <style src="./assets/styles/orders.css"></style>

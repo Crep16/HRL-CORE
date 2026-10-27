@@ -5,6 +5,9 @@ use tauri::State;
 use tauri_plugin_sql::DbInstances;
 
 #[cfg(test)]
+#[path = "orders_deletion_tests.rs"]
+mod deletion_tests;
+#[cfg(test)]
 #[path = "orders_tests.rs"]
 mod tests;
 
@@ -119,17 +122,31 @@ fn validate(order: &Order) -> Result<(i64, i64), String> {
     Ok((money_minor(&order.cost)?, money_minor(&order.deposit)?))
 }
 
+#[cfg(test)]
 pub(crate) async fn list(pool: &SqlitePool, state: &AccessState) -> Result<OrderList, String> {
+    list_view(pool, state, false).await
+}
+
+pub(crate) async fn list_view(
+    pool: &SqlitePool,
+    state: &AccessState,
+    deleted: bool,
+) -> Result<OrderList, String> {
     let mut tx = pool
         .begin()
         .await
         .map_err(|_| "No se pudo abrir la base local.")?;
     let can_view = state.authorize(&mut tx, "clients.view").await.is_ok();
+    if deleted {
+        state.authorize(&mut tx, "clients.view").await?;
+        state.authorize(&mut tx, "orders.delete").await?;
+    }
     if !can_view {
         state.authorize(&mut tx, "orders.create").await?;
     }
     let rows = if can_view {
-        sqlx::query("SELECT record_json FROM orders ORDER BY id")
+        sqlx::query("SELECT record_json FROM orders WHERE coalesce((SELECT action FROM order_visibility_events WHERE order_id=orders.id ORDER BY sequence DESC LIMIT 1),'restored')=? ORDER BY id")
+            .bind(if deleted { "deleted" } else { "restored" })
             .fetch_all(&mut *tx)
             .await
             .map_err(|_| "No se pudieron consultar las órdenes.")?
@@ -169,6 +186,14 @@ async fn write(
 ) -> Result<(), String> {
     let (price, deposit) = validate(order)?;
     let json = serde_json::to_string(order).map_err(|_| "No se pudo preparar la orden.")?;
+    let removed: i64 = sqlx::query_scalar("SELECT count(*) FROM order_visibility_events WHERE sequence=(SELECT max(sequence) FROM order_visibility_events WHERE order_id=?) AND action='deleted'")
+        .bind(&order.id).fetch_one(&mut *db).await.map_err(|_| "No se pudo comprobar el estado de la orden.")?;
+    if removed > 0 {
+        return Err(
+            "La orden está en la papelera. Restáurala antes de editarla; su folio se conserva."
+                .into(),
+        );
+    }
     let existing =
         sqlx::query("SELECT equipment_id,record_json,delivered_at FROM orders WHERE id=?")
             .bind(&order.id)
@@ -378,6 +403,54 @@ pub(crate) async fn import(
 }
 
 #[tauri::command]
+pub async fn set_order_deleted(
+    order: Order,
+    deleted: bool,
+    instances: State<'_, DbInstances>,
+    state: State<'_, AccessState>,
+) -> Result<(), String> {
+    set_deleted(&access::pool(&instances).await?, &state, order, deleted).await
+}
+
+pub(crate) async fn set_deleted(
+    pool: &SqlitePool,
+    state: &AccessState,
+    order: Order,
+    deleted: bool,
+) -> Result<(), String> {
+    let mut tx = pool
+        .begin()
+        .await
+        .map_err(|_| "No se pudo abrir la base local.")?;
+    let user = state.authorize(&mut tx, "orders.delete").await?;
+    let saved: Option<String> = sqlx::query_scalar("SELECT record_json FROM orders WHERE id=?")
+        .bind(&order.id)
+        .fetch_optional(&mut *tx)
+        .await
+        .map_err(|_| "No se pudo consultar la orden.")?
+        .flatten();
+    let saved: Order = serde_json::from_str(
+        saved
+            .as_deref()
+            .ok_or("La orden ya no está disponible o necesita revisión manual.")?,
+    )
+    .map_err(|_| "La orden guardada necesita revisión manual.")?;
+    if saved != order {
+        return Err("La orden cambió desde que la abriste. Vuelve a consultarla antes de eliminarla o restaurarla.".into());
+    }
+    let action: Option<String> = sqlx::query_scalar("SELECT action FROM order_visibility_events WHERE order_id=? ORDER BY sequence DESC LIMIT 1").bind(&order.id).fetch_optional(&mut *tx).await.map_err(|_| "No se pudo consultar la papelera.")?;
+    if deleted == (action.as_deref() == Some("deleted")) {
+        return Ok(());
+    }
+    sqlx::query("INSERT INTO order_visibility_events(order_id,author_id,action) VALUES (?,?,?)").bind(&order.id).bind(&user.id).bind(if deleted { "deleted" } else { "restored" })
+        .execute(&mut *tx).await.map_err(|_| "No se pudo guardar el cambio en la papelera. La orden conserva su estado anterior.")?;
+    tx.commit()
+        .await
+        .map_err(|_| "No se pudo confirmar el cambio de la orden.")?;
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn next_order_number(
     prefix: String,
     start: i64,
@@ -418,10 +491,16 @@ pub async fn next_order_number(
 
 #[tauri::command]
 pub async fn list_orders(
+    deleted: Option<bool>,
     instances: State<'_, DbInstances>,
     state: State<'_, AccessState>,
 ) -> Result<OrderList, String> {
-    list(&access::pool(&instances).await?, &state).await
+    list_view(
+        &access::pool(&instances).await?,
+        &state,
+        deleted.unwrap_or(false),
+    )
+    .await
 }
 #[tauri::command]
 pub async fn save_order(

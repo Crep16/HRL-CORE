@@ -60,3 +60,24 @@ rechazo de edición desactualizada, rollback si falla el historial, importación
 duplicada sin residuos, conservación de fechas históricas desconocidas y
 rechazo de pagos/edición/importación para acceso Limitado. La verificación
 nativa completa con una cuenta real y la revisión visual siguen pendientes.
+
+## Papelera recuperable, HRL-19
+
+La migración 005 añade `order_visibility_events`. Cada eliminación o
+restauración guarda orden, autor, acción y fecha en un registro inmutable.
+La acción más reciente determina si aparece en recepción o en Papelera.
+No se borran físicamente cliente, equipo, orden, cobros ni historial.
+
+El comando revalida `orders.delete` en SQLite y compara la ficha enviada
+con la guardada para rechazar acciones desactualizadas. El acceso Completo
+tiene ese permiso; Personalizado lo obtiene con Borrar en Clientes.
+Limitado no lo recibe. Consultar Papelera requiere además Visualizar Clientes.
+
+Las órdenes eliminadas no se editan; primero deben restaurarse. Sus folios
+continúan ocupados para no enlazar un seguimiento anterior a una orden nueva.
+Repetir una solicitud ya aplicada no duplica el registro de eliminación.
+
+Cuatro pruebas adicionales verifican eliminación/restauración, cobros e
+historial conservados, folio no reutilizable, autoría, permisos revocados,
+rechazo de solicitudes desactualizadas, fallo de registro y reapertura del
+archivo SQLite. Todas usan datos temporales; no se eliminaron registros reales.

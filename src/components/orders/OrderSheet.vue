@@ -1,19 +1,21 @@
 <script setup lang="ts">
 import OrderForm from "./OrderForm.vue";
 import OrderSidePanel from "./OrderSidePanel.vue";
+import AppIcon from '../ui/AppIcon.vue';
 import type { Order } from "../../types/order";
 import { useAccess } from '../../composables/useAccess';
 const { can } = useAccess();
 
-defineProps<{ order: Order; position: number; total: number; editing: boolean; busy?: boolean; initialPayment?: boolean }>();
-const emit = defineEmits<{ goTo: [position: number]; remove: []; edit: []; save: []; cancel: []; repairs: [] }>();
+defineProps<{ order: Order; position: number; total: number; editing: boolean; busy?: boolean; initialPayment?: boolean; trashed?: boolean }>();
+const emit = defineEmits<{ goTo: [position: number]; remove: []; restore: []; edit: []; save: []; cancel: []; repairs: [] }>();
 </script>
 
 <template>
   <section class="sheet" :aria-label="`Orden ${order.id}`">
     <div class="sh-h">
       <div>
-        <h1 class="num">{{ order.id }}</h1>
+        <h1 class="num" tabindex="-1">{{ order.id }}</h1>
+        <p v-if="trashed" class="subt">En la papelera · historial y cobros conservados</p>
         <p class="who">{{ order.client }}</p>
         <p class="subt">Recibida el {{ order.received }}</p>
       </div>
@@ -26,15 +28,16 @@ const emit = defineEmits<{ goTo: [position: number]; remove: []; edit: []; save:
           <button type="button" aria-label="Orden siguiente" title="Siguiente" @click="emit('goTo', position)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button>
           <button type="button" aria-label="Última orden" title="Última" @click="emit('goTo', total - 1)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 17 5-5-5-5" /><path d="m13 17 5-5-5-5" /></svg></button>
         </div>
-        <button v-if="!editing" class="btn btn-s" type="button" :disabled="busy || !can('orders.edit')" @click="emit('edit')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>Editar</button>
-        <button v-if="!editing" class="btn btn-s" type="button" disabled title="El borrado está deshabilitado para conservar el historial"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /></svg>Eliminar</button>
+        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy || !can('orders.edit')" @click="emit('edit')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>Editar</button>
+        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy || !can('orders.delete')" @click="emit('remove')"><AppIcon name="trash" />Eliminar</button>
+        <button v-if="trashed" class="btn btn-p" type="button" :disabled="busy || !can('orders.delete')" @click="emit('restore')"><AppIcon name="restore" />Restaurar orden</button>
       </div>
     </div>
     <div class="perf" aria-hidden="true"></div>
 
     <div class="sh-b">
       <OrderForm :order="order" :editing="editing && !busy" :initial-payment="initialPayment" />
-      <OrderSidePanel :order="order" :editing="editing && !busy" :initial-payment="initialPayment" @repairs="emit('repairs')" />
+      <OrderSidePanel :order="order" :editing="editing && !busy" :initial-payment="initialPayment" :unavailable="trashed" @repairs="emit('repairs')" />
     </div>
   </section>
 </template>

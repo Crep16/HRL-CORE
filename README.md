@@ -37,8 +37,11 @@ El acceso Limitado consulta todas las órdenes y crea recepciones sin pagos.
 La administración de usuarios requiere acceso Completo y clave maestra.
 Reparaciones conserva por ahora su implementación anterior, disponible solo
 para el acceso Completo mientras se conectan sus operaciones al backend.
-El borrado está deshabilitado para conservar el historial. La reducción de
-precios y corrección de pagos esperan las reglas pendientes de HRL-9.
+Eliminar requiere el permiso correspondiente y una confirmación. La orden
+pasa a **Papelera**, desde donde puede restaurarse; se conservan su folio,
+historial y cobros. El acceso Limitado no puede eliminar ni restaurar.
+La reducción de precios y corrección de pagos esperan las reglas pendientes
+de HRL-9.
 
 Empresa permite configurar datos, logo, cláusulas, folios, garantías sugeridas, región y formatos de impresión. Se generan notas de entrada/salida; falta comprobar la impresión nativa con el equipo acordado. Véase `docs/auditoria-empresa.md`.
 

@@ -36,6 +36,12 @@ pub fn run() {
                             sql: include_str!("../migrations/004_order_records.sql"),
                             kind: tauri_plugin_sql::MigrationKind::Up,
                         },
+                        tauri_plugin_sql::Migration {
+                            version: 5,
+                            description: "recoverable_order_deletion",
+                            sql: include_str!("../migrations/005_order_visibility.sql"),
+                            kind: tauri_plugin_sql::MigrationKind::Up,
+                        },
                     ],
                 )
                 .build(),
@@ -52,7 +58,8 @@ pub fn run() {
             orders::list_orders,
             orders::save_order,
             orders::import_orders,
-            orders::next_order_number
+            orders::next_order_number,
+            orders::set_order_deleted
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

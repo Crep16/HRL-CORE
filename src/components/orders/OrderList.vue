@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useAccess } from '../../composables/useAccess';
+import AppIcon from '../ui/AppIcon.vue';
 const { can } = useAccess();
 import { statusTone } from "../../data/orderStatuses";
 import type { Order, SearchField } from "../../types/order";
@@ -8,8 +9,8 @@ import type { Order, SearchField } from "../../types/order";
 const query = defineModel<string>("query", { required: true });
 const field = defineModel<SearchField>("field", { required: true });
 
-const props = defineProps<{ orders: Order[]; total: number; selectedId: string }>();
-const emit = defineEmits<{ select: [id: string]; toggleSort: []; create: [] }>();
+const props = defineProps<{ orders: Order[]; total: number; selectedId: string; trashed?: boolean; busy?: boolean }>();
+const emit = defineEmits<{ select: [id: string]; toggleSort: []; create: []; toggleTrash: [] }>();
 
 const page = ref(0);
 const pageSize = 5;
@@ -35,10 +36,10 @@ const fields: { value: SearchField; label: string }[] = [
   <aside class="rail" aria-label="Órdenes">
     <div class="rail-h">
       <div>
-        <h2 class="h-disp">Órdenes</h2>
+        <h2 class="h-disp" tabindex="-1">{{ trashed ? 'Papelera' : 'Órdenes' }}</h2>
         <p class="subt">{{ total }} en total</p>
       </div>
-      <button class="btn btn-p" type="button" :disabled="!can('orders.create')" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
+      <button v-if="!trashed" class="btn btn-p" type="button" :disabled="busy || !can('orders.create')" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
     </div>
     <div class="search">
       <label class="sr" for="q">Buscar órdenes</label>
@@ -49,6 +50,7 @@ const fields: { value: SearchField; label: string }[] = [
       <button v-for="option in fields" :key="option.value" type="button" :class="{ on: field === option.value }" :aria-pressed="field === option.value" @click="field = option.value">{{ option.label }}</button>
     </div>
     <div class="tools">
+      <button v-if="trashed || (can('orders.delete') && can('clients.view'))" class="lnk trash-toggle" type="button" :disabled="busy" :aria-pressed="!!trashed" @click="emit('toggleTrash')"><AppIcon :name="trashed ? 'clients' : 'trash'" />{{ trashed ? 'Ver órdenes' : 'Papelera' }}</button>
       <button class="lnk" type="button" :aria-pressed="reversed" @click="toggleSort"><svg class="i sm sort-icon" :class="{ reversed }" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 16-4 4-4-4" /><path d="M17 20V4" /><path d="m3 8 4-4 4 4" /><path d="M7 4v16" /></svg>Cambiar orden</button>
 
     </div>
