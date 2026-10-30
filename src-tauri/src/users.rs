@@ -43,8 +43,10 @@ pub(crate) async fn save(
         return Err("Selecciona un acceso válido.".into());
     }
     if input.permissions.iter().any(|g| {
+        if g.section == "payments" { !["add","refund"].contains(&g.action.as_str()) } else {
         !["clients", "repairs", "logbook", "company"].contains(&g.section.as_str())
             || !["view", "create", "edit", "delete"].contains(&g.action.as_str())
+        }
     }) {
         return Err("Hay un permiso desconocido.".into());
     }
@@ -55,8 +57,8 @@ pub(crate) async fn save(
         .begin()
         .await
         .map_err(|_| "No se pudo abrir la base local.")?;
-    state.authorize(&mut tx, "users.manage").await?;
-    let master: String = sqlx::query_scalar("SELECT master_hash FROM access_settings WHERE id=1")
+    let author=state.authorize_scoped(&mut tx, "users.manage",None).await?;
+    let master: String = sqlx::query_scalar("SELECT hash_clave_maestra FROM Configuracion_acceso WHERE id=1")
         .fetch_one(&mut *tx)
         .await
         .map_err(|_| "Falta la configuración de la clave maestra.")?;
@@ -70,27 +72,30 @@ pub(crate) async fn save(
         None
     };
     let id = input.id.clone().unwrap_or_else(access::random_id);
+    let credentials_updated=hash.is_some()&&input.id.is_some();
+    let previous=audit_snapshot(&mut tx,&id).await?;
     if input.id.is_some() {
-        let result = sqlx::query("UPDATE users SET name=?,login_name=?,access_level=?,active=?,password_hash=coalesce(?,password_hash) WHERE id=?")
+        let result = sqlx::query("UPDATE Usuarios SET nombre=?,nombre_acceso=?,nivel_acceso=?,activo=?,hash_contrasena=coalesce(?,hash_contrasena) WHERE id=?")
             .bind(input.name.trim()).bind(key).bind(&input.access_level).bind(input.active).bind(hash).bind(&id).execute(&mut *tx).await
             .map_err(|_| "No se pudo actualizar: el usuario puede estar repetido o ser el último administrador activo.")?;
         if result.rows_affected() != 1 {
             return Err("El usuario ya no existe.".into());
         }
     } else {
-        sqlx::query("INSERT INTO users(id,name,login_name,password_hash,access_level,active) VALUES (?,?,?,?,?,?)")
+        sqlx::query("INSERT INTO Usuarios(id,nombre,nombre_acceso,hash_contrasena,nivel_acceso,activo) VALUES (?,?,?,?,?,?)")
             .bind(&id).bind(input.name.trim()).bind(key).bind(hash).bind(&input.access_level).bind(input.active).execute(&mut *tx).await
             .map_err(|_| "No se pudo crear el usuario. Comprueba que su nombre no esté repetido.")?;
     }
-    sqlx::query("DELETE FROM user_permissions WHERE user_id=?")
+    sqlx::query("DELETE FROM Permisos_usuarios WHERE id_usuario=?")
         .bind(&id)
         .execute(&mut *tx)
         .await
         .map_err(|_| "No se pudieron guardar los permisos.")?;
-    if input.access_level == "custom" {
+    if input.access_level == "custom" || input.access_level == "limited" {
         for grant in input.permissions {
+            if input.access_level == "limited" && grant.section != "payments" { continue; }
             sqlx::query(
-                "INSERT OR IGNORE INTO user_permissions(user_id,section,action) VALUES (?,?,?)",
+                "INSERT OR IGNORE INTO Permisos_usuarios(id_usuario,apartado,accion) VALUES (?,?,?)",
             )
             .bind(&id)
             .bind(grant.section)
@@ -100,10 +105,20 @@ pub(crate) async fn save(
             .map_err(|_| "No se pudieron guardar los permisos.")?;
         }
     }
+    let current=audit_snapshot(&mut tx,&id).await?;
+    let mut changes:Vec<_>=["name","accessLevel","active","permissions"].iter().filter(|field|previous[**field]!=current[**field]).map(|field|serde_json::json!({"field":field,"oldValue":previous[*field],"newValue":current[*field]})).collect();
+    if credentials_updated{changes.push(serde_json::json!({"field":"credentialsUpdated","oldValue":null,"newValue":true}));}
+    if !changes.is_empty(){crate::logbook::system_record(&mut tx,&format!("Usuario: {id}"),&author.id,if previous.is_null(){"users.create"}else{"users.edit"},serde_json::json!(changes)).await?;}
     tx.commit()
         .await
         .map_err(|_| "No se pudo confirmar la cuenta.")?;
     Ok(())
+}
+async fn audit_snapshot(db:&mut sqlx::SqliteConnection,id:&str)->Result<serde_json::Value,String>{
+    let row=sqlx::query("SELECT nombre,nivel_acceso,activo FROM Usuarios WHERE id=?").bind(id).fetch_optional(&mut *db).await.map_err(|_|"No se pudo consultar el historial de la cuenta.")?;
+    let Some(row)=row else{return Ok(serde_json::Value::Null)};
+    let grants:Vec<_>=sqlx::query("SELECT apartado,accion FROM Permisos_usuarios WHERE id_usuario=? ORDER BY apartado,accion").bind(id).fetch_all(&mut *db).await.map_err(|_|"No se pudieron consultar los permisos.")?.into_iter().map(|g|serde_json::json!({"section":g.get::<String,_>("apartado"),"action":g.get::<String,_>("accion")})).collect();
+    Ok(serde_json::json!({"name":row.get::<String,_>("nombre"),"accessLevel":row.get::<String,_>("nivel_acceso"),"active":row.get::<bool,_>("activo"),"permissions":grants}))
 }
 
 #[tauri::command]
@@ -125,8 +140,8 @@ pub async fn list_users(
         .begin()
         .await
         .map_err(|_| "No se pudo abrir la base local.")?;
-    state.authorize(&mut tx, "users.manage").await?;
-    let rows = sqlx::query("SELECT id,name,access_level,active FROM users ORDER BY name")
+    state.check_scoped(&mut tx, "users.manage",None).await?;
+    let rows = sqlx::query("SELECT id,nombre,nivel_acceso,activo FROM Usuarios ORDER BY nombre")
         .fetch_all(&mut *tx)
         .await
         .map_err(|_| "No se pudieron consultar los usuarios.")?;
@@ -134,7 +149,7 @@ pub async fn list_users(
     for row in rows {
         let id: String = row.get("id");
         let grants = sqlx::query(
-            "SELECT section,action FROM user_permissions WHERE user_id=? ORDER BY section,action",
+            "SELECT apartado,accion FROM Permisos_usuarios WHERE id_usuario=? ORDER BY apartado,accion",
         )
         .bind(&id)
         .fetch_all(&mut *tx)
@@ -142,14 +157,14 @@ pub async fn list_users(
         .map_err(|_| "No se pudieron consultar los permisos.")?;
         accounts.push(Account {
             id,
-            name: row.get("name"),
-            access_level: row.get("access_level"),
-            active: row.get("active"),
+            name: row.get("nombre"),
+            access_level: row.get("nivel_acceso"),
+            active: row.get("activo"),
             permissions: grants
                 .iter()
                 .map(|g| Grant {
-                    section: g.get("section"),
-                    action: g.get("action"),
+                    section: g.get("apartado"),
+                    action: g.get("accion"),
                 })
                 .collect(),
         });

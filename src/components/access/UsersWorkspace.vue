@@ -3,6 +3,8 @@ import { computed, nextTick, onMounted, reactive, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useAccess } from '../../composables/useAccess';
 import AppIcon from '../ui/AppIcon.vue';
+import SearchSelect from '../ui/SearchSelect.vue';
+import AppNotice from '../ui/AppNotice.vue';
 type Grant = { section: string; action: string };
 type Account = { id: string; name: string; accessLevel: string; active: boolean; permissions: Grant[] };
 const { refresh, user } = useAccess();
@@ -52,7 +54,7 @@ async function save() {
       <div><h1 id="users-title"><AppIcon name="users" />Usuarios</h1><p>Cuentas de este equipo y acciones que puede realizar cada persona.</p></div>
       <span class="users-local"><AppIcon name="shield" />Acceso administrado con clave maestra</span>
     </header>
-    <div v-if="message" class="users-feedback" :class="{ error: failed }" :role="failed ? 'alert' : 'status'">{{ message }}<button v-if="failed && !loaded" class="btn btn-s" :disabled="busy" type="button" @click="retry">Volver a consultar</button></div>
+    <AppNotice :message="message" :tone="failed?'error':'status'" @dismiss="message=''"><button v-if="failed && !loaded" class="btn btn-s" :disabled="busy" type="button" @click="retry">Volver a consultar</button></AppNotice>
     <div class="users-layout">
       <aside class="users-roster" aria-label="Cuentas de este equipo">
         <div class="users-roster-heading"><h2>Cuentas</h2><span v-if="loaded">{{ accounts.length }}</span></div>
@@ -80,7 +82,7 @@ async function save() {
             <div class="users-editor-body">
               <div class="users-account-fields">
                 <div class="users-field"><label for="user-name">Usuario</label><input id="user-name" v-model="draft.name" autocomplete="off" maxlength="100" placeholder="Nombre de la persona" required></div>
-                <div class="users-field"><label for="user-role">Nivel de acceso</label><select id="user-role" v-model="draft.accessLevel"><option value="complete">Completo</option><option value="limited">Limitado</option><option value="custom">Personalizado</option></select></div>
+                <SearchSelect id="user-role" v-model="draft.accessLevel" label="Nivel de acceso" :options="[{value:'complete',label:'Completo'},{value:'limited',label:'Limitado'},{value:'custom',label:'Personalizado'}]" />
                 <label class="users-active"><input v-model="draft.active" type="checkbox"><span><strong>Cuenta activa</strong><small>{{ draft.active ? 'Puede iniciar sesión en este equipo.' : 'No podrá iniciar sesión; se conserva su historial.' }}</small></span></label>
                 <div class="users-passwords">
                   <div class="users-field"><label for="user-password">Clave del usuario</label><input id="user-password" v-model="draft.password" type="password" autocomplete="new-password" :required="!draft.id" minlength="8" maxlength="1024" aria-describedby="user-password-help"></div>
@@ -92,10 +94,12 @@ async function save() {
                 <h3 id="user-grants-title"><AppIcon name="shield" />Acciones permitidas</h3>
                 <template v-if="draft.accessLevel === 'custom'">
                   <p>Marca los permisos de cada apartado.</p>
-                  <table class="users-permissions"><caption class="sr">Permisos personalizados por apartado y acción</caption><thead><tr><th scope="col">Apartado</th><th v-for="action in actions" :key="action.id" scope="col">{{ action.name }}</th></tr></thead><tbody><tr v-for="section in sections" :key="section.id"><th scope="row">{{ section.name }}</th><td v-for="action in actions" :key="action.id"><label :aria-label="`${action.name} en ${section.name}`"><input v-model="selectedGrants" type="checkbox" :value="`${section.id}:${action.id}`"><span class="sr">{{ action.name }} en {{ section.name }}</span></label></td></tr></tbody></table>
+                  <table class="users-permissions"><caption class="sr">Permisos personalizados por apartado y acción</caption><thead><tr><th scope="col">Apartado</th><th v-for="action in actions" :key="action.id" scope="col">{{ action.name }}</th></tr></thead><tbody><tr v-for="section in sections" :key="section.id"><th scope="row">{{ section.name }}</th><td v-for="action in actions" :key="action.id"><label v-if="section.id !== 'logbook' || action.id === 'view'" :aria-label="`${action.name} en ${section.name}`"><input v-model="selectedGrants" type="checkbox" :value="`${section.id}:${action.id}`"><span class="sr">{{ action.name }} en {{ section.name }}</span></label><span v-else class="users-help">No aplica</span></td></tr></tbody></table>
+                  <p>La Bitácora solo permite consultar movimientos; no se pueden crear, editar ni borrar manualmente.</p>
                 </template>
                 <template v-else-if="draft.accessLevel === 'complete'"><p class="users-role-title">Acceso completo</p><p>Sin restricciones de acceso. Puede administrar las cuentas y sus permisos.</p><div class="users-rule"><AppIcon name="users" /><span>Siempre debe conservarse al menos un administrador activo.</span></div></template>
-                <template v-else><p class="users-role-title">Acceso limitado</p><ul class="users-role-list"><li>Consultar todas las órdenes y sus datos.</li><li>Registrar nuevas recepciones.</li><li>Sin pagos, edición ni borrado.</li></ul><div class="users-rule"><AppIcon name="shield" /><span>Para elegir acciones por apartado, usa Personalizado.</span></div></template>
+                <template v-else><p class="users-role-title">Acceso limitado</p><ul class="users-role-list"><li>Consultar todas las órdenes y sus datos.</li><li>Registrar nuevas recepciones y avances técnicos.</li><li>Sin edición ni borrado de órdenes.</li></ul></template>
+                <fieldset v-if="draft.accessLevel!=='complete'" class="users-money-permissions"><legend>Operaciones de dinero</legend><p>Estos permisos son independientes de Editar en Reparaciones.</p><label><input v-model="selectedGrants" type="checkbox" value="payments:add"> Registrar abonos</label><label><input v-model="selectedGrants" type="checkbox" value="payments:refund"> Devolver todo el saldo a favor</label><p>Solo el acceso Completo puede corregir abonos.</p></fieldset>
               </section>
             </div>
             <footer class="users-save-bar">
@@ -110,3 +114,6 @@ async function save() {
 </template>
 
 <style src="../../assets/styles/users.css"></style>
+<style scoped>
+.users-money-permissions{min-width:0;border:0;border-top:1px solid var(--line);margin:16px 0 0;padding:16px 0 0}.users-money-permissions legend{font-weight:700}.users-money-permissions label{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}.users-money-permissions input{width:18px;height:18px;accent-color:var(--acc)}.users-money-permissions p{color:var(--muted);font-size:14px;line-height:1.5}
+</style>

@@ -14,6 +14,9 @@ const DATABASE_ERROR: &str =
     "No se pudo consultar la base local. Conserva los datos y vuelve a intentar.";
 const INVALID_LOGIN: &str = "Usuario o clave incorrectos.";
 
+#[path = "temporary_access.rs"]
+pub(crate) mod temporary;
+
 #[derive(Clone, Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
@@ -27,6 +30,9 @@ struct Session {
     user: Option<User>,
     failures: u32,
     retry_at: Option<Instant>,
+    temporary: Option<temporary::TemporaryGrant>,
+    approval_failures: u32,
+    approval_retry_at: Option<Instant>,
 }
 
 #[derive(Default)]
@@ -111,11 +117,11 @@ pub(crate) async fn verify_password(password: String, hash: String) -> Result<bo
 }
 
 async fn setup_complete(pool: &SqlitePool) -> Result<bool, String> {
-    let users: i64 = sqlx::query_scalar("SELECT count(*) FROM users")
+    let users: i64 = sqlx::query_scalar("SELECT count(*) FROM Usuarios")
         .fetch_one(pool)
         .await
         .map_err(|_| DATABASE_ERROR)?;
-    let settings: i64 = sqlx::query_scalar("SELECT count(*) FROM access_settings")
+    let settings: i64 = sqlx::query_scalar("SELECT count(*) FROM Configuracion_acceso")
         .fetch_one(pool)
         .await
         .map_err(|_| DATABASE_ERROR)?;
@@ -166,7 +172,7 @@ impl AccessState {
             .ok_or("Inicia sesión para continuar.")?
             .id
             .clone();
-        let row = sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
+        let row = sqlx::query("SELECT id,nombre,nivel_acceso FROM Usuarios WHERE id=? AND activo=1")
             .bind(&id)
             .fetch_optional(&mut *db)
             .await
@@ -174,8 +180,8 @@ impl AccessState {
             .ok_or("La sesión ya no está activa. Vuelve a iniciar sesión.")?;
         let user = User {
             id: row.get("id"),
-            name: row.get("name"),
-            access_level: row.get("access_level"),
+            name: row.get("nombre"),
+            access_level: row.get("nivel_acceso"),
         };
         let (_, section, action) = crate::permissions::OPERATIONS
             .iter()
@@ -183,9 +189,9 @@ impl AccessState {
             .ok_or("Operación desconocida.")?;
         let allowed = match user.access_level.as_str() {
             "complete" => true,
-            "limited" => crate::permissions::limited_allows(operation),
-            "custom" if operation != "users.manage" => sqlx::query_scalar::<_, i64>(
-                "SELECT count(*) FROM user_permissions WHERE user_id=? AND section=? AND action=?",
+            "limited" if *section != "payments" => crate::permissions::limited_allows(operation),
+            "custom" | "limited" if operation != "users.manage" && operation != "payments.adjust" => sqlx::query_scalar::<_, i64>(
+                "SELECT count(*) FROM Permisos_usuarios WHERE id_usuario=? AND apartado=? AND accion=?",
             )
             .bind(&id)
             .bind(section)
@@ -206,15 +212,15 @@ impl AccessState {
         let setup_complete = setup_complete(pool).await?;
         let previous = self.0.lock().await.user.clone();
         let refreshed = if let Some(user) = &previous {
-            sqlx::query("SELECT id,name,access_level FROM users WHERE id=? AND active=1")
+            sqlx::query("SELECT id,nombre,nivel_acceso FROM Usuarios WHERE id=? AND activo=1")
                 .bind(&user.id)
                 .fetch_optional(pool)
                 .await
                 .map_err(|_| DATABASE_ERROR)?
                 .map(|row| User {
                     id: row.get("id"),
-                    name: row.get("name"),
-                    access_level: row.get("access_level"),
+                    name: row.get("nombre"),
+                    access_level: row.get("nivel_acceso"),
                 })
         } else {
             None
@@ -245,14 +251,14 @@ impl AccessState {
             access_level: "complete".into(),
         };
         let mut tx = pool.begin().await.map_err(|_| DATABASE_ERROR)?;
-        sqlx::query("INSERT INTO access_settings(id,master_hash) VALUES (1,?)")
+        sqlx::query("INSERT INTO Configuracion_acceso(id,hash_clave_maestra) VALUES (1,?)")
             .bind(master_hash)
             .execute(&mut *tx)
             .await
             .map_err(
                 |_| "La configuración ya existe o no pudo guardarse. Vuelve a abrir la aplicación.",
             )?;
-        sqlx::query("INSERT INTO users(id,name,password_hash,access_level,login_name) VALUES (?,?,?,'complete',?)")
+        sqlx::query("INSERT INTO Usuarios(id,nombre,hash_contrasena,nivel_acceso,nombre_acceso) VALUES (?,?,?,'complete',?)")
             .bind(&user.id).bind(&user.name).bind(password_hash).bind(key).execute(&mut *tx).await.map_err(|_| DATABASE_ERROR)?;
         tx.commit().await.map_err(|_| DATABASE_ERROR)?;
         let mut session = self.0.lock().await;
@@ -273,6 +279,7 @@ impl AccessState {
             return Err(INVALID_LOGIN.into());
         }
         let _gate = self.1.lock().await;
+        self.end_temporary_locked(pool,"Cambio de sesión").await?;
         {
             let mut session = self.0.lock().await;
             if session.retry_at.is_some_and(|time| time > Instant::now()) {
@@ -281,14 +288,14 @@ impl AccessState {
             session.user = None;
         }
         let row = sqlx::query(
-            "SELECT id,name,password_hash,access_level FROM users WHERE login_name=? AND active=1",
+            "SELECT id,nombre,hash_contrasena,nivel_acceso FROM Usuarios WHERE nombre_acceso=? AND activo=1",
         )
         .bind(key)
         .fetch_optional(pool)
         .await
         .map_err(|_| DATABASE_ERROR)?;
         let valid = if let Some(row) = &row {
-            verify_password(password, row.get("password_hash")).await?
+            verify_password(password, row.get("hash_contrasena")).await?
         } else {
             false
         };
@@ -303,8 +310,8 @@ impl AccessState {
         let row = row.ok_or(INVALID_LOGIN)?;
         let user = User {
             id: row.get("id"),
-            name: row.get("name"),
-            access_level: row.get("access_level"),
+            name: row.get("nombre"),
+            access_level: row.get("nivel_acceso"),
         };
         let mut session = self.0.lock().await;
         session.user = Some(user.clone());
@@ -334,7 +341,9 @@ pub async fn access_status(
     instances: State<'_, DbInstances>,
     state: State<'_, AccessState>,
 ) -> Result<AccessStatus, String> {
-    state.status(&pool(&instances).await?).await
+    let pool=pool(&instances).await?;
+    state.recover_temporary(&pool).await?;
+    state.status(&pool).await
 }
 
 #[tauri::command]
@@ -357,8 +366,10 @@ pub async fn login(
 }
 
 #[tauri::command]
-pub async fn logout(state: State<'_, AccessState>) -> Result<(), String> {
+pub async fn logout(instances: State<'_, DbInstances>,state: State<'_, AccessState>) -> Result<(), String> {
+    let pool=pool(&instances).await?;
     let _gate = state.1.lock().await;
+    state.end_temporary_locked(&pool,"Cierre de sesión").await?;
     state.0.lock().await.user = None;
     Ok(())
 }
@@ -392,6 +403,12 @@ mod tests {
             include_str!("../migrations/001_access.sql"),
             include_str!("../migrations/002_workshop.sql"),
             include_str!("../migrations/003_authentication.sql"),
+            include_str!("../migrations/004_order_records.sql"),
+            include_str!("../migrations/005_order_visibility.sql"),
+            include_str!("../migrations/006_repair_records.sql"),
+            include_str!("../migrations/007_logbook.sql"),
+            include_str!("../migrations/008_financial_logbook.sql"),
+            include_str!("../migrations/010_payment_adjustments.sql"),
         ] {
             sqlx::raw_sql(schema).execute(&pool).await.unwrap();
         }
@@ -521,6 +538,11 @@ mod tests {
                 include_str!("../migrations/001_access.sql"),
                 include_str!("../migrations/002_workshop.sql"),
                 include_str!("../migrations/003_authentication.sql"),
+                include_str!("../migrations/004_order_records.sql"),
+                include_str!("../migrations/005_order_visibility.sql"),
+                include_str!("../migrations/006_repair_records.sql"),
+                include_str!("../migrations/007_logbook.sql"),
+                include_str!("../migrations/008_financial_logbook.sql"),
             ] {
                 sqlx::raw_sql(schema).execute(&pool).await.unwrap();
             }
