@@ -57,10 +57,12 @@ watch(() => props.order.id, () => { showPassword.value = false; });
 
     <div class="block">
       <h2 class="sec">Trabajo</h2>
+      <div class="fld"><label for="falla">Falla reportada</label><textarea id="falla" v-model="order.failure" :readonly="!editing" :required="editing && initialPayment" :aria-required="editing && initialPayment" maxlength="16000" rows="2" :placeholder="editing?'Describe el problema que reporta el cliente':'Sin falla registrada'"></textarea></div>
       <div class="fld"><label for="trabajo">Trabajo a realizar</label><textarea id="trabajo" :readonly="!editing" rows="2" v-model="order.work"></textarea></div>
       <div class="g3">
         <div class="fld"><label for="costo">Costo aproximado</label><input id="costo" :readonly="!editing" v-model="order.cost" /></div>
         <div class="fld"><label for="abono">Abono inicial</label><input id="abono" :readonly="!editing || !initialPayment || !can('payments.add')" v-model="order.deposit" /></div>
+        <div class="fld"><label for="deposit-method">Método del abono inicial</label><input id="deposit-method" v-model="order.depositMethod" :readonly="!editing || !initialPayment || !can('payments.add')" maxlength="200" :placeholder="initialPayment?'Escribe el método si registras un abono':'Método no registrado'" /></div>
       </div>
     </div>
 

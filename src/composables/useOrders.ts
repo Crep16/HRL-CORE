@@ -20,10 +20,16 @@ export function useOrders() {
   const ascending = ref(true);
   let legacyRaw: string | null = null;
 
-  async function load() {
-    if (busy.value) return;
+  let pending: Promise<boolean> | null = null;
+  function fetchOrders(retain: boolean): Promise<boolean> {
+    if (pending) return pending;
+    if (busy.value) return Promise.resolve(false);
+    pending = readOrders(retain).finally(() => { pending = null; });
+    return pending;
+  }
+  async function readOrders(retain: boolean) {
     busy.value = true; ready.value = false; storageError.value = '';
-    orders.value = [];
+    if (!retain) orders.value = [];
     try {
       const result = await invoke<{ orders: Order[]; legacyImported: boolean }>('list_orders', { deleted: showDeleted.value });
       orders.value = result.orders;
@@ -31,10 +37,13 @@ export function useOrders() {
       legacyRaw = localStorage.getItem('hrl.orders.v1');
       needsImport.value = legacyRaw !== null && !result.legacyImported;
       ready.value = !needsImport.value;
-    } catch (cause) { storageError.value = typeof cause === 'string' ? cause : 'No se pudieron recuperar las órdenes. Los datos originales no se han modificado.'; }
+      return ready.value;
+    } catch (cause) { storageError.value = typeof cause === 'string' ? cause : 'No se pudieron recuperar las órdenes. Los datos originales no se han modificado.'; return false; }
     finally { busy.value = false; }
   }
-  onMounted(load);
+  const load = () => fetchOrders(false);
+  const refresh = () => fetchOrders(true);
+  onMounted(() => load());
 
   async function importLegacy() {
     if (busy.value || legacyRaw === null || !can('users.manage')) return;
@@ -53,9 +62,9 @@ export function useOrders() {
     busy.value = true; storageError.value = '';
     try {
       order = { ...order, currency: order.currency ?? company.value.currency };
-      await invoke('save_order', { order, original: original ?? null });
+      const saved = await invoke<Order>('save_order', { order, original: original ?? null });
       const position = orders.value.findIndex(item => item.id === order.id);
-      if (position >= 0) orders.value[position] = { ...order }; else orders.value.push({ ...order });
+      if (position >= 0) orders.value[position] = saved; else orders.value.push(saved);
       selectedId.value = order.id;
       return true;
     } catch (cause) { storageError.value = typeof cause === 'string' ? cause : 'No se pudo guardar la orden. Tu borrador sigue en pantalla.'; return false; }
@@ -86,5 +95,5 @@ export function useOrders() {
     } catch (cause) { storageError.value = typeof cause === 'string' ? cause : 'No se pudo cambiar el estado de la orden. Vuelve a intentar.'; return false; }
     finally { busy.value = false; }
   }
-  return { storageError, busy, ready, needsImport, showDeleted, load, importLegacy, saveOrder, setDeleted, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo };
+  return { storageError, busy, ready, needsImport, showDeleted, load, refresh, importLegacy, saveOrder, setDeleted, nextNumber, orders, selectedId, query, field, ascending, visible, index, selected, goTo };
 }

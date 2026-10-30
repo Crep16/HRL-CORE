@@ -1,23 +1,38 @@
 ﻿import { ref } from 'vue';
 export type Repair = {
+  stages: string[];
   completed: number; technician: string; publicNote: string; internalNote: string; syncMode: 'auto' | 'manual';
   events: { id:number; date:string; title:string; detail:string; stage:string; public:boolean }[];
   warranties: { name:string; days:number }[]; parts: { name:string; price:number }[];
-  payments: { date:string; amount:number }[]; visibility: { label:string; enabled:boolean }[];
+  payments: { date:string; amount:number; method?:string }[]; visibility: { label:string; enabled:boolean }[];
 };
+export const defaultStageOptions = ['Recibido', 'Diagnóstico', 'Autorización', 'Refacciones', 'Reparación', 'Pruebas', 'Entregado'];
+const legacyStages = [...defaultStageOptions.slice(0, -1), 'Entrega'];
+export function includeRepairStage(repair: Repair, name: string): string {
+  const normalized = name.trim();
+  const existing = repair.stages.find(item => item.toLocaleLowerCase('es') === normalized.toLocaleLowerCase('es'));
+  if (existing) return existing;
+  if (repair.completed === repair.stages.length) throw new Error('La entrega ya está completada. No se pueden incorporar etapas intermedias.');
+  if (!normalized || new TextEncoder().encode(normalized).length > 100 || repair.stages.length >= 200) throw new Error('La etapa debe tener entre 1 y 100 bytes y la orden admite hasta 200 etapas.');
+  repair.stages.splice(repair.stages.length - 1, 0, normalized);
+  return normalized;
+}
 function emptyRepair(): Repair {
-  return { completed:0, technician:'', publicNote:'', internalNote:'', syncMode:'manual', events:[], warranties:[], parts:[], payments:[], visibility:[{label:'Línea de tiempo',enabled:true},{label:'Garantías',enabled:true},{label:'Resumen de pago',enabled:false},{label:'Notas del técnico',enabled:true}] };
+  return { stages:['Recibido', 'Entregado'], completed:0, technician:'', publicNote:'', internalNote:'', syncMode:'manual', events:[], warranties:[], parts:[], payments:[], visibility:[{label:'Línea de tiempo',enabled:true},{label:'Garantías',enabled:true},{label:'Resumen de pago',enabled:false},{label:'Notas del técnico',enabled:true}] };
 }
 
 export function restoreRepair(raw: string): Repair {
   const value: unknown = JSON.parse(raw);
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid repair');
-  const repair = { ...emptyRepair(), ...value };
+  const repair = { ...emptyRepair(), stages:[...legacyStages], ...value };
   const record = (item: unknown): item is Record<string, unknown> => !!item && typeof item === 'object' && !Array.isArray(item);
   const text = (item: unknown) => typeof item === 'string';
   const nonnegative = (item: unknown): item is number => typeof item === 'number' && Number.isFinite(item) && item >= 0;
   const list = (items: unknown, valid: (item: Record<string, unknown>) => boolean) => Array.isArray(items) && items.every(item => record(item) && valid(item));
-  if (!Number.isInteger(repair.completed) || repair.completed < 0 || repair.completed > 7
+  if (!Array.isArray(repair.stages) || repair.stages.length < 2 || repair.stages.length > 200
+    || repair.stages.some(item => typeof item !== 'string' || !item.trim() || new TextEncoder().encode(item).length > 100)
+    || new Set(repair.stages.map(item => item.trim().toLocaleLowerCase('es'))).size !== repair.stages.length
+    || !Number.isInteger(repair.completed) || repair.completed < 0 || repair.completed > repair.stages.length
     || ![repair.technician, repair.publicNote, repair.internalNote].every(text)
     || !['auto', 'manual'].includes(repair.syncMode)
     || !list(repair.events, item => nonnegative(item.id) && Number.isInteger(item.id) && [item.date, item.title, item.detail, item.stage].every(text) && typeof item.public === 'boolean')

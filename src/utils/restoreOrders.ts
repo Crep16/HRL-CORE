@@ -11,7 +11,8 @@ export function restoreOrders(raw: string): Order[] {
     if (!strings.every(key => typeof value[key] === 'string') || !booleans.every(key => typeof value[key] === 'boolean')) throw new Error('Invalid order fields');
     if (!value.id.trim() || ids.has(value.id)) throw new Error('Duplicate or empty order id');
     if (value.otherShopReason !== undefined && typeof value.otherShopReason !== 'string') throw new Error('Invalid shop reason');
+    if (value.failure !== undefined && typeof value.failure !== 'string') throw new Error('Invalid reported failure');
     ids.add(value.id);
-    return { otherShopReason: '', ...value } as Order;
+    return { otherShopReason: '', failure: '', ...value } as Order;
   });
 }

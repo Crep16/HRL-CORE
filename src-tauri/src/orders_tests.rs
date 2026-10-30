@@ -8,6 +8,10 @@ pub(super) async fn migrate(pool: &SqlitePool) {
         include_str!("../migrations/003_authentication.sql"),
         include_str!("../migrations/004_order_records.sql"),
         include_str!("../migrations/005_order_visibility.sql"),
+        include_str!("../migrations/006_repair_records.sql"),
+        include_str!("../migrations/007_logbook.sql"),
+        include_str!("../migrations/008_financial_logbook.sql"),
+        include_str!("../migrations/010_payment_adjustments.sql"),
     ] {
         sqlx::raw_sql(schema).execute(pool).await.unwrap();
     }
@@ -16,8 +20,41 @@ pub(super) fn order() -> Order {
     serde_json::from_value(serde_json::json!({
         "id":"ORD-001", "client":"Cliente", "phone":"9980000000", "received":"27/10/2026", "status":"Diagnóstico",
         "serial":"SERIE", "item":"Laptop", "brand":"HP", "model":"14", "otherShop":false, "otherShopReason":"", "dropped":false, "dropReason":"",
-        "password":"equipment-secret-test-only", "work":"Diagnóstico", "cost":"$1,500.00", "deposit":"$500.00", "notes":"Nota", "paid":false, "delivered":false
+        "password":"equipment-secret-test-only", "work":"Diagnóstico", "cost":"$1,500.00", "deposit":"$500.00", "depositMethod":"Efectivo de prueba", "notes":"Nota", "paid":false, "delivered":false
     })).unwrap()
+}
+
+#[test]
+fn final_repair_payment_updates_clients_and_price_changes_recalculate_paid_without_touching_receipts() {
+    tauri::async_runtime::block_on(async {
+        let pool=sqlx::sqlite::SqlitePoolOptions::new().max_connections(1).connect("sqlite::memory:").await.unwrap();
+        migrate(&pool).await;
+        let state=AccessState::test_admin(&pool).await;
+        let mut captured=order();captured.cost="750".into();captured.deposit="300".into();
+        let before=save(&pool,&state,captured,None).await.unwrap();
+        assert!(!before.paid);
+        let snapshot=crate::repairs::load(&pool,&state,&before.id,None).await.unwrap();
+        let mut repair=serde_json::to_value(snapshot).unwrap()["repair"].clone();
+        repair["payments"]=serde_json::json!([{"date":"2026-10-28T13:15","amount":450,"method":"Efectivo de prueba"}]);
+        let saved=crate::repairs::save(&pool,&state,&before.id,serde_json::from_value(repair).unwrap(),0).await.unwrap();
+        let payment=serde_json::to_value(saved).unwrap()["payment"].clone();
+        assert_eq!(payment["collectedMinor"],75000);assert_eq!(payment["totalMinor"],75000);assert_eq!(payment["paid"],true);
+        let current=list(&pool,&state).await.unwrap().orders.remove(0);
+        assert!(current.paid);assert_eq!(current.deposit,"300");
+        assert!(save(&pool,&state,before.clone(),Some(before)).await.is_err());
+        let mut edited=current.clone();edited.delivered=true;
+        let delivered=save(&pool,&state,edited,Some(current)).await.unwrap();
+        assert!(delivered.paid&&delivered.delivered);
+        let mut higher=delivered.clone();higher.cost="900".into();
+        let higher=save(&pool,&state,higher,Some(delivered)).await.unwrap();
+        assert!(!higher.paid);assert!(higher.delivered);
+        assert_eq!(list(&pool,&state).await.unwrap().orders[0],higher);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT sum(amount_minor) FROM payments").fetch_one(&pool).await.unwrap(),75000);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM payments").fetch_one(&pool).await.unwrap(),2);
+        set_deleted(&pool,&state,higher.clone(),true).await.unwrap();
+        set_deleted(&pool,&state,higher.clone(),false).await.unwrap();
+        assert_eq!(list(&pool,&state).await.unwrap().orders[0],higher);
+    });
 }
 
 #[test]

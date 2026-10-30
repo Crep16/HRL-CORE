@@ -18,9 +18,11 @@ export type Order = {
   dropped: boolean;
   dropReason: string;
   password: string;
+  failure?: string;
   work: string;
   cost: string;
   deposit: string;
+  depositMethod?: string;
   notes: string;
   paid: boolean;
   delivered: boolean;

@@ -1,19 +1,37 @@
 ﻿<script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import SearchSelect from '../ui/SearchSelect.vue';
+import AppNotice from '../ui/AppNotice.vue';
+import PaymentsPanel from './PaymentsPanel.vue';
+import { invoke } from '@tauri-apps/api/core';
+import { defaultStageOptions, includeRepairStage } from '../../composables/useRepair';
 import type { Order } from '../../types/order';
 import { useRepairWorkspace } from '../../composables/useRepairWorkspace';
 import { useAccess } from '../../composables/useAccess';
 import { useCompany } from '../../composables/useCompany';
 import { companyDateTime } from '../../utils/companyDate';
-import { orderAmount } from '../../utils/orderAmount';
+import { orderDisplayStatus } from '../../utils/orderStatus';
 const props = defineProps<{ order: Order }>();
-const emit = defineEmits<{ back: [] }>();
-const { repair, save, commit, message, busy, ready, dirty } = useRepairWorkspace(props.order.id);
+const emit = defineEmits<{ back: []; saved: [] }>();
+const { repair, payment, save, commit, message, busy:repairBusy, ready, dirty, reload } = useRepairWorkspace(props.order.id, () => emit('saved'));
+const moneyBusy=ref(false);
+const busy=computed(()=>repairBusy.value||moneyBusy.value);
 const { can } = useAccess();
 const newNote = ref('');
 const { company } = useCompany();
 defineExpose({ save });
-const stages = ['Recibido', 'Diagnóstico', 'Autorización', 'Refacciones', 'Reparación', 'Pruebas', 'Entrega'];
+const stages = computed(() => repair.value.stages);
+const savedStages = ref<string[]>([]);
+const customStage = ref(false);
+const customStageName = ref('');
+const stageOptions = computed(() => {
+  const names = [...defaultStageOptions, ...savedStages.value, ...stages.value];
+  return names.filter((name, index) => names.findIndex(item => item.toLocaleLowerCase('es') === name.toLocaleLowerCase('es')) === index);
+});
+onMounted(async () => {
+  try { savedStages.value = await invoke<string[]>('list_repair_stages',{orderId:props.order.id}); }
+  catch { message.value = 'No se pudieron cargar las etapas guardadas. Puedes usar las opciones predeterminadas o escribir una personalizada.'; }
+});
 const noteType = ref<'publicNote' | 'internalNote'>('publicNote');
 const title = ref('');
 const detail = ref('');
@@ -29,25 +47,25 @@ const days = ref(company.value.partsDays);
 const addingPart = ref(false);
 const part = ref('');
 const price = ref(0);
-const paymentOpen = ref(false);
-const amount = ref(0);
 const money = (value: number) => new Intl.NumberFormat(company.value.locale, { style:'currency', currency:props.order.currency ?? company.value.currency }).format(value);
-const number = orderAmount;
-const deposited = computed(() => number(props.order.deposit) + repair.value.payments.reduce((sum, item) => sum + item.amount, 0));
-const balance = computed(() => Math.max(0, number(props.order.cost) - deposited.value));
 const nextEventId = () => repair.value.events.reduce((id, event) => Math.max(id, event.id), Date.now() - 1) + 1;
 async function addEvent() {
   if (!title.value.trim() || !can('notes.add')) return;
-  if (await commit(next => next.events.unshift({ id:nextEventId(), date:date.value, title:title.value.trim(), detail:detail.value, stage:stage.value, public:publicEvent.value }))) { title.value = ''; detail.value = ''; }
+  const name = (customStage.value ? customStageName.value : stage.value).trim();
+  if (!name) { message.value = 'Selecciona o escribe una etapa.'; return; }
+  try {
+    if (await commit(next => {
+      const selected = includeRepairStage(next, name);
+      next.events.unshift({ id:nextEventId(), date:date.value, title:title.value.trim(), detail:detail.value, stage:selected, public:publicEvent.value });
+    })) {
+      savedStages.value.push(name); stage.value = name; title.value = ''; detail.value = '';
+      customStage.value = false; customStageName.value = '';
+    }
+  } catch (cause) { message.value = cause instanceof Error ? cause.message : 'No se pudo agregar la etapa.'; }
 }
 async function complete() {
-  if (repair.value.completed >= stages.length || !can('stages.advance')) return;
-  await commit(next => { next.events.unshift({ id:nextEventId(), date:now(), title:`${stages[next.completed]}: etapa completada`, detail:'', stage:stages[next.completed]!, public:true }); next.completed++; });
-}
-async function addPayment() {
-  if (!can('payments.add')) return;
-  if (amount.value <= 0 || amount.value > balance.value) { message.value = 'El abono debe ser mayor a cero y no superar el saldo.'; return; }
-  if (await commit(next => next.payments.push({ date:now(), amount:amount.value }))) { amount.value = 0; paymentOpen.value = false; }
+  if (repair.value.completed >= stages.value.length || !can('stages.advance')) return;
+  await commit(next => { next.events.unshift({ id:nextEventId(), date:now(), title:`${next.stages[next.completed]}: etapa completada`, detail:'', stage:next.stages[next.completed]!, public:true }); next.completed++; });
 }
 async function addWarranty() {
   if (!warranty.value.trim() || !can('warranties.add')) return;
@@ -67,29 +85,20 @@ async function back() { if (await save()) emit('back'); }
 
 <template>
   <div class="repair-page">
-    <p v-if="busy" class="notice" role="status">Consultando o guardando el seguimiento…</p>
-    <p v-if="message" class="notice" role="status">{{ message }}</p>
+    <AppNotice v-if="busy" message="Consultando o guardando el seguimiento…" :closable="false" />
+    <AppNotice v-else :message="message" @dismiss="message=''" />
     <div class="work">
       <aside class="rail" aria-label="Contexto de la orden">
         <button class="btn btn-s" style="align-self:flex-start" @click="back">‹ Volver a clientes</button>
         <section class="card"><h2 class="h3">Registro seleccionado</h2>
-          <div v-for="(value, label) in { Orden:order.id, Cliente:order.client, Estado:order.status, Artículo:order.item }" :key="label" class="kv"><span class="k">{{ label }}</span><span class="v">{{ value || 'Sin registrar' }}</span></div>
+          <div v-for="(value, label) in { Orden:order.id, Cliente:order.client, Estado:orderDisplayStatus(order), Artículo:order.item }" :key="label" class="kv"><span class="k">{{ label }}</span><span class="v">{{ value || 'Sin registrar' }}</span></div>
           <details class="equipment-details">
             <summary>Datos del equipo</summary>
             <div v-for="(value, label) in { Serie:order.serial, Marca:order.brand, Modelo:order.model, 'Fecha de entrada':order.received }" :key="label" class="kv"><span class="k">{{ label }}</span><span class="v">{{ value || 'Sin registrar' }}</span></div>
           </details>
           <div class="fld"><label for="technician">Técnico</label><input id="technician" v-model="repair.technician" :readonly="!can('repairs.edit') || !ready || busy" placeholder="Sin asignar" /></div>
         </section>
-        <section class="block"><h2 class="sec">Pago</h2>
-          <div class="line"><span class="k">Total</span><strong>{{ order.cost }}</strong></div>
-          <div class="line"><span class="k">Abonado</span><strong>{{ money(deposited) }}</strong></div>
-          <div class="bar"><i :style="{ width: `${Math.min(100, deposited / (number(order.cost) || 1) * 100)}%` }"></i></div>
-          <div class="line"><span>Saldo pendiente</span><strong style="font:800 30px var(--disp)">{{ money(balance) }}</strong></div>
-          <div v-for="(payment, i) in repair.payments" :key="i" class="line"><span>{{ payment.date.replace('T',' ') }}</span><strong>{{ money(payment.amount) }}</strong></div>
-          <button class="btn btn-s" :disabled="!can('payments.add') || !ready || busy" @click="paymentOpen = !paymentOpen">+ Registrar abono</button>
-          <p v-if="!can('payments.add')" class="help">Tu acceso permite consultar los pagos, pero no registrar abonos.</p>
-          <form v-if="paymentOpen" class="compose" :inert="busy || !ready" @submit.prevent="addPayment"><div class="fld"><label for="payment">Importe</label><input id="payment" v-model.number="amount" type="number" min="0.01" step="0.01" :max="balance" required /></div><button class="btn btn-p">Guardar abono</button></form>
-        </section>
+        <PaymentsPanel :order-id="order.id" :currency="order.currency??company.currency" :payment="payment" :disabled="busy||!ready" :prepare="save" @refreshed="payment=$event" @working="moneyBusy=$event" @saved="async result=>{payment=result;await reload();emit('saved');}" />
       </aside>
       <section class="sheet" aria-label="Gestión de la reparación">
         <div class="sh-h"><div><h1 class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" :disabled="!ready || busy || !dirty" @click="save">Guardar cambios</button></div></div>
@@ -100,9 +109,9 @@ async function back() { if (await save()) emit('back'); }
         </div>
         <div class="sh-b" :class="{ 'history-view': workspaceTab === 'history' }">
           <div v-show="workspaceTab === 'work'" class="repair-work">
-          <section class="block" style="gap:18px"><h2 class="sec">Avance del trabajo<small>{{ Math.round(repair.completed / 7 * 100) }}%</small></h2>
+          <section class="block" style="gap:18px"><h2 class="sec">Avance del trabajo<small>{{ Math.round(repair.completed / stages.length * 100) }}%</small></h2>
             <ol class="steps"><li v-for="(item, i) in stages" :key="item" class="step" :class="{ done:i < repair.completed, cur:i === repair.completed }"><span class="st-c"><span v-if="i < repair.completed">✓</span><i v-else-if="i === repair.completed"></i></span><span class="st-l">{{ item }}</span></li></ol>
-            <div class="actions"><p class="help">Completaste {{ repair.completed }} de 7 etapas. {{ repair.completed < 7 ? `Ahora: ${stages[repair.completed]}.` : 'Trabajo completado.' }}</p><button class="btn btn-p" :disabled="repair.completed === 7 || !can('stages.advance') || busy || !ready" @click="complete">Completar etapa</button></div>
+            <div class="actions"><p class="help">Completaste {{ repair.completed }} de {{ stages.length }} etapas. {{ repair.completed < stages.length ? `Ahora: ${stages[repair.completed]}.` : 'Trabajo completado.' }}</p><button class="btn btn-p" :disabled="repair.completed === stages.length || !can('stages.advance') || busy || !ready" @click="complete">Completar etapa</button></div>
           </section>
           <section class="block"><h2 class="sec">Notas del técnico</h2><div class="seg" style="max-width:340px"><button :class="{on:noteType === 'publicNote'}" :aria-pressed="noteType === 'publicNote'" @click="noteType = 'publicNote'">Para el cliente</button><button :class="{on:noteType === 'internalNote'}" :aria-pressed="noteType === 'internalNote'" @click="noteType = 'internalNote'">Internas</button></div><div class="fld note"><label class="sr" for="technical-note">Nota del técnico</label><textarea id="technical-note" v-model="repair[noteType]" :readonly="!can('repairs.edit') || !ready || busy" rows="4" placeholder="Sin notas registradas"></textarea></div><p class="help">{{ noteType === 'publicNote' ? 'Nota preparada para el seguimiento del cliente.' : 'Nota interna del taller. No se comparte con el cliente.' }}</p><form v-if="can('notes.add') && !can('repairs.edit')" class="compose" :inert="busy || !ready" @submit.prevent="appendNote"><div class="fld"><label for="append-note">Agregar nota {{ noteType === 'publicNote' ? 'para el cliente' : 'interna' }}</label><textarea id="append-note" v-model="newNote" rows="3" required placeholder="Se añadirá después de las notas existentes"></textarea></div><button class="btn btn-p" :disabled="busy || !ready">Agregar nota</button></form></section>
           </div>
@@ -110,8 +119,16 @@ async function back() { if (await save()) emit('back'); }
             <details v-if="can('notes.add')" class="event-composer">
               <summary>Agregar avance</summary>
               <form class="compose" :inert="busy || !ready" @submit.prevent="addEvent">
-                <div class="g2">
-                  <div class="fld"><label for="stage">Etapa</label><select id="stage" v-model="stage"><option v-for="item in stages" :key="item">{{ item }}</option></select></div>
+                <label class="custom-stage-toggle"><input v-model="customStage" type="checkbox" /> Etapa personalizada</label>
+                <div class="g2 event-stage-row">
+                  <div class="fld stage-picker">
+                    <template v-if="customStage">
+                      <label for="custom-stage">Nombre de la nueva etapa</label>
+                      <input id="custom-stage" v-model="customStageName" required maxlength="100" placeholder="Ej. Limpieza de placa" />
+                      <p class="help">Se guardará al agregar el avance y podrás reutilizarla en otras órdenes.</p>
+                    </template>
+                    <SearchSelect v-else id="repair-stage" v-model="stage" label="Etapa" :options="stageOptions" required />
+                  </div>
                   <div class="fld"><label for="event-date">Fecha y hora</label><input id="event-date" v-model="date" type="datetime-local" required /><button class="lnk" type="button" @click="date = now()">Ahora</button></div>
                 </div>
                 <div class="fld"><label for="event-title">¿Qué pasó?</label><input id="event-title" v-model="title" required placeholder="Ej. Cambio de pantalla terminado" /></div>
@@ -131,7 +148,7 @@ async function back() { if (await save()) emit('back'); }
           <div v-for="(item, i) in repair.warranties" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ item.days }} días de cobertura</div></div><span class="pill amber">{{ order.delivered ? 'Entrega registrada' : 'Empieza al entregar' }}</span></div>
           <p v-if="!repair.warranties.length" class="help">Sin garantías registradas.</p>
           <form v-if="addingWarranty" class="compose" :inert="busy || !ready" @submit.prevent="addWarranty">
-            <div class="fld"><label for="warranty-type">Tipo de garantía sugerida</label><select id="warranty-type" v-model="warrantyType" @change="days = warrantyType === 'labor' ? company.laborDays : company.partsDays"><option value="parts">Refacciones</option><option value="labor">Mano de obra</option></select></div>
+            <SearchSelect id="warranty-type" v-model="warrantyType" label="Tipo de garantía sugerida" :options="[{value:'parts',label:'Refacciones'},{value:'labor',label:'Mano de obra'}]" @update:model-value="days = $event === 'labor' ? company.laborDays : company.partsDays" />
             <div class="fld"><label for="warranty">Concepto</label><input id="warranty" v-model="warranty" required /></div>
             <div class="fld"><label for="days">Días de cobertura</label><input id="days" v-model.number="days" type="number" min="1" max="3650" required /></div>
             <p v-if="days === 0" class="help">Empresa no tiene días sugeridos para este tipo. Escribe los días acordados para registrar la garantía.</p>
@@ -150,6 +167,9 @@ async function back() { if (await save()) emit('back'); }
 @media(max-width:760px){.work{display:flex;flex-direction:column}.rail,.aside{width:100%;padding:20px 16px}.sheet{width:calc(100% - 32px);margin:0 16px;flex:auto}.g2{grid-template-columns:1fr}.ev{grid-template-columns:70px 26px minmax(0,1fr);gap:8px}.st-l{font-size:10px}.st-c{width:28px;height:28px}}
 
 .repair-page{min-width:0;flex:1}
+.custom-stage-toggle{display:flex;align-items:center;gap:8px;min-height:44px;font-size:14px}.custom-stage-toggle input{width:18px;height:18px}.event-stage-row{align-items:start}
+.event-stage-row>.fld{gap:8px}.event-stage-row>.fld>label{font-size:14px;line-height:20px;margin:0}
+.stage-picker{gap:8px}.stage-picker .custom-stage{display:flex;align-items:center;gap:8px;min-height:44px}.stage-picker .custom-stage input{width:18px;min-height:18px;flex:none}.stage-picker .help{margin:0}
 .work{max-width:1920px;align-items:start;grid-template-columns:minmax(220px,.85fr) minmax(0,2fr) minmax(240px,.95fr)}
 .rail,.aside{padding:16px;gap:16px}
 .sheet{margin:16px 0;min-width:0;border-radius:16px}
@@ -178,7 +198,7 @@ async function back() { if (await save()) emit('back'); }
 .aside .btn,.rail .btn{font-size:13px;min-height:38px;padding-inline:12px;white-space:normal}
 .rail .compose{padding:12px;gap:12px}
 .rail .block{gap:8px}
-.steps{overflow:visible;gap:4px;padding-block:8px}
+.steps{overflow-x:auto;gap:4px;padding-block:8px}.step{flex:1 0 76px}
 .step::before{top:17px}
 .st-l{font-size:11px;overflow-wrap:anywhere;line-height:1.35}
 .actions{gap:10px}

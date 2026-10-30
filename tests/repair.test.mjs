@@ -1,6 +1,27 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
-import { restoreRepair, useRepair } from '../src/composables/useRepair.ts';
+import { includeRepairStage, restoreRepair, useRepair } from '../src/composables/useRepair.ts';
+
+test('new repairs start with two stages; custom stages persist before delivery without duplicates', () => {
+  storage();
+  const session = useRepair('A');
+  assert.deepEqual(session.repair.value.stages, ['Recibido', 'Entregado']);
+  session.repair.value.completed = 1;
+  assert.equal(includeRepairStage(session.repair.value, ' Limpieza de placa '), 'Limpieza de placa');
+  includeRepairStage(session.repair.value, 'limpieza de placa');
+  assert.deepEqual(session.repair.value.stages, ['Recibido', 'Limpieza de placa', 'Entregado']);
+  assert.equal(session.repair.value.completed, 1);
+  assert.equal(session.save(), true);
+  assert.deepEqual(useRepair('A').repair.value.stages, session.repair.value.stages);
+  assert.deepEqual(useRepair('B').repair.value.stages, ['Recibido', 'Entregado']);
+  const old = restoreRepair('{"completed":5}');
+  assert.equal(old.stages.length, 7);
+  assert.equal(old.stages[5], 'Pruebas');
+  assert.equal(old.completed, 5);
+  for (const stages of [null, [], ['Recibido'], ['Recibido', 'recibido'], ['Recibido', '']]) {
+    assert.throws(() => restoreRepair(JSON.stringify({ stages })));
+  }
+});
 
 const previousStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
 after(() => {

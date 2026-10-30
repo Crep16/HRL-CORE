@@ -12,13 +12,16 @@ async fn migrate(pool: &SqlitePool) {
         include_str!("../migrations/004_order_records.sql"),
         include_str!("../migrations/005_order_visibility.sql"),
         include_str!("../migrations/006_repair_records.sql"),
+        include_str!("../migrations/007_logbook.sql"),
+        include_str!("../migrations/008_financial_logbook.sql"),
+        include_str!("../migrations/010_payment_adjustments.sql"),
     ] {
         sqlx::raw_sql(sql).execute(pool).await.unwrap();
     }
 }
 async fn seed(pool: &SqlitePool) -> AccessState {
     let state = AccessState::test_admin(pool).await;
-    let order=serde_json::from_value(serde_json::json!({"id":"TEST-1","client":"Test client","phone":"123","received":"2026-10-27","status":"Diagnóstico","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","password":"","work":"","cost":"1500","deposit":"500","notes":"","paid":false,"delivered":false})).unwrap();
+    let order=serde_json::from_value(serde_json::json!({"id":"TEST-1","client":"Test client","phone":"123","received":"2026-10-27","status":"Diagnóstico","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","password":"","work":"","cost":"1500","deposit":"500","depositMethod":"Efectivo de prueba","notes":"","paid":false,"delivered":false})).unwrap();
     orders::save(pool, &state, order, None).await.unwrap();
     users::save(
         pool,
@@ -72,6 +75,34 @@ fn appended() -> Repair {
     repair
 }
 #[test]
+fn dynamic_stages_are_saved_reusable_and_preserve_existing_progress() {
+    tauri::async_runtime::block_on(async {
+        let (pool, state) = fixture().await;
+        state.test_login(&pool, "Limited").await;
+        let fresh = load(&pool, &state, "TEST-1", None).await.unwrap();
+        assert_eq!(fresh.repair.stages, ["Recibido", "Entregado"]);
+        let mut next = appended();
+        next.stages.insert(1, "Limpieza de placa".into());
+        next.events[0].stage = "Limpieza de placa".into();
+        save(&pool, &state, "TEST-1", next.clone(), 0).await.unwrap();
+        assert_eq!(load(&pool, &state, "TEST-1", None).await.unwrap().repair, next);
+        assert!(stage_options(&pool, &state).await.unwrap().contains(&"Limpieza de placa".into()));
+        let mut invalid = next.clone();
+        invalid.stages.swap(0, 1);
+        assert!(save(&pool, &state, "TEST-1", invalid, 1).await.is_err());
+        let mut invalid = next.clone();
+        invalid.stages = vec!["Otro".into(), "Entregado".into()];
+        assert!(save(&pool, &state, "TEST-1", invalid, 1).await.is_err());
+        assert_eq!(load(&pool, &state, "TEST-1", None).await.unwrap().repair, next);
+        let mut legacy = serde_json::to_value(&next).unwrap();
+        legacy.as_object_mut().unwrap().remove("stages");
+        legacy["completed"] = serde_json::json!(5);
+        let legacy: Repair = serde_json::from_value(legacy).unwrap();
+        assert_eq!(legacy.stages, legacy_stages());
+        assert_eq!(legacy.completed, 5);
+    });
+}
+#[test]
 fn limited_can_read_and_append_technical_work_but_cannot_edit_or_collect_money() {
     tauri::async_runtime::block_on(async {
         let (pool, state) = fixture().await;
@@ -103,6 +134,7 @@ fn limited_can_read_and_append_technical_work_but_cannot_edit_or_collect_money()
         attempts.push(next);
         let mut next = snapshot.repair.clone();
         next.payments.push(Payment {
+            method: Some("Efectivo de prueba".into()),
             date: String::new(),
             amount: 100.,
         });
@@ -164,6 +196,7 @@ fn legacy_import_requires_admin_and_does_not_duplicate_payments_or_notes() {
         let (pool, state) = fixture().await;
         let mut legacy = appended();
         legacy.payments.push(Payment {
+            method: None,
             date: "2026-10-26T11:00".into(),
             amount: 100.,
         });
@@ -238,6 +271,7 @@ fn full_access_payments_use_the_same_ledger_and_respect_the_remaining_balance() 
         let (pool, state) = fixture().await;
         let mut repair = Repair::default();
         repair.payments.push(Payment {
+            method: Some("Efectivo de prueba".into()),
             date: "2026-10-27T12:00".into(),
             amount: 1000.,
         });
@@ -245,6 +279,7 @@ fn full_access_payments_use_the_same_ledger_and_respect_the_remaining_balance() 
             .await
             .unwrap();
         repair.payments.push(Payment {
+            method: Some("Efectivo de prueba".into()),
             date: String::new(),
             amount: 0.01,
         });
