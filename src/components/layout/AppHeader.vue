@@ -1,8 +1,21 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue';
 import brandLogo from "../../assets/images/brand/hrl-symbol-original.svg";
 import AppIcon from '../ui/AppIcon.vue';
 import { useAccess } from '../../composables/useAccess';
 const { user } = useAccess();
+const header = ref<HTMLElement>();
+let observer: ResizeObserver | undefined;
+function measureHeader() {
+  document.documentElement.style.setProperty('--app-header-bottom', `${Math.max(0, header.value?.getBoundingClientRect().bottom ?? 76)}px`);
+}
+onMounted(() => {
+  observer = new ResizeObserver(measureHeader);
+  if (header.value) observer.observe(header.value);
+  window.addEventListener('scroll', measureHeader, { passive:true });
+  measureHeader();
+});
+onUnmounted(() => { observer?.disconnect(); window.removeEventListener('scroll', measureHeader); });
 const levels = { complete: 'Acceso completo', limited: 'Acceso limitado', custom: 'Acceso personalizado' };
 const tabIcons: Record<string, string> = { Clientes: 'clients', Reparaciones: 'repair', Bitácora: 'logbook', Empresa: 'company', Usuarios: 'users' };
 
@@ -13,10 +26,10 @@ const printIcon = "M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 
 </script>
 
 <template>
-  <header class="top">
+  <header ref="header" class="top">
     <div class="logo-tile"><img :src="brandLogo" alt="HRL – Héctor Refacciones Laptop" /></div>
     <nav class="tabs" aria-label="Secciones">
-      <button v-for="tab in tabs" :key="tab" class="tab" :disabled="tab === 'Bitácora' || (tab === 'Reparaciones' && !canRepair)" :title="tab === 'Bitácora' ? 'Bitácora pendiente de implementar' : tab === 'Reparaciones' && !canRepair ? 'Selecciona una orden activa' : undefined" :class="{ on: tab === active }" type="button" :aria-current="tab === active ? 'page' : undefined" @click="emit('change', tab)"><AppIcon v-if="tabIcons[tab]" :name="tabIcons[tab]" />{{ tab }}</button>
+      <button v-for="tab in tabs" :key="tab" class="tab" :disabled="tab === 'Reparaciones' && !canRepair" :title="tab === 'Reparaciones' && !canRepair ? 'Selecciona una orden activa' : undefined" :class="{ on: tab === active }" type="button" :aria-current="tab === active ? 'page' : undefined" @click="emit('change', tab)"><AppIcon v-if="tabIcons[tab]" :name="tabIcons[tab]" />{{ tab }}</button>
     </nav>
     <div class="header-actions" role="group" aria-label="Impresión y herramientas">
     <button class="ghost" type="button" :disabled="!canPrint" title="Imprimir con la configuración guardada de Empresa" @click="emit('print','entry')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path :d="printIcon" /><rect x="6" y="14" width="12" height="8" /></svg>Imprimir nota entrada</button>

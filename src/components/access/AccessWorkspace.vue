@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import logo from '../../assets/images/brand/hrl-original.svg';
 import { useAccess } from '../../composables/useAccess';
+import AppNotice from '../ui/AppNotice.vue';
 const { setupComplete, loading, error, available, refresh, firstSetup, login } = useAccess();
 const step = ref<'master' | 'first'>('master');
 const name = ref('');
@@ -51,16 +52,15 @@ function back() { clearSecrets(); step.value = 'master'; }
       <main class="access-main" :aria-busy="loading">
         <h1 ref="heading" tabindex="-1">{{ title }}</h1>
         <p class="access-lead">{{ description }}</p>
-        <p v-if="loading" class="access-feedback" role="status">Comprobando el acceso…</p>
-        <p v-if="error" class="access-feedback" role="alert">{{ error }}</p>
-        <button v-if="error && available" class="access-secondary" type="button" :disabled="loading" @click="refresh">Volver a comprobar</button>
+        <AppNotice v-if="loading" message="Comprobando el acceso…" :closable="false" />
+        <AppNotice :message="error" tone="error"><button v-if="available" class="access-secondary" type="button" :disabled="loading" @click="refresh">Volver a comprobar</button></AppNotice>
         <form class="access-form" @submit.prevent="submit">
           <fieldset class="access-fields" :disabled="loading || !available">
             <div v-if="view !== 'master'" class="access-field"><label for="access-name">Usuario</label><input id="access-name" v-model="name" autocomplete="username" required maxlength="100"></div>
             <div v-if="view === 'first'" class="access-role"><strong>Acceso completo</strong><span>Sin restricciones. Siempre debe existir un administrador activo.</span></div>
             <div class="access-field"><label for="access-password">{{ view === 'master' ? 'Clave maestra' : 'Clave del usuario' }}</label><div class="access-password"><input id="access-password" v-model="password" :type="show ? 'text' : 'password'" :autocomplete="view === 'login' ? 'current-password' : 'new-password'" :minlength="view === 'login' ? undefined : 8" maxlength="1024" required aria-describedby="access-password-help"><button type="button" :aria-pressed="show" @click="show = !show">{{ show ? 'Ocultar' : 'Mostrar' }}</button></div><p id="access-password-help">{{ view === 'login' ? 'La clave maestra no sustituye la clave del usuario.' : 'Usa al menos 8 caracteres. Puedes pegar una clave de tu gestor.' }}</p></div>
             <div v-if="view !== 'login'" class="access-field"><label for="access-confirm">Repite la clave</label><input id="access-confirm" v-model="confirmation" :type="show ? 'text' : 'password'" autocomplete="new-password" required maxlength="1024" :aria-invalid="confirmation.length > 0 && confirmation !== password" :aria-describedby="confirmation.length > 0 && confirmation !== password ? 'access-match' : undefined"><p v-if="confirmation.length > 0 && confirmation !== password" id="access-match" class="access-error">Las dos claves deben coincidir.</p></div>
-            <p v-if="message" class="access-feedback" role="alert">{{ message }}</p>
+            <AppNotice :message="message" tone="error" @dismiss="message=''" />
             <div class="access-actions"><button v-if="view === 'first'" type="button" class="access-secondary" @click="back">Atrás</button><button class="access-primary" type="submit">{{ view === 'master' ? 'Continuar' : view === 'login' ? 'Iniciar sesión' : 'Crear administrador' }}</button></div>
           </fieldset>
         </form>
