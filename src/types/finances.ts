@@ -1,0 +1,3 @@
+export type FinancialPayment={amountMinor:number;occurredAt:string|null;kind?:'receipt'|'adjustment'|'refund'};
+export type FinancialOrder={id:string;client:string;equipment:string;status:string;currency:string;totalMinor:number;collectedMinor:number;receivedMinor?:number;adjustedMinor?:number;refundedMinor?:number;creditMinor?:number;balanceMinor:number;costsMinor:number;profitMinor:number;delivered:boolean;paid:boolean;classification:string;excluded:boolean;received:string;deliveredAt:string|null;settledAt:string|null;payments:FinancialPayment[];expenses:{description:string;amountMinor:number;occurredAt:string}[]};
+export type FinancialFilters={query:string;classification:string;dateBasis:string;from:string;to:string;scope:string};
