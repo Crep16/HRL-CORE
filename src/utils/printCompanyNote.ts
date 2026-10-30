@@ -45,7 +45,7 @@ export async function printCompanyNote(note: HTMLElement, settings: CompanySetti
     .print-sheet .note-clauses ol{margin:4px 0;padding-left:0;list-style:none}
     .print-sheet .note-clauses li{margin-bottom:3px}
     .print-sheet .note-clauses ol:not(.unnumbered) li::before{content:attr(data-print-number) '. '}
-    .print-sheet .note-signature{margin:18px auto 6px;padding-top:3px}
+    .print-sheet .note-signature{margin:6mm auto 6px;padding-top:18mm}
     .print-sheet .note-footer{margin-top:6px;font-size:11px}
     .print-sheet .note-reverse{break-before:auto;margin:0;padding-top:6px}
     .print-sheet .note-totals{margin-block:6px}

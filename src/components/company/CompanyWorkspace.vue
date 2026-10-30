@@ -3,6 +3,8 @@ import { useAccess } from '../../composables/useAccess';
 const { can } = useAccess();
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import CompanyClauses from './CompanyClauses.vue';
+import SearchSelect from '../ui/SearchSelect.vue';
+import AppNotice from '../ui/AppNotice.vue';
 import CompanyNote from './CompanyNote.vue';
 import brandLogo from '../../assets/images/brand/hrl-original.svg';
 import { cloneCompany, companyErrors, formatFolio, nextAvailableNumber, useCompany } from '../../composables/useCompany';
@@ -13,12 +15,13 @@ import type { Order } from '../../types/order';
 
 const props = defineProps<{orders: Order[]; order?: Order}>();
 const emit = defineEmits<{ dirtyChange: [value: boolean] }>();
-const {company, companyStorageError, saveCompany} = useCompany();
+const {company, persistCompany} = useCompany();
 const draft = ref(cloneCompany(company.value));
 const section = ref<CompanySection>('general');
 const noteKind = ref<NoteKind>('entry');
 const clauseEditing = ref(false);
 const message = ref('');
+const saving = ref(false);
 const errors = ref<string[]>([]);
 const errorTargets: {pattern:RegExp;section:CompanySection;id:string}[] = [
   {pattern:/nombre/,section:'general',id:'company-name'}, {pattern:/correo/,section:'general',id:'company-email'},
@@ -75,16 +78,14 @@ function goTo(id:CompanySection) {
   section.value=id; errors.value=[]; message.value='';
   nextTick(()=>document.getElementById('company-section-title')?.focus());
 }
-function selectSection(event:Event) {
-  const select=event.target as HTMLSelectElement;
-  goTo(select.value as CompanySection);
-  select.value=section.value;
-}
-function save() {
+async function save() {
+  if(saving.value)return;
   if (!can('company.edit')) { message.value = 'Tu acceso permite consultar Empresa, pero no modificarla.'; return; }
   errors.value=companyErrors(draft.value);
   if (errors.value.length) {nextTick(()=>errorSummary.value?.focus()); return;}
-  if (saveCompany(draft.value)) {draft.value=cloneCompany(company.value); message.value='Configuración guardada en este equipo.';}
+  saving.value=true;
+  try{if (await persistCompany(draft.value)) {draft.value=cloneCompany(company.value); message.value='Configuración e historial guardados en este equipo.';}}
+  finally{saving.value=false;}
 }
 function discard() {
   draft.value=cloneCompany(company.value); errors.value=[]; uploadError.value=''; confirmDiscard.value=false;
@@ -131,16 +132,15 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
 <template>
   <main class="company-workspace" aria-labelledby="company-title">
     <header class="company-heading"><div><h1 id="company-title">Empresa</h1><p>Configura tus datos y el formato de las notas del taller.</p></div><span class="company-save-state" :class="{pending:hasPending}" role="status">{{ hasPending ? 'Cambios sin guardar' : 'Sin cambios pendientes' }}</span></header>
-    <p v-if="companyStorageError" class="company-error" role="alert">{{ companyStorageError }}</p>
-    <div v-if="message" class="company-feedback" role="status"><span>{{ message }}</span><button class="company-icon-button" type="button" aria-label="Cerrar mensaje" @click="message=''">×</button></div>
+    <AppNotice :message="message" @dismiss="message=''" />
     <div class="company-layout">
-      <div class="company-mobile-nav company-field"><label for="company-section-select">Sección de Empresa</label><select id="company-section-select" :value="section" @change="selectSection"><option v-for="item in sections" :key="item.id" :value="item.id">{{ item.title }}</option></select></div>
+      <SearchSelect class="company-mobile-nav company-field" id="company-section-select" :model-value="section" label="Sección de Empresa" :options="sections.map(item=>({value:item.id,label:item.title}))" @update:model-value="goTo($event as CompanySection)" />
       <nav class="company-nav" aria-label="Configuración de Empresa">
         <button v-for="item in sections" :key="item.id" type="button" :class="{active:section===item.id}" :aria-current="section===item.id ? 'page' : undefined" @click="goTo(item.id)"><strong>{{ item.title }}</strong><span>{{ item.detail }}</span></button>
         <p>Guardado en este equipo.<br />Web pendiente de conectar.</p>
       </nav>
       <form class="company-panel" novalidate aria-labelledby="company-section-title" @submit.prevent="save">
-        <fieldset class="company-permission-fields" :disabled="!can('company.edit')">
+        <fieldset class="company-permission-fields" :disabled="!can('company.edit') || saving">
         <div class="company-panel-heading"><h2 id="company-section-title" tabindex="-1">{{ current.title }}</h2><p>{{ descriptions[section] }}</p></div>
         <div v-if="errors.length" ref="errorSummary" class="company-error" tabindex="-1" role="alert"><strong>Revisa la configuración antes de guardar:</strong><ul><li v-for="error in errors" :key="error"><button class="company-error-link" type="button" @click="focusError(error)">{{ error }}</button></li></ul></div>
         <div class="company-fields">
@@ -182,7 +182,7 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
           </template>
           <CompanyClauses v-else-if="section==='clauses'" v-model="draft" @editing="clauseEditing=$event" />
           <template v-else-if="section==='paper'">
-            <div class="company-field"><label for="company-paper">Tamaño del papel</label><select id="company-paper" v-model="draft.paper"><option v-for="(label,value) in paperLabels" :key="value" :value="value">{{ label }}</option></select></div>
+            <SearchSelect id="company-paper" v-model="draft.paper" label="Tamaño del papel" :options="Object.entries(paperLabels).map(([value,label])=>({value,label}))" />
             <fieldset v-if="draft.paper==='letter'" class="company-inline-options"><legend>Orientación</legend><label class="company-check"><input v-model="draft.orientation" type="radio" value="portrait" /> Vertical</label><label class="company-check"><input v-model="draft.orientation" type="radio" value="landscape" /> Horizontal</label></fieldset>
             <div class="company-field"><label for="company-copies">Copias por nota</label><div class="company-stepper"><button type="button" :disabled="draft.copies<=1" aria-label="Menos copias" @click="draft.copies=Math.max(1,Number(draft.copies)-1)">−</button><input id="company-copies" v-model.number="draft.copies" type="number" min="1" max="5" step="1" /><button type="button" :disabled="draft.copies>=5" aria-label="Más copias" @click="draft.copies=Math.min(5,Number(draft.copies)+1)">+</button></div></div>
             <p class="company-help">Elige la impresora o Guardar como PDF en el diálogo del sistema. {{ draft.paper!=='letter' ? 'Cada copia se prepara por separado, con el ancho de ticket seleccionado.' : 'Las copias se agrupan de dos en dos en la misma hoja, con una línea de corte. Si el contenido es extenso, ambas continúan juntas en la hoja siguiente.' }}</p>
@@ -203,9 +203,9 @@ onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emi
           <template v-else-if="section==='region'">
             <div class="company-grid">
               <div class="company-field"><label for="company-country">País</label><input id="company-country" v-model="draft.country" maxlength="80" /></div>
-              <div class="company-field"><label for="company-locale">Formato regional</label><select id="company-locale" v-model="draft.locale"><option value="es-MX">Español (México)</option><option value="en-US">Inglés (Estados Unidos)</option><option value="es-ES">Español (España)</option></select></div>
-              <div class="company-field"><label for="company-currency">Moneda</label><select id="company-currency" v-model="draft.currency"><option value="MXN">Peso mexicano (MXN)</option><option value="USD">Dólar estadounidense (USD)</option><option value="EUR">Euro (EUR)</option></select></div>
-              <div class="company-field"><label for="company-timezone">Zona horaria</label><select id="company-timezone" v-model="draft.timezone"><option value="America/Cancun">Cancún</option><option value="America/Mexico_City">Ciudad de México</option><option value="America/Tijuana">Tijuana</option><option value="America/Hermosillo">Hermosillo</option><option value="UTC">UTC</option></select></div>
+              <SearchSelect id="company-locale" v-model="draft.locale" label="Formato regional" :options="[{value:'es-MX',label:'Español (México)'},{value:'en-US',label:'Inglés (Estados Unidos)'},{value:'es-ES',label:'Español (España)'}]" />
+              <SearchSelect id="company-currency" v-model="draft.currency" label="Moneda" :options="[{value:'MXN',label:'Peso mexicano (MXN)'},{value:'USD',label:'Dólar estadounidense (USD)'},{value:'EUR',label:'Euro (EUR)'}]" />
+              <SearchSelect id="company-timezone" v-model="draft.timezone" label="Zona horaria" :options="[{value:'America/Cancun',label:'Cancún'},{value:'America/Mexico_City',label:'Ciudad de México'},{value:'America/Tijuana',label:'Tijuana'},{value:'America/Hermosillo',label:'Hermosillo'},{value:'UTC',label:'UTC'}]" />
             </div>
             <p class="company-help">El formato regional ajusta fechas e importes, y mantiene la interfaz en español. Cambiar moneda no convierte los importes existentes.</p>
             <label class="company-check"><input v-model="draft.showTax" type="checkbox" /> Desglosar impuesto incluido en el total de salida</label>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { invoke, isTauri } from '@tauri-apps/api/core';
+import AppNotice from '../ui/AppNotice.vue';
 import brandLogo from '../../assets/images/brand/hrl-symbol-original.svg';
 import type { CompanySettings, NoteKind } from '../../types/company';
 import type { Order } from '../../types/order';
@@ -36,7 +37,7 @@ const money = (value: number) => new Intl.NumberFormat(props.settings.locale, {s
 </script>
 
 <template>
-  <p v-if="summaryError" role="alert">{{ summaryError }}</p>
+  <AppNotice :message="summaryError" tone="error" />
   <article class="company-note" :class="{ 'note-ticket':settings.paper !== 'letter', 'note-ticket60':settings.paper==='ticket60', 'note-landscape':settings.paper==='letter' && settings.orientation === 'landscape', 'clauses-back':settings.clausePosition === 'back' }" :aria-label="`Nota de ${kind === 'entry' ? 'entrada' : 'salida'}`">
     <div class="note-front">
       <header class="note-company">

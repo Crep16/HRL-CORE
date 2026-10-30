@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue';
+import SearchSelect from '../ui/SearchSelect.vue';
+import AppNotice from '../ui/AppNotice.vue';
 import type { Clause, CompanySettings } from '../../types/company';
 const settings = defineModel<CompanySettings>({ required: true });
 const emit = defineEmits<{ editing: [value: boolean] }>();
@@ -46,7 +48,7 @@ function undo() {
 
 <template>
   <div class="company-clause-controls">
-    <div class="company-field"><label for="clause-position">Dónde se imprimen</label><select id="clause-position" v-model="settings.clausePosition"><option value="foot">Al pie de la nota</option><option value="back">En el reverso</option></select></div>
+    <SearchSelect id="clause-position" v-model="settings.clausePosition" label="Dónde se imprimen" :options="[{value:'foot',label:'Al pie de la nota'},{value:'back',label:'En el reverso'}]" />
     <label class="company-check"><input v-model="settings.numberClauses" type="checkbox" /> Numerar cláusulas</label>
   </div>
   <p class="company-help">Textos de ejemplo del prototipo. Revísalos antes de utilizarlos con clientes.</p>
@@ -63,7 +65,7 @@ function undo() {
       </div>
     </li>
   </ol>
-  <div v-if="removed" class="company-feedback" role="status">Se quitó «{{ removed.clause.title }}». <button class="lnk" type="button" @click="undo">Deshacer</button></div>
+  <AppNotice v-if="removed" :message="`Se quitó «${removed.clause.title}».`"><button class="lnk" type="button" @click="undo">Deshacer</button></AppNotice>
   <section v-if="editor" class="company-clause-editor" aria-labelledby="clause-editor-title">
     <h3 id="clause-editor-title">{{ isNew ? 'Nueva cláusula' : 'Editar cláusula' }}</h3>
     <p v-if="error" class="company-error" role="alert">{{ error }}</p>

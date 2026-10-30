@@ -1,4 +1,5 @@
 import { computed, ref } from 'vue';
+import { invoke,isTauri } from '@tauri-apps/api/core';
 import type { CompanySettings } from '../types/company';
 import type { Order } from '../types/order';
 
@@ -83,8 +84,20 @@ export function useCompany() {
       return true;
     } catch { storageError.value = 'No se pudo guardar la configuración. Revisa el espacio disponible e inténtalo de nuevo; tus cambios siguen en pantalla.'; return false; }
   }
+  async function loadPersistedCompany(){
+    if(!isTauri())return true;
+    try{const value=await invoke<CompanySettings|null>('load_company_settings');if(value){if(!validStored(value))throw new Error('La configuración guardada necesita revisión.');settings.value=cloneCompany(value);}storageError.value='';return true;}
+    catch(cause){storageError.value=typeof cause==='string'?cause:'No se pudo consultar Empresa en la base local.';return false;}
+  }
+  async function persistCompany(value:CompanySettings){
+    if(!isTauri())return saveCompany(value);
+    if(companyErrors(value).length)return false;
+    const copy=cloneCompany(value);
+    try{await invoke('save_company_settings',{value:copy,expected:cloneCompany(settings.value)});settings.value=copy;storageError.value='';try{localStorage.setItem(key,JSON.stringify(copy));}catch{/* SQLite conserva la configuración aunque falle la copia local. */}return true;}
+    catch(cause){storageError.value=typeof cause==='string'?cause:'No se pudo guardar Empresa y su historial.';return false;}
+  }
   const nextFolio = computed(() => formatFolio(settings.value.prefix, settings.value.nextNumber));
-  return { company: settings, companyStorageError: storageError, saveCompany, nextFolio };
+  return { company: settings, companyStorageError: storageError, saveCompany, persistCompany, loadPersistedCompany, nextFolio };
 }
 
 export const formatFolio = (prefix: string, number: number) => `${prefix}${String(number).padStart(3, '0')}`;
