@@ -28,16 +28,16 @@ const emit = defineEmits<{ goTo: [position: number]; remove: []; restore: []; ed
           <button type="button" aria-label="Orden siguiente" title="Siguiente" @click="emit('goTo', position)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button>
           <button type="button" aria-label="Última orden" title="Última" @click="emit('goTo', total - 1)"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 17 5-5-5-5" /><path d="m13 17 5-5-5-5" /></svg></button>
         </div>
-        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy || !can('orders.edit')" @click="emit('edit')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>Editar</button>
-        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy || !can('orders.delete')" @click="emit('remove')"><AppIcon name="trash" />Eliminar</button>
-        <button v-if="trashed" class="btn btn-p" type="button" :disabled="busy || !can('orders.delete')" @click="emit('restore')"><AppIcon name="restore" />Restaurar orden</button>
+        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy" :title="can('orders.edit')?'Editar orden':'Solicitar autorización temporal para editar'" @click="emit('edit')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z" /></svg>Editar</button>
+        <button v-if="!editing && !trashed" class="btn btn-s" type="button" :disabled="busy" :title="can('orders.delete')?'Enviar a papelera':'Solicitar autorización temporal para eliminar'" @click="emit('remove')"><AppIcon name="trash" />Eliminar</button>
+        <button v-if="trashed" class="btn btn-p" type="button" :disabled="busy" @click="emit('restore')"><AppIcon name="restore" />Restaurar orden</button>
       </div>
     </div>
     <div class="perf" aria-hidden="true"></div>
 
     <div class="sh-b">
       <OrderForm :order="order" :editing="editing && !busy" :initial-payment="initialPayment" />
-      <OrderSidePanel :order="order" :editing="editing && !busy" :initial-payment="initialPayment" :unavailable="trashed" @repairs="emit('repairs')" />
+      <OrderSidePanel :order="order" :editing="editing && !busy" :initial-payment="initialPayment" :unavailable="trashed" :blocked="busy" @repairs="emit('repairs')" />
     </div>
   </section>
 </template>
