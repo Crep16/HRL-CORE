@@ -4,6 +4,7 @@ import { useAccess } from '../../composables/useAccess';
 import AppIcon from '../ui/AppIcon.vue';
 const { can } = useAccess();
 import { statusTone } from "../../data/orderStatuses";
+import { orderDisplayStatus } from '../../utils/orderStatus';
 import type { Order, SearchField } from "../../types/order";
 
 const query = defineModel<string>("query", { required: true });
@@ -39,7 +40,7 @@ const fields: { value: SearchField; label: string }[] = [
         <h2 class="h-disp" tabindex="-1">{{ trashed ? 'Papelera' : 'Órdenes' }}</h2>
         <p class="subt">{{ total }} en total</p>
       </div>
-      <button v-if="!trashed" class="btn btn-p" type="button" :disabled="busy || !can('orders.create')" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
+      <button v-if="!trashed" class="btn btn-p" type="button" :disabled="busy" @click="emit('create')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.2"><path d="M12 5v14M5 12h14" /></svg>Nueva orden</button>
     </div>
     <div class="search">
       <label class="sr" for="q">Buscar órdenes</label>
@@ -58,7 +59,7 @@ const fields: { value: SearchField; label: string }[] = [
       <li v-for="order in pageOrders" :key="order.id">
         <button class="orow" :class="{ sel: order.id === selectedId }" type="button" @click="emit('select', order.id)">
           <span class="o-top"><span class="o-name">{{ order.client }}</span><span class="o-id">{{ order.id }}</span></span>
-          <span class="o-bot"><span class="st"><i class="dot" :class="statusTone(order.status)"></i>{{ order.status }}</span><span class="o-sn">{{ order.serial }}</span></span>
+          <span class="o-bot"><span class="st"><i class="dot" :class="order.delivered ? 'd-teal' : statusTone(order.status)"></i>{{ orderDisplayStatus(order) }}</span><span class="o-sn">{{ order.serial }}</span></span>
         </button>
       </li>
       <li v-if="orders.length === 0" class="empty-list">No hay órdenes que coincidan.</li>
