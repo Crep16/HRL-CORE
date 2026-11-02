@@ -8,6 +8,8 @@
     "build": "vue-tsc --noEmit && vite build",
     "test:company": "node --experimental-strip-types --test tests/company.test.mjs",
     "preview": "vite preview",
+    "export:figma-views": "node scripts/export-figma-views.mjs",
+    "validate:figma-views": "node scripts/validate-figma-views.mjs",
     "tauri": "tauri"
   },
   "dependencies": {
