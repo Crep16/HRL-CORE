@@ -6,6 +6,12 @@ Puntos: 34 (suma de historias, sin duplicar el epic).
 Sprint: 4 para todas sus historias.
 Subtareas: agrupador de HRL-49 a HRL-56.
 
+Criterios de aceptación del epic (fuentes: `docs/auditoria-empresa.md`, `docs/bitacora.md`):
+
+- Dada configuración válida y autorizada, cuando guarda, entonces persiste identidad, documentos, folios y región con revisión y auditoría.
+- Dadas notas de entrada/salida, cuando las prepara, entonces aplica mensajes, logo, cláusulas, papel y copias elegidos sin incluir secretos.
+- Dada una revisión antigua, datos inválidos o permiso insuficiente, cuando guarda, entonces conserva configuración anterior y permite resolver el borrador.
+
 Fuente funcional: `docs/auditoria-empresa.md`, tabla de siete vistas y límites comprobables. Persistencia/revisión: arquitectura objetivo y `docs/bitacora.md`. Puntos de alcance completo; no se ejecutó ninguna prueba.
 
 ## HRL-49 [Historia] Datos generales: nombre, identificación fiscal, contacto, dirección y horario

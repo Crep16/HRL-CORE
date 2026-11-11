@@ -6,6 +6,12 @@ Puntos: 66 (suma de tareas; no sumar el epic de nuevo).
 Sprint: 1 y 4.
 Subtareas: agrupador de HRL-58 a HRL-64; nuevas subtareas HRL-77 a HRL-93.
 
+Criterios de aceptación del epic (fuentes: arquitectura objetivo, `docs/sqlite.md`, `docs/reglas-pagos.md`):
+
+- Dada la ruta activa de aplicación, cuando procesa una petición, entonces recorre viewmodel/API/comando/servicio/repositorio/base con las dependencias exigidas.
+- Dados datos monetarios y eventos, cuando persisten, entonces usan centavos enteros, referencias activas y libros inmutables con auditoría transaccional.
+- Dado fallo de autorización, auditoría o custodia, cuando ocurre, entonces no confirma cambios parciales ni usa la ruta anterior como alternativa de éxito.
+
 Fuentes de aceptación: arquitectura objetivo, `AGENTS.md`, `docs/sqlite.md`, `docs/evidencias.md`, `docs/ventana-por-sesion.md` y reglas funcionales de cada módulo. Las subtareas siguientes son trabajo propuesto; no se modificó código, configuración, pruebas ni migraciones. Los puntos estiman alcance completo.
 
 ## HRL-58 [Tarea] Esquema SQLite 3FN y migraciones (001 y 002)

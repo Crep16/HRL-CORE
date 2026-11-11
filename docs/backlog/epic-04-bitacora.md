@@ -6,6 +6,12 @@ Puntos: 39 (suma de historias; no duplicar al sumar sprints).
 Sprint: 1 y 4.
 Subtareas: agrupador de HRL-40 a HRL-47; las nuevas claves comienzan en HRL-71.
 
+Criterios de aceptación del epic (fuentes: `docs/bitacora.md`, `docs/reglas-pagos.md`):
+
+- Dado un cambio de negocio confirmado, cuando consulta auditoría con permiso, entonces identifica operación, autor y diferencias disponibles sin secretos.
+- Dado un conjunto financiero filtrado, cuando muestra indicadores, entonces conserva separación de monedas y calcula neto, pendiente y ganancia provisional según las reglas documentadas.
+- Dado fallo de auditoría o falta de autorización, cuando intenta confirmar un cambio o consultar el historial, entonces se revierte el cambio o se deniega la lectura respectivamente.
+
 Fuente funcional principal: `docs/bitacora.md`; integridad monetaria: `docs/reglas-pagos.md`; arquitectura transaccional: `docs/arquitectura-objetivo.md`. Las pruebas existentes se leyeron, no se ejecutaron. Los puntos describen alcance completo, no trabajo restante.
 
 ## HRL-40 [Historia] Servicio de auditoría dentro de la misma transacción del cambio

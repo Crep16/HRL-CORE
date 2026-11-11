@@ -1,17 +1,23 @@
 # HRL-65 [Epic] Pendientes futuros (Backlog)
 
 Estado: En progreso como agrupador: Herramientas ya tiene implementación, mientras las otras capacidades están pendientes o carecen de verificación suficiente.
-Prioridad: Media para el conjunto; Alta para importación, respaldo y custodia por su impacto en datos y secretos.
+Prioridad: Alta, porque publicación, importación y respaldo afectan privacidad, integridad y custodia de secretos.
 Puntos: 45 (suma de historias; estimación preliminar, sin sumar otra vez el epic).
 Sprint: Backlog, sin fecha.
 Subtareas: conserva HRL-66 a HRL-70; nuevas subtareas HRL-94 a HRL-106.
+
+Criterios de aceptación del epic (fuentes: contexto completo §§6.4 y 9, `docs/evidencias.md`, `AGENTS.md` §6):
+
+- Dadas capacidades solo previstas en esquema o preferencias, cuando se comunica su estado, entonces no se anuncian publicación, importación o formatos adicionales operativos sin implementación verificable.
+- Dado un futuro respaldo operativo, cuando se define su recuperación, entonces contempla base, recursos y custodia de claves sin suponer portabilidad DPAPI.
+- Dado un origen de datos no confirmado o una regla futura sin especificar, cuando se prepara implementación, entonces se conserva el original y se solicita definición antes de migrar o inventar políticas.
 
 Fuentes: `docs/contexto-completo-proyecto.md` §§6.4 y 9; `docs/contexto-funcional-vistas-y-estructura.md` §§1 y pendientes; `docs/evidencias.md`; `AGENTS.md` §6. No hay especificación suficiente para inventar autenticación del portal, formatos y tamaños de video/documento, resolución de conflictos de importación o transporte de claves entre equipos. Los criterios siguientes recogen límites ya documentados y condiciones de entrada; no sustituyen la especificación faltante. Los puntos son provisionales de alcance completo.
 
 ## HRL-66 [Historia] Portal web del cliente y publicación de avances
 
 Estado: Pendiente (evidencia: `src-tauri/src/services/repairs.rs::RepairService::save` y `src-tauri/src/repositories/repairs.rs::RepairRepository::save` solo guardan preferencias locales; `src/services/api/workshop.ts` no contiene publicación remota; `src-tauri/src/commands/mod.rs` y `src-tauri/src/lib.rs::run` no registran un comando de publicación). La búsqueda en src y src-tauri/src no localizó implementación del portal. Una infraestructura externa no incluida en el repositorio está No verificada.
-Prioridad: Media, porque amplía seguimiento al cliente sin bloquear la operación local existente.
+Prioridad: Alta, porque la publicación debe proteger notas internas y secretos del equipo frente al acceso externo.
 Puntos: 13
 Sprint: Backlog
 División propuesta: alcance/presentación de información pública (5), servicio de publicación (5), validación de privacidad y fallos (3). Reestimar al tener contrato externo; no se selecciona proveedor ni autenticación.

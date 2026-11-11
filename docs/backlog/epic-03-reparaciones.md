@@ -6,6 +6,12 @@ Puntos: 63 (suma de historias; epic sin cómputo adicional).
 Sprint: 3 y 4, según historia.
 Subtareas: agrupador de HRL-25 a HRL-38. No se añade trabajo a historias completas por lectura.
 
+Criterios de aceptación del epic (fuentes: `docs/reparaciones-permisos.md`, `docs/reglas-pagos.md`):
+
+- Dada una reparación autorizada, cuando registra trabajo técnico, entonces conserva revisión, historial y separación de notas públicas/internas.
+- Dado un movimiento financiero válido, cuando confirma, entonces recalcula saldo y registra movimiento inmutable y auditoría sin duplicarlo al reintentar.
+- Dado permiso insuficiente, revisión antigua o intento de devolución parcial, cuando guarda, entonces rechaza sin alterar el expediente ni el dinero.
+
 Los puntos expresan alcance completo. Las pruebas citadas existen, pero no se ejecutaron. Reglas técnicas: `docs/reparaciones-permisos.md`; reglas monetarias: `docs/reglas-pagos.md`; independencia pago/entrega/avance: `docs/contexto-funcional-vistas-y-estructura.md` §2. Las menciones a migraciones anteriores describen la implementación histórica, no la ruta normalizada actual.
 
 ## HRL-25 [Historia] Abrir reparación sobre la orden seleccionada con contexto de cliente y equipo

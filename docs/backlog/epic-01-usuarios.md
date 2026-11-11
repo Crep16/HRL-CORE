@@ -6,6 +6,12 @@ Puntos: 42 (suma de historias; no se suman otra vez al sprint).
 Sprint: 1 y 2, según historia.
 Subtareas: agrupador; conserva HRL-2 a HRL-10 como hijas. No recibe subtareas técnicas adicionales.
 
+Criterios de aceptación del epic (fuentes: `docs/accesos.md`, `docs/acceso-validacion.md`, `docs/acceso-temporal.md`):
+
+- Dada una instalación nueva, cuando se configura el acceso, entonces administrador y clave maestra se crean atómicamente sin credenciales predeterminadas.
+- Dada una sesión activa, cuando ejecuta una operación protegida, entonces Rust revalida sus facultades permanentes o temporales vigentes.
+- Dado un intento de desactivar al último administrador o usar un préstamo fuera de alcance, cuando se procesa, entonces se deniega sin perder la administración ni elevar permisos.
+
 Lectura del árbol de trabajo del 11 de noviembre de 2026, incluidos archivos modificados y nuevos todavía sin commit. «Hecho» acredita implementación localizada, no pruebas ejecutadas. Los puntos estiman alcance completo, no esfuerzo restante. Las historias hechas no reciben trabajo ficticio; la validación nativa transversal se concentra en HRL-64. Los epics se aceptan al cumplir los criterios de sus hijas y no se cuentan como historias independientes.
 
 ## HRL-2 [Historia] Configuración inicial: definir clave maestra y crear primer administrador (envío atómico)

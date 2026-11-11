@@ -2,9 +2,15 @@
 
 Estado: Hecho por inspección estática de las historias. Cámara, impresora y persistencia nativa no se ejecutaron; su validación transversal está en HRL-64.
 Prioridad: Alta, porque crea el expediente del que dependen seguimiento, dinero y auditoría.
-Puntos: 54 (suma de historias, sin sumar otra vez el epic).
+Puntos: 58 (suma de historias, sin sumar otra vez el epic).
 Sprint: 2, 3 y 4, conservando el reparto original.
 Subtareas: agrupador de HRL-12 a HRL-23. No se añaden subtareas para funciones ya localizadas completas.
+
+Criterios de aceptación del epic (fuentes: contexto funcional §5.2, `docs/evidencias.md`, `docs/papelera-ordenes.md`):
+
+- Dada una recepción válida y autorizada, cuando guarda, entonces obtiene folio único, cliente/equipo relacionados y auditoría sin exponer la contraseña del equipo.
+- Dada una orden con fotografías y movimientos, cuando se envía a papelera y se restaura, entonces conserva expediente, archivos, dinero e historial.
+- Dado permiso insuficiente, revisión antigua o borrador sin resolver, cuando intenta cambiar el expediente, entonces se rechaza o bloquea la salida sin perder datos confirmados.
 
 Convenciones de estado y estimación: véase [usuarios](epic-01-usuarios.md). Fuentes funcionales de recepción: `docs/contexto-funcional-vistas-y-estructura.md` §§2, 3 y 5.2; para revisión y MVVM, `docs/arquitectura-objetivo.md`. Se conservan reglas funcionales aunque las rutas técnicas citadas por esos documentos sean anteriores.
 
