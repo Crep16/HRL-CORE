@@ -1,5 +1,7 @@
 # HRL-11 [Epic] Módulo de Registro de clientes y recepción de órdenes
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: Hecho por inspección estática de las historias. Cámara, impresora y persistencia nativa no se ejecutaron; su validación transversal está en HRL-64.
 Prioridad: Alta, porque crea el expediente del que dependen seguimiento, dinero y auditoría.
 Puntos: 58 (suma de historias, sin sumar otra vez el epic).
@@ -76,7 +78,7 @@ Prioridad: Media, porque acelera la consulta de expedientes existentes.
 Puntos: 3
 Sprint: 3
 Subtareas: ninguna faltante detectada. Prueba de referencia presente en `src-tauri/src/services/tests.rs::reception_list_search_reference_history_and_balances_survive_reopen`, sin ejecutar.
-Criterios de aceptación (fuentes: `docs/backlog-base.md` HRL-16, contexto funcional §5.2 y `docs/accesos.md`):
+Criterios de aceptación (fuentes: `docs/backlog-base (1).md` HRL-16, contexto funcional §5.2 y `docs/accesos.md`):
 
 - Dada una orden activa, cuando introduce su folio o ID desde Herramientas, entonces muestra esa ficha sin crear otra orden.
 - Dada una referencia vacía o inexistente, cuando consulta, entonces comunica el error y no reemplaza la selección con datos inventados.
