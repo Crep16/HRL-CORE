@@ -1,5 +1,7 @@
 # HRL-48 [Epic] Módulo de Empresa
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: En progreso por validaciones de contacto pendientes en Rust (HRL-49). Los demás flujos están implementados por lectura estática; impresión física No verificada, en HRL-64.
 Prioridad: Alta, porque configura folios, documentos y datos usados por otros módulos.
 Puntos: 34 (suma de historias, sin duplicar el epic).
@@ -22,8 +24,8 @@ Puntos: 5
 Sprint: 4
 Subtareas:
 
-- HRL-75 [Servicio Rust] Aplicar en `CompanyService::save` las reglas documentadas de correo y sitio web, admitiendo campos opcionales vacíos como el formulario actual.
-- HRL-76 [Pruebas] Cubrir llamadas directas con correo/web inválidos, valores opcionales vacíos y rechazo sin modificar configuración ni auditoría.
+- HRL-86 [Servicio Rust] Aplicar en `CompanyService::save` las reglas documentadas de correo y sitio web, admitiendo campos opcionales vacíos como el formulario actual.
+- HRL-87 [Pruebas] Cubrir llamadas directas con correo/web inválidos, valores opcionales vacíos y rechazo sin modificar configuración ni auditoría.
 
 Criterios de aceptación (fuente: `docs/auditoria-empresa.md`, Datos generales y validación):
 
