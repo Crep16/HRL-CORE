@@ -1,1897 +1,1524 @@
 {
-  "site": "https://utrivieramaya-team-z3bsbh6g.atlassian.net",
-  "cloudId": "970ecf12-ffb6-4671-8f72-ce7f1e57cb1f",
-  "boardId": 34,
-  "sourceRevision": "982f62f",
-  "sourcePath": "docs/backlog/",
-  "sourceReviewDate": "2026-11-11",
-  "summary": {
-    "key": "HRL-161",
-    "url": "https://utrivieramaya-team-z3bsbh6g.atlassian.net/browse/HRL-161",
-    "type": "Tarea",
-    "estimated": false
+  "status": "pending_project_creation",
+  "requestedProject": {
+    "name": "HRL registro",
+    "key": "HRL"
   },
-  "stateMapping": {
-    "Hecho": "Terminado (inspección estática, sin certificar pruebas)",
-    "En progreso": "En curso",
-    "Pendiente": "Por hacer",
-    "No verificado": "En prueba + etiqueta no-verificado (sin ejecución acreditada)"
-  },
-  "completedEpics": [
-    "HRL-1",
-    "HRL-11",
-    "HRL-24",
-    "HRL-39",
-    "HRL-48",
-    "HRL-57",
-    "HRL-65"
+  "actualProjectId": null,
+  "actualBoardId": null,
+  "sourceFiles": [
+    "docs/backlog-base (1).md",
+    "docs/jira-import (1).csv"
   ],
+  "sourceDate": "2026-11-12",
+  "points": 386,
+  "baseItems": 80,
+  "subtasks": 53,
+  "missingSourceItems": 5,
+  "historicalSnapshot": "historico/jira-correspondencia-2026-11-11.json",
+  "notes": [
+    "El registro del 11 de noviembre está archivado como histórico y no define alcance vigente.",
+    "Este archivo no afirma que exista el proyecto HRL registro ni que se hayan creado claves nuevas.",
+    "Las claves solicitadas se verifican tras la creación del destino y la importación con omisión de HRL-66."
+  ],
+  "renumberedRetainedSubtasks": {
+    "HRL-71": "HRL-82",
+    "HRL-72": "HRL-83",
+    "HRL-73": "HRL-84",
+    "HRL-74": "HRL-85",
+    "HRL-75": "HRL-86",
+    "HRL-76": "HRL-87",
+    "HRL-77": "HRL-88",
+    "HRL-78": "HRL-89",
+    "HRL-79": "HRL-90",
+    "HRL-80": "HRL-91",
+    "HRL-81": "HRL-92",
+    "HRL-82": "HRL-93",
+    "HRL-83": "HRL-94",
+    "HRL-84": "HRL-95",
+    "HRL-85": "HRL-96",
+    "HRL-86": "HRL-97",
+    "HRL-87": "HRL-98",
+    "HRL-88": "HRL-99",
+    "HRL-89": "HRL-100",
+    "HRL-90": "HRL-101",
+    "HRL-91": "HRL-102",
+    "HRL-92": "HRL-103",
+    "HRL-93": "HRL-104",
+    "HRL-97": "HRL-105",
+    "HRL-98": "HRL-106",
+    "HRL-99": "HRL-107",
+    "HRL-100": "HRL-108",
+    "HRL-101": "HRL-109",
+    "HRL-102": "HRL-110",
+    "HRL-103": "HRL-111",
+    "HRL-104": "HRL-112",
+    "HRL-105": "HRL-113",
+    "HRL-106": "HRL-114"
+  },
   "mapping": {
     "HRL-1": {
-      "key": "HRL-55",
+      "requestedKey": "HRL-1",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Módulo de Usuarios, registro e inicio de sesión",
-      "status": "Hecho",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "status": "Hecho",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-2": {
-      "key": "HRL-56",
-      "type": "Historia",
+      "requestedKey": "HRL-2",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Configuración inicial: definir clave maestra y crear primer administrador (envío atómico)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 5,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-3": {
-      "key": "HRL-57",
-      "type": "Historia",
+      "requestedKey": "HRL-3",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Inicio de sesión con usuario y contraseña (Argon2, solo cuentas activas)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 3,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-4": {
-      "key": "HRL-58",
-      "type": "Historia",
+      "requestedKey": "HRL-4",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Cierre de sesión e invalidación de datos de la sesión anterior",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 3,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-5": {
-      "key": "HRL-59",
-      "type": "Historia",
+      "requestedKey": "HRL-5",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Recuperación de clave maestra con soporte (desafío de 15 min, firma Ed25519)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 8,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-6": {
-      "key": "HRL-60",
-      "type": "Historia",
+      "requestedKey": "HRL-6",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Gestión de usuarios: crear, editar, activar/desactivar y cambiar contraseña",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 5,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-7": {
-      "key": "HRL-61",
-      "type": "Historia",
+      "requestedKey": "HRL-7",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Niveles de acceso y permisos por apartado y acción (completo, limitado, personalizado)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 5,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-8": {
-      "key": "HRL-62",
-      "type": "Historia",
+      "requestedKey": "HRL-8",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Protección del último administrador activo (servicio + triggers)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 3,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-9": {
-      "key": "HRL-63",
-      "type": "Historia",
+      "requestedKey": "HRL-9",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Acceso temporal: autorización de otra persona con motivo, limitada a apartado u orden",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 8,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-10": {
-      "key": "HRL-64",
-      "type": "Historia",
+      "requestedKey": "HRL-10",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Perfil de ventana según estado (acceso, configuración inicial, taller)",
-      "status": "Hecho",
       "parent": "HRL-1",
+      "status": "Hecho",
       "points": 2,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-01-usuarios.md"
     },
     "HRL-11": {
-      "key": "HRL-65",
+      "requestedKey": "HRL-11",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Módulo de Registro de clientes y recepción de órdenes",
-      "status": "Hecho",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "status": "Hecho",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-12": {
-      "key": "HRL-66",
-      "type": "Historia",
+      "requestedKey": "HRL-12",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Crear orden con cliente, equipo, falla y trabajo solicitado (folio asignado por backend)",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 8,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-13": {
-      "key": "HRL-67",
-      "type": "Historia",
+      "requestedKey": "HRL-13",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Ficha de recepción: cliente, artículo, antecedentes, precio y observaciones",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-14": {
-      "key": "HRL-68",
-      "type": "Historia",
+      "requestedKey": "HRL-14",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Listado lateral con búsqueda (Todo/Orden/Cliente/Serie), paginación y navegación entre órdenes",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-15": {
-      "key": "HRL-69",
-      "type": "Historia",
+      "requestedKey": "HRL-15",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Editar orden con control de revisión",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-16": {
-      "key": "HRL-70",
-      "type": "Historia",
+      "requestedKey": "HRL-16",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Consulta por folio o ID desde Herramientas",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-17": {
-      "key": "HRL-71",
-      "type": "Historia",
+      "requestedKey": "HRL-17",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Contraseña del equipo cifrada (AES-256-GCM), visible solo bajo solicitud expresa",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 8,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-18": {
-      "key": "HRL-72",
-      "type": "Historia",
+      "requestedKey": "HRL-18",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Abono inicial al crear la orden (con permiso de cobro)",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-19": {
-      "key": "HRL-73",
-      "type": "Historia",
+      "requestedKey": "HRL-19",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Evidencias fotográficas por archivo o cámara (JPEG/PNG/WebP, máx. 20 MiB)",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-20": {
-      "key": "HRL-74",
-      "type": "Historia",
+      "requestedKey": "HRL-20",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Descripción, retiro y restauración de evidencias",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-21": {
-      "key": "HRL-75",
-      "type": "Historia",
+      "requestedKey": "HRL-21",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Papelera: eliminar y restaurar órdenes conservando historial",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 5,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-22": {
-      "key": "HRL-76",
-      "type": "Historia",
+      "requestedKey": "HRL-22",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Nota de entrada imprimible",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-23": {
-      "key": "HRL-77",
-      "type": "Historia",
+      "requestedKey": "HRL-23",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Guardas de borrador al cambiar de apartado o cerrar sesión",
-      "status": "Hecho",
       "parent": "HRL-11",
+      "status": "Hecho",
       "points": 3,
       "sprint": "2",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-02-clientes.md"
     },
     "HRL-24": {
-      "key": "HRL-78",
+      "requestedKey": "HRL-24",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Módulo de Reparaciones",
-      "status": "Hecho",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "status": "Hecho",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-25": {
-      "key": "HRL-79",
-      "type": "Historia",
+      "requestedKey": "HRL-25",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Abrir reparación sobre la orden seleccionada con contexto de cliente y equipo",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-26": {
-      "key": "HRL-80",
-      "type": "Historia",
+      "requestedKey": "HRL-26",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Asignar técnico y registrar notas internas y públicas",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-27": {
-      "key": "HRL-81",
-      "type": "Historia",
+      "requestedKey": "HRL-27",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Etapas y avances con fecha (completar etapa no marca entrega)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-28": {
-      "key": "HRL-82",
-      "type": "Historia",
+      "requestedKey": "HRL-28",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Registro de refacciones utilizadas con costo",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-29": {
-      "key": "HRL-83",
-      "type": "Historia",
+      "requestedKey": "HRL-29",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Registro de garantías (cobertura y días)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-30": {
-      "key": "HRL-84",
-      "type": "Historia",
+      "requestedKey": "HRL-30",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Control de revisión y permisos por operación en el guardado",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-31": {
-      "key": "HRL-85",
-      "type": "Historia",
+      "requestedKey": "HRL-31",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Panel de pagos: total, abonado, pendiente, saldo a favor y movimientos",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-32": {
-      "key": "HRL-86",
-      "type": "Historia",
+      "requestedKey": "HRL-32",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Registrar abonos (importe positivo dentro del pendiente)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-33": {
-      "key": "HRL-87",
-      "type": "Historia",
+      "requestedKey": "HRL-33",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Correcciones de abonos (con motivo, permiso de acceso completo)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-34": {
-      "key": "HRL-88",
-      "type": "Historia",
+      "requestedKey": "HRL-34",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Devolución del saldo a favor (método, motivo y permiso propio)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-35": {
-      "key": "HRL-89",
-      "type": "Historia",
+      "requestedKey": "HRL-35",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Reintento seguro de operaciones financieras (ID de solicitud y huella)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 8,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-36": {
-      "key": "HRL-90",
-      "type": "Historia",
+      "requestedKey": "HRL-36",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Registro de entrega independiente de pago y avance técnico",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 3,
       "sprint": "3",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-37": {
-      "key": "HRL-91",
-      "type": "Historia",
+      "requestedKey": "HRL-37",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Nota de salida con resumen técnico público y garantías",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-38": {
-      "key": "HRL-92",
-      "type": "Historia",
+      "requestedKey": "HRL-38",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Preferencias de publicación (solo guardado local, sin portal web)",
-      "status": "Hecho",
       "parent": "HRL-24",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Baja"
+      "sourceFile": "epic-03-reparaciones.md"
     },
     "HRL-39": {
-      "key": "HRL-93",
+      "requestedKey": "HRL-39",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Módulo de Bitácora / Auditoría",
-      "status": "En progreso",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
+      "status": "En progreso",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-40": {
-      "key": "HRL-94",
-      "type": "Historia",
+      "requestedKey": "HRL-40",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Servicio de auditoría dentro de la misma transacción del cambio",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 5,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-41": {
-      "key": "HRL-95",
-      "type": "Historia",
+      "requestedKey": "HRL-41",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Bitácora global con filtros por texto, autor, operación, orden y fechas",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-42": {
-      "key": "HRL-96",
-      "type": "Historia",
+      "requestedKey": "HRL-42",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Detalle de cambios (valores anterior y nuevo, sin contraseñas)",
-      "status": "En progreso",
       "parent": "HRL-39",
+      "status": "En progreso",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-71": {
-      "key": "HRL-97",
-      "type": "Subtask",
-      "title": "Completar en `OrderService::edit` las diferencias de email y entrega estimada, y revisar cobertura de cada campo editable sin registrar el secreto del equipo.",
-      "status": "Pendiente",
-      "parent": "HRL-42",
-      "layer": "Servicio Rust",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-72": {
-      "key": "HRL-98",
-      "type": "Subtask",
-      "title": "Transportar entidad e identificador afectado desde la consulta de auditoría en el contrato de detalle; no alterar el libro inmutable existente.",
-      "status": "Pendiente",
-      "parent": "HRL-42",
-      "layer": "Repositorio/SQL",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-73": {
-      "key": "HRL-99",
-      "type": "Subtask",
-      "title": "Mostrar la identidad del registro y los nuevos campos de diferencia en el detalle de Bitácora.",
-      "status": "Pendiente",
-      "parent": "HRL-42",
-      "layer": "Composable/store",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-74": {
-      "key": "HRL-100",
-      "type": "Subtask",
-      "title": "Cubrir edición de email/entrega estimada, comparación anterior/nuevo y ausencia de contraseñas en todos los eventos y DTO públicos de auditoría.",
-      "status": "Pendiente",
-      "parent": "HRL-42",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-43": {
-      "key": "HRL-101",
-      "type": "Historia",
+      "requestedKey": "HRL-43",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Historial de una orden",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-44": {
-      "key": "HRL-102",
-      "type": "Historia",
+      "requestedKey": "HRL-44",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Finanzas: filtros por folio, cliente, clasificación, periodo y alcance",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-45": {
-      "key": "HRL-103",
-      "type": "Historia",
+      "requestedKey": "HRL-45",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Clasificación de órdenes (completadas, pagadas sin entregar, entregadas con pendiente, sin liquidar)",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-46": {
-      "key": "HRL-104",
-      "type": "Historia",
+      "requestedKey": "HRL-46",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Seis indicadores financieros agrupados por moneda",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-47": {
-      "key": "HRL-105",
-      "type": "Historia",
+      "requestedKey": "HRL-47",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Registro de gastos directos (descripción, importe, motivo y autorización)",
-      "status": "Hecho",
       "parent": "HRL-39",
+      "status": "Hecho",
       "points": 8,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-04-bitacora.md"
     },
     "HRL-48": {
-      "key": "HRL-106",
+      "requestedKey": "HRL-48",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Módulo de Empresa",
-      "status": "En progreso",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
+      "status": "En progreso",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-49": {
-      "key": "HRL-107",
-      "type": "Historia",
+      "requestedKey": "HRL-49",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Datos generales: nombre, identificación fiscal, contacto, dirección y horario",
-      "status": "En progreso",
       "parent": "HRL-48",
+      "status": "En progreso",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Media"
-    },
-    "HRL-75": {
-      "key": "HRL-108",
-      "type": "Subtask",
-      "title": "Aplicar en `CompanyService::save` las reglas documentadas de correo y sitio web, admitiendo campos opcionales vacíos como el formulario actual.",
-      "status": "Pendiente",
-      "parent": "HRL-49",
-      "layer": "Servicio Rust",
-      "sprint": "4",
-      "priority": "Media"
-    },
-    "HRL-76": {
-      "key": "HRL-109",
-      "type": "Subtask",
-      "title": "Cubrir llamadas directas con correo/web inválidos, valores opcionales vacíos y rechazo sin modificar configuración ni auditoría.",
-      "status": "Pendiente",
-      "parent": "HRL-49",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Media"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-50": {
-      "key": "HRL-110",
-      "type": "Historia",
+      "requestedKey": "HRL-50",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Logo y su uso en documentos",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-51": {
-      "key": "HRL-111",
-      "type": "Historia",
+      "requestedKey": "HRL-51",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Notas impresas: mensajes de entrada/salida, firma y referencia",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-52": {
-      "key": "HRL-112",
-      "type": "Historia",
+      "requestedKey": "HRL-52",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Cláusulas: título, texto, orden y aplicación a entrada/salida",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-53": {
-      "key": "HRL-113",
-      "type": "Historia",
+      "requestedKey": "HRL-53",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Hoja de impresión: carta, ticket 80/60 mm, orientación y copias",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-54": {
-      "key": "HRL-114",
-      "type": "Historia",
+      "requestedKey": "HRL-54",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Folios y garantías: prefijo, siguiente número y días sugeridos",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-55": {
-      "key": "HRL-115",
-      "type": "Historia",
+      "requestedKey": "HRL-55",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Región e impuestos: país, zona horaria, moneda e impuesto incluido",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 3,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-56": {
-      "key": "HRL-116",
-      "type": "Historia",
+      "requestedKey": "HRL-56",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Edición como borrador con control de revisión, vista previa y auditoría",
-      "status": "Hecho",
       "parent": "HRL-48",
+      "status": "Hecho",
       "points": 5,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-05-empresa.md"
     },
     "HRL-57": {
-      "key": "HRL-117",
+      "requestedKey": "HRL-57",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Base técnica transversal",
-      "status": "En progreso",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
+      "status": "En progreso",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-58": {
-      "key": "HRL-118",
-      "type": "Tarea",
+      "requestedKey": "HRL-58",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Esquema SQLite 3FN y migraciones (001 y 002)",
-      "status": "Hecho",
       "parent": "HRL-57",
+      "status": "Hecho",
       "points": 8,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Alta"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-59": {
-      "key": "HRL-119",
-      "type": "Tarea",
+      "requestedKey": "HRL-59",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Arquitectura backend en capas: commands, services, repositories, db",
-      "status": "En progreso",
       "parent": "HRL-57",
+      "status": "En progreso",
       "points": 8,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-77": {
-      "key": "HRL-120",
-      "type": "Subtask",
-      "title": "Recibir por constructor los repositorios colaboradores que hoy se instancian en RepairService, EvidenceService y ReportService, conservando la transacción única y la composición.",
-      "status": "Pendiente",
-      "parent": "HRL-59",
-      "layer": "Servicio Rust",
-      "sprint": "1",
-      "priority": "Alta"
-    },
-    "HRL-78": {
-      "key": "HRL-121",
-      "type": "Subtask",
-      "title": "Probar las colaboraciones mediante contratos de repositorio sustituibles donde permitan simular fallos, sin convertir los comandos en acceso directo a SQL. El retiro de rutas anteriores se concentra en HRL-63.",
-      "status": "Pendiente",
-      "parent": "HRL-59",
-      "layer": "Pruebas",
-      "sprint": "1",
-      "priority": "Alta"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-60": {
-      "key": "HRL-122",
-      "type": "Tarea",
+      "requestedKey": "HRL-60",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Frontend MVVM con stores Pinia y capa services/api",
-      "status": "En progreso",
       "parent": "HRL-57",
+      "status": "En progreso",
       "points": 8,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-79": {
-      "key": "HRL-123",
-      "type": "Subtask",
-      "title": "Cerrar la coexistencia de acceso a Tauri directo en composables con HRL-63 y mantener `services/api` como único adaptador IPC de aplicación.",
-      "status": "Pendiente",
-      "parent": "HRL-60",
-      "layer": "Composable/store",
-      "sprint": "1",
-      "priority": "Alta"
-    },
-    "HRL-80": {
-      "key": "HRL-124",
-      "type": "Subtask",
-      "title": "Trasladar las reglas financieras de exclusión, periodos y agregación de `utils/finances.ts` a servicio/modelo de dominio según arquitectura, dejando formato y fechas puras en utils.",
-      "status": "Pendiente",
-      "parent": "HRL-60",
-      "layer": "Servicio Rust",
-      "sprint": "1",
-      "priority": "Alta"
-    },
-    "HRL-81": {
-      "key": "HRL-125",
-      "type": "Subtask",
-      "title": "Verificar equivalencia de los filtros e indicadores, denegaciones en backend y descarte de respuestas de una sesión anterior tras completar la separación.",
-      "status": "Pendiente",
-      "parent": "HRL-60",
-      "layer": "Pruebas",
-      "sprint": "1",
-      "priority": "Alta"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-61": {
-      "key": "HRL-126",
-      "type": "Tarea",
+      "requestedKey": "HRL-61",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Mover vistas restantes de components/ a views/ y adelgazar WorkshopApp",
-      "status": "En progreso",
       "parent": "HRL-57",
+      "status": "En progreso",
       "points": 8,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Media"
-    },
-    "HRL-82": {
-      "key": "HRL-127",
-      "type": "Subtask",
-      "title": "Trasladar las pantallas completas restantes a views y actualizar la composición de WorkshopApp conservándolo como contenedor.",
-      "status": "Pendiente",
-      "parent": "HRL-61",
-      "layer": "Vista",
-      "sprint": "4",
-      "priority": "Media"
-    },
-    "HRL-83": {
-      "key": "HRL-128",
-      "type": "Subtask",
-      "title": "Extraer estado y operaciones de cámara y editor de cláusulas; llevar al viewmodel la selección de días sugeridos que hoy calcula la plantilla de RepairWorkspace.",
-      "status": "Pendiente",
-      "parent": "HRL-61",
-      "layer": "Composable/store",
-      "sprint": "4",
-      "priority": "Media"
-    },
-    "HRL-84": {
-      "key": "HRL-129",
-      "type": "Subtask",
-      "title": "Verificar guardas, eventos, foco y errores de las pantallas trasladadas sin cambiar permisos ni comportamiento del taller.",
-      "status": "Pendiente",
-      "parent": "HRL-61",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Media"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-62": {
-      "key": "HRL-130",
-      "type": "Tarea",
+      "requestedKey": "HRL-62",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Custodia de claves con DPAPI y estrategia de respaldo (base + assets + claves)",
-      "status": "En progreso",
       "parent": "HRL-57",
+      "status": "En progreso",
       "points": 8,
       "sprint": "1",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-85": {
-      "key": "HRL-131",
-      "type": "Subtask",
-      "title": "Precisar el contrato de custodia/restauración conjunta de DB, assets y clave protegida, distinguiendo recuperación con el mismo usuario Windows de portabilidad. No elegir exportación o cambio de protección sin definición de HRL-70.",
-      "status": "Pendiente",
-      "parent": "HRL-62",
-      "layer": "Servicio Rust",
-      "sprint": "1",
-      "priority": "Alta"
-    },
-    "HRL-86": {
-      "key": "HRL-132",
-      "type": "Subtask",
-      "title": "Verificar reapertura DPAPI con la identidad real de destino y fallos por archivo ausente/corrupto o identidad no válida; comprobar que no aparece material de clave en SQLite ni auditoría.",
-      "status": "Pendiente",
-      "parent": "HRL-62",
-      "layer": "Pruebas",
-      "sprint": "1",
-      "priority": "Alta"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-63": {
-      "key": "HRL-133",
-      "type": "Tarea",
+      "requestedKey": "HRL-63",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Retirar código legacy (comandos anteriores, plugin SQL 001-013, archivos Legacy)",
-      "status": "En progreso",
       "parent": "HRL-57",
+      "status": "En progreso",
       "points": 13,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-87": {
-      "key": "HRL-134",
-      "type": "Subtask",
-      "title": "Archivar migraciones anteriores en legacy y retirar su registro del cargador anterior sin ejecutar ni migrar datos reales (5 puntos de los 13 del padre).",
-      "status": "Pendiente",
-      "parent": "HRL-63",
-      "layer": "Repositorio/SQL",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-88": {
-      "key": "HRL-135",
-      "type": "Subtask",
-      "title": "Retirar comandos/módulos anteriores de lib.rs y el plugin ligado a esa ruta, conservando solo servicios normalizados y el mecanismo de seguridad vigente (5 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-63",
-      "layer": "Servicio Rust",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-89": {
-      "key": "HRL-136",
-      "type": "Subtask",
-      "title": "Retirar composables/componentes Legacy y datos de demostración sin uso como fuente de verdad, tras comprobar referencias y conservar utilidades puras aún necesarias (3 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-63",
-      "layer": "Composable/store",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-90": {
-      "key": "HRL-137",
-      "type": "Subtask",
-      "title": "Comprobar ausencia de invocaciones antiguas y regresión de permisos, recepción, reparación y dinero sobre la única ruta vigente (incluida en las entregas anteriores).",
-      "status": "Pendiente",
-      "parent": "HRL-63",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Alta"
+      "sourceFile": "epic-06-base-tecnica.md"
     },
     "HRL-64": {
-      "key": "HRL-138",
-      "type": "Tarea",
+      "requestedKey": "HRL-64",
+      "jiraKey": null,
+      "type": "Task",
       "title": "Pruebas frontend y Rust, y validación nativa (cámara, impresora, DPAPI)",
+      "parent": "HRL-77",
       "status": "No verificado",
-      "parent": "HRL-57",
       "points": 13,
       "sprint": "4",
-      "transitioned": true,
-      "jiraStatus": "En prueba",
-      "priority": "Alta"
-    },
-    "HRL-91": {
-      "key": "HRL-139",
-      "type": "Subtask",
-      "title": "Ejecutar y completar regresión frontend de sesión, borradores y reintentos; reparar en una tarea posterior la referencia `test:company` a `tests/company.test.mjs`, ausente del árbol revisado (5 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-64",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-92": {
-      "key": "HRL-140",
-      "type": "Subtask",
-      "title": "Ejecutar y completar cobertura Rust de migraciones/FK, permisos, concurrencia, libros inmutables y rollback de auditoría, reportando resultados del árbol exacto (5 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-64",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Alta"
-    },
-    "HRL-93": {
-      "key": "HRL-141",
-      "type": "Subtask",
-      "title": "Validar en la aplicación Windows cámara concedida/denegada y liberación, impresora carta/ticket, geometría de ventana y reapertura DPAPI; registrar entorno y evidencia reproducible (3 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-64",
-      "layer": "Pruebas",
-      "sprint": "4",
-      "priority": "Alta"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
     },
     "HRL-65": {
-      "key": "HRL-142",
+      "requestedKey": "HRL-65",
+      "jiraKey": null,
       "type": "Epic",
       "title": "Pendientes futuros (Backlog)",
-      "status": "En progreso",
       "parent": null,
-      "transitioned": true,
-      "jiraStatus": "En curso",
-      "priority": "Alta"
-    },
-    "HRL-66": {
-      "key": "HRL-143",
-      "type": "Historia",
-      "title": "Portal web del cliente y publicación de avances",
-      "status": "Pendiente",
-      "parent": "HRL-65",
-      "points": 13,
-      "sprint": "Backlog",
-      "priority": "Alta"
-    },
-    "HRL-94": {
-      "key": "HRL-144",
-      "type": "Subtask",
-      "title": "Definir con producto el contrato de consulta del cliente y construir la vista del portal después de aprobarlo, usando solo datos públicos previstos (5 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-66",
-      "layer": "Vista",
-      "sprint": "Backlog",
-      "priority": "Alta"
-    },
-    "HRL-95": {
-      "key": "HRL-145",
-      "type": "Subtask",
-      "title": "Implementar publicación real según contrato y autorización definidos, separada del guardado local y con trazabilidad de la operación efectiva (5 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-66",
-      "layer": "Servicio Rust",
-      "sprint": "Backlog",
-      "priority": "Alta"
-    },
-    "HRL-96": {
-      "key": "HRL-146",
-      "type": "Subtask",
-      "title": "Verificar distinción entre guardado local/publicación, aislamiento de notas internas y manejo del fallo de conexión conforme al contrato que se apruebe (3 puntos).",
-      "status": "Pendiente",
-      "parent": "HRL-66",
-      "layer": "Pruebas",
-      "sprint": "Backlog",
-      "priority": "Alta"
+      "status": "En progreso",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-07-futuros.md"
     },
     "HRL-67": {
-      "key": "HRL-147",
-      "type": "Historia",
+      "requestedKey": "HRL-67",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Importación de datos desde la base legacy",
-      "status": "No verificado",
       "parent": "HRL-65",
+      "status": "No verificado",
       "points": 8,
       "sprint": "Backlog",
-      "transitioned": true,
-      "jiraStatus": "En prueba",
-      "priority": "Alta"
-    },
-    "HRL-97": {
-      "key": "HRL-148",
-      "type": "Subtask",
-      "title": "Inventariar una copia autorizada de la base origen y definir correspondencias a 3FN, conservando libros, identificadores de referencia y fechas desconocidas; no escribir migración de datos sin confirmar el alcance.",
-      "status": "Pendiente",
-      "parent": "HRL-67",
-      "layer": "Repositorio/SQL",
-      "sprint": "Backlog",
-      "priority": "Alta"
-    },
-    "HRL-98": {
-      "key": "HRL-149",
-      "type": "Subtask",
-      "title": "Diseñar la importación transaccional al destino normalizado después de confirmar datos y reglas de conflictos, sin reutilizar la sesión ni el pool del importador anterior.",
-      "status": "Pendiente",
-      "parent": "HRL-67",
-      "layer": "Servicio Rust",
-      "sprint": "Backlog",
-      "priority": "Alta"
-    },
-    "HRL-99": {
-      "key": "HRL-150",
-      "type": "Subtask",
-      "title": "Con fixtures autorizadas, comprobar conservación de originales, dinero y auditoría, rechazo de datos ambiguos y ausencia de duplicación al repetir la importación según el contrato aprobado.",
-      "status": "Pendiente",
-      "parent": "HRL-67",
-      "layer": "Pruebas",
-      "sprint": "Backlog",
-      "priority": "Alta"
+      "sourceFile": "epic-07-futuros.md"
     },
     "HRL-68": {
-      "key": "HRL-151",
-      "type": "Historia",
+      "requestedKey": "HRL-68",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Carga de video y documentos como evidencia",
-      "status": "Pendiente",
       "parent": "HRL-65",
+      "status": "Pendiente",
       "points": 8,
       "sprint": "Backlog",
-      "priority": "Baja"
-    },
-    "HRL-100": {
-      "key": "HRL-152",
-      "type": "Subtask",
-      "title": "Diseñar selección y consulta de archivos adicionales después de definir formatos, tamaños y comportamiento de visualización; no reutilizar silenciosamente el límite fotográfico de 20 MiB.",
-      "status": "Pendiente",
-      "parent": "HRL-68",
-      "layer": "Vista",
-      "sprint": "Backlog",
-      "priority": "Baja"
-    },
-    "HRL-101": {
-      "key": "HRL-153",
-      "type": "Subtask",
-      "title": "Extender contratos de evidencia y estados de reintento manteniendo identificadores, alcance y errores de sesión.",
-      "status": "Pendiente",
-      "parent": "HRL-68",
-      "layer": "Composable/store",
-      "sprint": "Backlog",
-      "priority": "Baja"
-    },
-    "HRL-102": {
-      "key": "HRL-154",
-      "type": "Subtask",
-      "title": "Ampliar validación y almacenamiento controlado por tipo junto al repositorio normalizado, una vez aprobada la política de archivo.",
-      "status": "Pendiente",
-      "parent": "HRL-68",
-      "layer": "Servicio Rust",
-      "sprint": "Backlog",
-      "priority": "Baja"
-    },
-    "HRL-103": {
-      "key": "HRL-155",
-      "type": "Subtask",
-      "title": "Cubrir tipos autorizados/no autorizados, tamaños definidos, rollback de metadatos/auditoría y conservación del original retirado.",
-      "status": "Pendiente",
-      "parent": "HRL-68",
-      "layer": "Pruebas",
-      "sprint": "Backlog",
-      "priority": "Baja"
+      "sourceFile": "epic-07-futuros.md"
     },
     "HRL-69": {
-      "key": "HRL-156",
-      "type": "Historia",
+      "requestedKey": "HRL-69",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Herramientas (acceso temporal, consulta por referencia, actualización e historial)",
-      "status": "Hecho",
       "parent": "HRL-65",
+      "status": "Hecho",
       "points": 3,
       "sprint": "Backlog",
-      "transitioned": true,
-      "jiraStatus": "Terminado",
-      "priority": "Media"
+      "sourceFile": "epic-07-futuros.md"
     },
     "HRL-70": {
-      "key": "HRL-157",
-      "type": "Historia",
+      "requestedKey": "HRL-70",
+      "jiraKey": null,
+      "type": "Story",
       "title": "Respaldo y migración automática entre instalaciones",
-      "status": "Pendiente",
       "parent": "HRL-65",
+      "status": "Pendiente",
       "points": 13,
       "sprint": "Backlog",
-      "priority": "Alta"
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-71": {
+      "requestedKey": "HRL-71",
+      "jiraKey": null,
+      "type": "Epic",
+      "title": "Sincronización con el portal web",
+      "parent": null,
+      "status": "Pendiente",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-72": {
+      "requestedKey": "HRL-72",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[P03] Acordar la sincronización con el responsable del portal",
+      "parent": "HRL-71",
+      "status": "Pendiente",
+      "points": 3,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-73": {
+      "requestedKey": "HRL-73",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S305] Publicar cambios autorizados",
+      "parent": "HRL-71",
+      "status": "Pendiente",
+      "points": 8,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-74": {
+      "requestedKey": "HRL-74",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S306] Probar el contrato de intercambio",
+      "parent": "HRL-71",
+      "status": "Pendiente",
+      "points": 5,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-75": {
+      "requestedKey": "HRL-75",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S401] Integrar la publicación con el servicio web",
+      "parent": "HRL-71",
+      "status": "Pendiente",
+      "points": 8,
+      "sprint": "4",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-76": {
+      "requestedKey": "HRL-76",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[A05] Ampliar controles de publicación",
+      "parent": "HRL-71",
+      "status": "Pendiente",
+      "points": 5,
+      "sprint": "Backlog",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-77": {
+      "requestedKey": "HRL-77",
+      "jiraKey": null,
+      "type": "Epic",
+      "title": "Pruebas, instalación y entrega",
+      "parent": null,
+      "status": "En progreso",
+      "points": null,
+      "sprint": null,
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-78": {
+      "requestedKey": "HRL-78",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S206] Probar edición, evidencias y permisos",
+      "parent": "HRL-77",
+      "status": "En progreso",
+      "points": 5,
+      "sprint": "2",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-79": {
+      "requestedKey": "HRL-79",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S307] Probar notas, garantías y totales",
+      "parent": "HRL-77",
+      "status": "En progreso",
+      "points": 5,
+      "sprint": "3",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-80": {
+      "requestedKey": "HRL-80",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S402] Preparar instalación y recuperación local",
+      "parent": "HRL-77",
+      "status": "En progreso",
+      "points": 8,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-81": {
+      "requestedKey": "HRL-81",
+      "jiraKey": null,
+      "type": "Task",
+      "title": "[S403] Realizar pruebas con personal del taller",
+      "parent": "HRL-77",
+      "status": "No verificado",
+      "points": 5,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-82": {
+      "requestedKey": "HRL-82",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Completar en `OrderService::edit` las diferencias de email y entrega estimada, y revisar cobertura de cada campo editable sin registrar el secreto del equipo.",
+      "parent": "HRL-42",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-04-bitacora.md"
+    },
+    "HRL-83": {
+      "requestedKey": "HRL-83",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Repositorio/SQL] Transportar entidad e identificador afectado desde la consulta de auditoría en el contrato de detalle; no alterar el libro inmutable existente.",
+      "parent": "HRL-42",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-04-bitacora.md"
+    },
+    "HRL-84": {
+      "requestedKey": "HRL-84",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Mostrar la identidad del registro y los nuevos campos de diferencia en el detalle de Bitácora.",
+      "parent": "HRL-42",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-04-bitacora.md"
+    },
+    "HRL-85": {
+      "requestedKey": "HRL-85",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Cubrir edición de email/entrega estimada, comparación anterior/nuevo y ausencia de contraseñas en todos los eventos y DTO públicos de auditoría.",
+      "parent": "HRL-42",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-04-bitacora.md"
+    },
+    "HRL-86": {
+      "requestedKey": "HRL-86",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Aplicar en `CompanyService::save` las reglas documentadas de correo y sitio web, admitiendo campos opcionales vacíos como el formulario actual.",
+      "parent": "HRL-49",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-05-empresa.md"
+    },
+    "HRL-87": {
+      "requestedKey": "HRL-87",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Cubrir llamadas directas con correo/web inválidos, valores opcionales vacíos y rechazo sin modificar configuración ni auditoría.",
+      "parent": "HRL-49",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-05-empresa.md"
+    },
+    "HRL-88": {
+      "requestedKey": "HRL-88",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Recibir por constructor los repositorios colaboradores que hoy se instancian en RepairService, EvidenceService y ReportService, conservando la transacción única y la composición.",
+      "parent": "HRL-59",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-89": {
+      "requestedKey": "HRL-89",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Probar las colaboraciones mediante contratos de repositorio sustituibles donde permitan simular fallos, sin convertir los comandos en acceso directo a SQL. El retiro de rutas anteriores se concentra en HRL-63.",
+      "parent": "HRL-59",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-90": {
+      "requestedKey": "HRL-90",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Cerrar la coexistencia de acceso a Tauri directo en composables con HRL-63 y mantener `services/api` como único adaptador IPC de aplicación.",
+      "parent": "HRL-60",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-91": {
+      "requestedKey": "HRL-91",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Trasladar las reglas financieras de exclusión, periodos y agregación de `utils/finances.ts` a servicio/modelo de dominio según arquitectura, dejando formato y fechas puras en utils.",
+      "parent": "HRL-60",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-92": {
+      "requestedKey": "HRL-92",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Verificar equivalencia de los filtros e indicadores, denegaciones en backend y descarte de respuestas de una sesión anterior tras completar la separación.",
+      "parent": "HRL-60",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-93": {
+      "requestedKey": "HRL-93",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Vista] Trasladar las pantallas completas restantes a views y actualizar la composición de WorkshopApp conservándolo como contenedor.",
+      "parent": "HRL-61",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-94": {
+      "requestedKey": "HRL-94",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Extraer estado y operaciones de cámara y editor de cláusulas; llevar al viewmodel la selección de días sugeridos que hoy calcula la plantilla de RepairWorkspace.",
+      "parent": "HRL-61",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-95": {
+      "requestedKey": "HRL-95",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Verificar guardas, eventos, foco y errores de las pantallas trasladadas sin cambiar permisos ni comportamiento del taller.",
+      "parent": "HRL-61",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-96": {
+      "requestedKey": "HRL-96",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Precisar el contrato de custodia/restauración conjunta de DB, assets y clave protegida, distinguiendo recuperación con el mismo usuario Windows de portabilidad. No elegir exportación o cambio de protección sin definición de HRL-70.",
+      "parent": "HRL-62",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-97": {
+      "requestedKey": "HRL-97",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Verificar reapertura DPAPI con la identidad real de destino y fallos por archivo ausente/corrupto o identidad no válida; comprobar que no aparece material de clave en SQLite ni auditoría.",
+      "parent": "HRL-62",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "1",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-98": {
+      "requestedKey": "HRL-98",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Repositorio/SQL] Archivar migraciones anteriores en legacy y retirar su registro del cargador anterior sin ejecutar ni migrar datos reales (5 puntos de los 13 del padre).",
+      "parent": "HRL-63",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-99": {
+      "requestedKey": "HRL-99",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Retirar comandos/módulos anteriores de lib.rs y el plugin ligado a esa ruta, conservando solo servicios normalizados y el mecanismo de seguridad vigente (5 puntos).",
+      "parent": "HRL-63",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-100": {
+      "requestedKey": "HRL-100",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Retirar composables/componentes Legacy y datos de demostración sin uso como fuente de verdad, tras comprobar referencias y conservar utilidades puras aún necesarias (3 puntos).",
+      "parent": "HRL-63",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-101": {
+      "requestedKey": "HRL-101",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Comprobar ausencia de invocaciones antiguas y regresión de permisos, recepción, reparación y dinero sobre la única ruta vigente (incluida en las entregas anteriores).",
+      "parent": "HRL-63",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-06-base-tecnica.md"
+    },
+    "HRL-102": {
+      "requestedKey": "HRL-102",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Ejecutar y completar regresión frontend de sesión, borradores y reintentos; reparar en una tarea posterior la referencia `test:company` a `tests/company.test.mjs`, ausente del árbol revisado (5 puntos).",
+      "parent": "HRL-64",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-103": {
+      "requestedKey": "HRL-103",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Ejecutar y completar cobertura Rust de migraciones/FK, permisos, concurrencia, libros inmutables y rollback de auditoría, reportando resultados del árbol exacto (5 puntos).",
+      "parent": "HRL-64",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
     },
     "HRL-104": {
-      "key": "HRL-158",
-      "type": "Subtask",
-      "title": "Definir e implementar, tras aprobar la estrategia de HRL-62, el procedimiento autorizado para recuperar claves junto con la instalación, distinguiéndolo del restablecimiento Ed25519 de contraseñas de acceso (5 puntos).",
+      "requestedKey": "HRL-104",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Validar en la aplicación Windows cámara concedida/denegada y liberación, impresora carta/ticket, geometría de ventana y reapertura DPAPI; registrar entorno y evidencia reproducible (3 puntos).",
+      "parent": "HRL-64",
       "status": "Pendiente",
-      "parent": "HRL-70",
-      "layer": "Servicio Rust",
-      "sprint": "Backlog",
-      "priority": "Alta"
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
     },
     "HRL-105": {
-      "key": "HRL-159",
-      "type": "Subtask",
-      "title": "Implementar captura y restauración consistentes de DB normalizada y assets, conservando referencias, libros y secuencias; el respaldo legacy existente no sustituye esta entrega (5 puntos).",
+      "requestedKey": "HRL-105",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Repositorio/SQL] Inventariar una copia autorizada de la base origen y definir correspondencias a 3FN, conservando libros, identificadores de referencia y fechas desconocidas; no escribir migración de datos sin confirmar el alcance.",
+      "parent": "HRL-67",
       "status": "Pendiente",
-      "parent": "HRL-70",
-      "layer": "Repositorio/SQL",
+      "points": null,
       "sprint": "Backlog",
-      "priority": "Alta"
+      "sourceFile": "epic-07-futuros.md"
     },
     "HRL-106": {
-      "key": "HRL-160",
-      "type": "Subtask",
-      "title": "Probar restauración conjunta en origen/destino y rechazos por paquete incompleto, clave no recuperable o esquema incompatible, sin alterar el original hasta validar el resultado (3 puntos).",
+      "requestedKey": "HRL-106",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Diseñar la importación transaccional al destino normalizado después de confirmar datos y reglas de conflictos, sin reutilizar la sesión ni el pool del importador anterior.",
+      "parent": "HRL-67",
       "status": "Pendiente",
-      "parent": "HRL-70",
-      "layer": "Pruebas",
+      "points": null,
       "sprint": "Backlog",
-      "priority": "Alta"
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-107": {
+      "requestedKey": "HRL-107",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Con fixtures autorizadas, comprobar conservación de originales, dinero y auditoría, rechazo de datos ambiguos y ausencia de duplicación al repetir la importación según el contrato aprobado.",
+      "parent": "HRL-67",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-108": {
+      "requestedKey": "HRL-108",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Vista] Diseñar selección y consulta de archivos adicionales después de definir formatos, tamaños y comportamiento de visualización; no reutilizar silenciosamente el límite fotográfico de 20 MiB.",
+      "parent": "HRL-68",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-109": {
+      "requestedKey": "HRL-109",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Extender contratos de evidencia y estados de reintento manteniendo identificadores, alcance y errores de sesión.",
+      "parent": "HRL-68",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-110": {
+      "requestedKey": "HRL-110",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Ampliar validación y almacenamiento controlado por tipo junto al repositorio normalizado, una vez aprobada la política de archivo.",
+      "parent": "HRL-68",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-111": {
+      "requestedKey": "HRL-111",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Cubrir tipos autorizados/no autorizados, tamaños definidos, rollback de metadatos/auditoría y conservación del original retirado.",
+      "parent": "HRL-68",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-112": {
+      "requestedKey": "HRL-112",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Definir e implementar, tras aprobar la estrategia de HRL-62, el procedimiento autorizado para recuperar claves junto con la instalación, distinguiéndolo del restablecimiento Ed25519 de contraseñas de acceso (5 puntos).",
+      "parent": "HRL-70",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-113": {
+      "requestedKey": "HRL-113",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Repositorio/SQL] Implementar captura y restauración consistentes de DB normalizada y assets, conservando referencias, libros y secuencias; el respaldo legacy existente no sustituye esta entrega (5 puntos).",
+      "parent": "HRL-70",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-114": {
+      "requestedKey": "HRL-114",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Probar restauración conjunta en origen/destino y rechazos por paquete incompleto, clave no recuperable o esquema incompatible, sin alterar el original hasta validar el resultado (3 puntos).",
+      "parent": "HRL-70",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-07-futuros.md"
+    },
+    "HRL-115": {
+      "requestedKey": "HRL-115",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Preparar con el responsable del portal el contrato de datos, autorización y respuesta, partiendo del resumen público y de la separación entre guardado local y publicación; registrar los acuerdos antes de implementar.",
+      "parent": "HRL-72",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-116": {
+      "requestedKey": "HRL-116",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Acordar ejemplos y casos de rechazo verificables contra el contrato, dejando explícitos los aspectos todavía sin definir.",
+      "parent": "HRL-72",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-117": {
+      "requestedKey": "HRL-117",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Incorporar estados de publicación real separados del guardado local, consumiendo el contrato que se acuerde en HRL-72 sin reutilizar el indicador de preferencia como éxito remoto.",
+      "parent": "HRL-73",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-118": {
+      "requestedKey": "HRL-118",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Implementar la operación de publicación autorizada y su trazabilidad de acuerdo con el contrato; mantener secretos y notas internas fuera de los datos del cliente.",
+      "parent": "HRL-73",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-119": {
+      "requestedKey": "HRL-119",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Cubrir publicación autorizada, rechazo por permiso y resultado no confirmado con el contrato aprobado, sin certificar una conexión mediante mocks solamente.",
+      "parent": "HRL-73",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-120": {
+      "requestedKey": "HRL-120",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Preparar el adaptador de contrato comprobable en un entorno acordado con el portal; no definir un endpoint o credencial a partir de fixtures locales.",
+      "parent": "HRL-74",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-121": {
+      "requestedKey": "HRL-121",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Añadir y registrar casos válidos, rechazo de autorización, contenido privado excluido y resultados fallidos o no confirmados según el contrato de HRL-72.",
+      "parent": "HRL-74",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-122": {
+      "requestedKey": "HRL-122",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Composable/store] Conectar el flujo de publicación al resultado del servicio integrado, con estados de espera, éxito confirmado y error sin afirmar una publicación por guardar preferencias.",
+      "parent": "HRL-75",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-123": {
+      "requestedKey": "HRL-123",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Integrar el cliente del portal aprobado por constructor y respetar el comportamiento offline-first, permisos y trazabilidad; no introducir comunicación desde componentes.",
+      "parent": "HRL-75",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-124": {
+      "requestedKey": "HRL-124",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Registrar una integración de extremo a extremo en el entorno acordado y sus rechazos, separando la aceptación remota de los mocks locales.",
+      "parent": "HRL-75",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-125": {
+      "requestedKey": "HRL-125",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Vista] Precisar y construir los controles adicionales que se acuerden para el portal, distinguiéndolos de las opciones locales de HRL-38 y sin inventar destinos ni capacidades.",
+      "parent": "HRL-76",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-126": {
+      "requestedKey": "HRL-126",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Verificar los controles definidos, sus permisos y la diferencia entre preferencia local y publicación confirmada; registrar lo que siga sin especificar.",
+      "parent": "HRL-76",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "Backlog",
+      "sourceFile": "epic-08-sincronizacion-portal.md"
+    },
+    "HRL-127": {
+      "requestedKey": "HRL-127",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Completar una matriz de edición, revisión antigua, consulta de evidencia, descripción, retiro/restauración y denegaciones sobre los contratos normalizados, identificando casos ya existentes y huecos sin duplicarlos.",
+      "parent": "HRL-78",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "2",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-128": {
+      "requestedKey": "HRL-128",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Preparar y registrar la ejecución integrada de la matriz frontend/Rust sobre datos aislados. La cámara física pertenece a HRL-64; no acreditar ese recorrido con mocks.",
+      "parent": "HRL-78",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "2",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-129": {
+      "requestedKey": "HRL-129",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Completar aserciones del resumen público y documento de entrada/salida normalizados: nota pública, garantías, exclusión de notas internas/contraseñas y errores de preparación; distinguir fixtures de pruebas ejecutables.",
+      "parent": "HRL-79",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-130": {
+      "requestedKey": "HRL-130",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Integrar los casos de totales, refacciones, cobros, ajustes, devoluciones y separación de monedas con garantías y notas del flujo actual, registrando después la ejecución real. La impresión física queda en HRL-64.",
+      "parent": "HRL-79",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "3",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-131": {
+      "requestedKey": "HRL-131",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Servicio Rust] Documentar el procedimiento de instalación, primer inicio y recuperación local con rutas reales de DB, assets y custodia, apoyado en la estrategia de HRL-62. No implementar aquí otra migración automática ni duplicar HRL-70.",
+      "parent": "HRL-80",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-132": {
+      "requestedKey": "HRL-132",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Preparar y, en una validación posterior autorizada, registrar instalación/reapertura y recuperación conjunta en entorno Windows conocido, incluyendo rechazo de respaldo incompleto y custodia inválida. No inferir portabilidad DPAPI.",
+      "parent": "HRL-80",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-133": {
+      "requestedKey": "HRL-133",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Acordar con el responsable del taller un recorrido y criterios de aceptación sobre cuentas y datos de prueba autorizados, cubriendo recepción, reparación, dinero y consulta de auditoría sin seleccionar participantes por suposición.",
+      "parent": "HRL-81",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+    },
+    "HRL-134": {
+      "requestedKey": "HRL-134",
+      "jiraKey": null,
+      "type": "Sub-task",
+      "title": "[Pruebas] Registrar versión, entorno, roles participantes, resultados, incidencias y decisión de aceptación real; mantener pendientes los recorridos no realizados y derivar fallos a trabajo identificado.",
+      "parent": "HRL-81",
+      "status": "Pendiente",
+      "points": null,
+      "sprint": "4",
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
     }
-  },
-  "replacedOldIssues": [
-    {
-      "key": "HRL-8",
-      "originalTitle": "[P01] Comprobar el entorno y el proyecto inicial",
-      "originalStatus": "Terminado",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-p",
-        "hrl-core",
-        "origen-p01"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-9",
-      "originalTitle": "[P02] Cerrar las reglas mínimas del registro y la bitácora",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-p",
-        "hrl-core",
-        "origen-p02"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-10",
-      "originalTitle": "[P03] Acordar la sincronización con el responsable web",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-p",
-        "hrl-core",
-        "origen-p03"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-11",
-      "originalTitle": "[S101] Crear el esquema local y las migraciones",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s1",
-        "hrl-core",
-        "origen-s101"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-12",
-      "originalTitle": "[S102] Configurar el primer administrador e iniciar sesión",
-      "originalStatus": "Terminado",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s1",
-        "hrl-core",
-        "origen-s102"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-13",
-      "originalTitle": "[S103] Implementar accesos completo, limitado y personalizado",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s1",
-        "hrl-core",
-        "origen-s103"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-14",
-      "originalTitle": "[S104] Registrar y recuperar una orden completa",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s1",
-        "hrl-core",
-        "origen-s104"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-15",
-      "originalTitle": "[S105] Registrar el primer evento de auditoría",
-      "originalStatus": "Terminado",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s1",
-        "hrl-core",
-        "origen-s105"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-19",
-      "originalTitle": "[S201] Buscar y modificar órdenes",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s201"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-20",
-      "originalTitle": "[S202] Capturar y agregar fotografías de evidencia",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s202"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-21",
-      "originalTitle": "[S203] Registrar avances técnicos y notas",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s203"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-22",
-      "originalTitle": "[S204] Registrar abonos y calcular el saldo",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s204"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-23",
-      "originalTitle": "[S205] Consultar la bitácora de cambios",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s205"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-24",
-      "originalTitle": "[S206] Probar edición, evidencias, permisos y pagos",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s206"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-26",
-      "originalTitle": "[S208] Revisar la operación local",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s2",
-        "hrl-core",
-        "origen-s208"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-27",
-      "originalTitle": "[S301] Mostrar cobros y pendientes en la bitácora",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s301"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-28",
-      "originalTitle": "[S302] Guardar la configuración esencial de la empresa",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s302"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-29",
-      "originalTitle": "[S303] Generar notas de entrada y salida",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s303"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-30",
-      "originalTitle": "[S304] Registrar la garantía básica por orden",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s304"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-31",
-      "originalTitle": "[S305] Publicar cambios autorizados con una cola local",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s305"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-32",
-      "originalTitle": "[S306] Probar el contrato de intercambio",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s306"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-33",
-      "originalTitle": "[S307] Probar notas, garantías, totales y desconexión",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s307"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-34",
-      "originalTitle": "[S308] Documentar la bitácora y la sincronización",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s308"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-35",
-      "originalTitle": "[S309] Revisar el flujo previo a la entrega",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s3",
-        "hrl-core",
-        "origen-s309"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-36",
-      "originalTitle": "[S401] Integrar la publicación con el servicio web real",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s401"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-37",
-      "originalTitle": "[S402] Preparar instalación y recuperación local",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s402"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-38",
-      "originalTitle": "[S403] Realizar pruebas con personal del taller",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s403"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-39",
-      "originalTitle": "[S404] Corregir fallos que impidan el uso",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s404"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-40",
-      "originalTitle": "[S405] Completar resultados y cierre de la memoria",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s405"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-41",
-      "originalTitle": "[S406] Revisar la versión candidata",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-s4",
-        "hrl-core",
-        "origen-s406"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-42",
-      "originalTitle": "[E01] Revisar formato y referencias del reporte",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-e",
-        "hrl-core",
-        "origen-e01"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-43",
-      "originalTitle": "[E02] Preparar el paquete para revisión",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-e",
-        "hrl-core",
-        "origen-e02"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-44",
-      "originalTitle": "[E03] Entregar para revisión",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "alcance-base",
-        "etapa-e",
-        "hrl-core",
-        "origen-e03"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-45",
-      "originalTitle": "[R01A] Aplicar observaciones recibidas",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "etapa-r",
-        "hrl-core",
-        "origen-r01a",
-        "reserva"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-46",
-      "originalTitle": "[A01] Capturar y reproducir video",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s2",
-        "hrl-core",
-        "origen-a01"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-47",
-      "originalTitle": "[A02] Ampliar la galería de evidencias",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s2",
-        "hrl-core",
-        "origen-a02"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-48",
-      "originalTitle": "[A03] Completar opciones avanzadas de Empresa",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s3",
-        "hrl-core",
-        "origen-a03"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-49",
-      "originalTitle": "[A04] Consultar garantías de órdenes anteriores",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s3",
-        "hrl-core",
-        "origen-a04"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-50",
-      "originalTitle": "[A05] Ampliar controles de publicación",
-      "originalStatus": "Por hacer",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s3",
-        "hrl-core",
-        "origen-a05"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-51",
-      "originalTitle": "[A06] Ampliar filtros y exportación de reportes",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s4",
-        "hrl-core",
-        "origen-a06"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-52",
-      "originalTitle": "[A07] Permitir estados escritos por el usuario",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s2",
-        "hrl-core",
-        "origen-a07"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-53",
-      "originalTitle": "[A08] Agregar logo desde el portapapeles",
-      "originalStatus": "En curso",
-      "originalLabels": [
-        "ampliacion",
-        "etapa-s3",
-        "hrl-core",
-        "origen-a08"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    },
-    {
-      "key": "HRL-54",
-      "originalTitle": "Autorizar acceso temporal por ventana con auditoría de ambas identidades",
-      "originalStatus": "En prueba",
-      "originalLabels": [
-        "acceso-temporal",
-        "hrl-core"
-      ],
-      "replacementSummary": "HRL-161",
-      "jiraStatus": "Terminado",
-      "reason": "Cierre por sustitución de planificación, no por implementación."
-    }
-  ],
-  "verification": {
-    "newItems": 107,
-    "types": {
-      "Epic": 7,
-      "Historia": 56,
-      "Subtask": 36,
-      "Tarea": 8
-    },
-    "statuses": {
-      "Terminado": 55,
-      "En curso": 11,
-      "Por hacer": 39,
-      "En prueba": 2
-    },
-    "sprints": {
-      "1": {
-        "items": 10,
-        "points": 55,
-        "done": 7
-      },
-      "2": {
-        "items": 10,
-        "points": 58,
-        "done": 10
-      },
-      "3": {
-        "items": 11,
-        "points": 43,
-        "done": 11
-      },
-      "4": {
-        "items": 27,
-        "points": 146,
-        "done": 22
-      },
-      "Backlog": {
-        "items": 5,
-        "points": 45,
-        "done": 1
-      }
-    },
-    "totalPoints": 347,
-    "mapped": 106,
-    "oldReplaced": 43,
-    "defects": [],
-    "priorityDefects": []
-  },
-  "sprints": [
-    {
-      "id": 104,
-      "number": 1,
-      "dates": "26-30 oct 2026",
-      "goal": "Cimientos y acceso",
-      "lifecycleState": "active"
-    },
-    {
-      "id": 105,
-      "number": 2,
-      "dates": "2-6 nov 2026",
-      "goal": "Usuarios completos y registro de clientes",
-      "lifecycleState": "future"
-    },
-    {
-      "id": 106,
-      "number": 3,
-      "dates": "9-13 nov 2026",
-      "goal": "Evidencias, papelera y reparaciones",
-      "lifecycleState": "future"
-    },
-    {
-      "id": 107,
-      "number": 4,
-      "dates": "16-20 nov 2026",
-      "goal": "Dinero, bitácora, empresa y cierre",
-      "lifecycleState": "future"
-    }
-  ],
-  "warnings": [],
-  "notes": [
-    "No se iniciaron ni cerraron sprints; se conservaron sus fechas y estados de ciclo.",
-    "No se aplicó el rebalanceo propuesto ni se ejecutaron builds/pruebas.",
-    "Las referencias de mapping son identificadores documentales; las claves de replacedOldIssues son claves reales del backlog Jira anterior.",
-    "Los ítems anteriores se cerraron por sustitución de planificación, no como trabajo implementado."
-  ]
+  }
 }

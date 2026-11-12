@@ -1,75 +1,89 @@
-# Revisión del backlog de HRL CORE
+# Revisión actualizada del backlog de HRL CORE
 
-Corte: 11 de noviembre de 2026, zona America/Cancun. Fuente de claves, títulos y sprints: `docs/backlog-base.md`. Fuente de estados: inspección del árbol de trabajo real, incluidos archivos nuevos/modificados sin commit, en `src/`, `src-tauri/src/` y `src-tauri/migrations/`. Fuente de aceptación: reglas funcionales citadas en cada historia.
+Corte documental: 12 de noviembre de 2026, America/Cancun. **Única fuente de alcance vigente: `docs/backlog-base (1).md`**. `docs/jira-import (1).csv` corrobora las 80 claves y relaciones; sus títulos abreviados no sustituyen al Markdown. Se ignoran para determinar alcance las copias anteriores, incluido `docs/backlog-base.md`.
 
-Se crearon siete documentos de epic y este resumen. Se conservaron HRL-1 a HRL-70: siete epics y 63 historias/tareas. Se añadieron 36 subtareas, HRL-71 a HRL-106, solo donde se identificó trabajo faltante. No se cambiaron código fuente, migraciones, pruebas, configuración ni documentos fuera de `docs/backlog/`. No se ejecutaron builds, suites, la aplicación ni operaciones sobre bases del taller.
+Hay **80 ítems base: 9 epics y 71 historias/tareas**, con claves HRL-1 a HRL-81 excepto HRL-66. Hay **53 subtareas técnicas HRL-82 a HRL-134**. Los cinco ítems todavía desconocidos de HRL-77 no se crean, estiman ni incluyen en denominadores. No se ejecutaron builds, suites, instalación, cámara, impresión ni sesiones con personal.
 
-## Cómo leer los estados y puntos
+## Alcance, estados y estimaciones
 
-- Hecho: se localizó implementación del alcance por lectura estática, con cadena de llamadas y reglas pertinentes. No significa aceptación ejecutada, despliegue ni validación nativa.
-- En progreso: hay implementación, pero la inspección identifica una brecha concreta respecto del alcance o arquitectura.
-- Pendiente: no se localizó el flujo funcional y la ruta actual confirma que no lo ofrece. No implica ausencia de otro proyecto externo desconocido.
-- No verificado: falta evidencia que no puede obtenerse leyendo el código, o falta un origen/contrato confirmado para comprobar el alcance.
+- Hecho acredita implementación localizada por lectura estática, sin certificar pruebas o entrega. Los ítems sin cambio de alcance conservan la evidencia de la revisión anterior; las tareas añadidas se contrastaron con código y procedimientos reales en esta actualización.
+- En progreso identifica implementación o pruebas presentes con trabajo faltante concreto.
+- Pendiente indica ausencia del flujo funcional localizado. La configuración de publicación local de HRL-38 no acredita sincronización con el portal.
+- No verificado indica evidencia que no puede acreditarse leyendo código. Incluye obligatoriamente validación nativa y participación de personal del taller.
+- Los puntos Fibonacci representan alcance completo, no trabajo restante ni velocidad. Se suman historias/tareas una sola vez; epics y subtareas no añaden puntos independientes. Las historias de 13 puntos mantienen su propuesta de división.
+- Los sprints son asignaciones del plan, no fechas de entrega demostradas. S2xx corresponde al 2, S3xx al 3 y S4xx al 4. P03 en Sprint 3 y A05 en Backlog son supuestos indicados por el usuario, no decisiones inferidas del código.
 
-Las estimaciones Fibonacci de las historias/tareas expresan **alcance completo**, incluidas las hechas. No son puntos pendientes ni velocidad observada. Los epics muestran sumas y no agregan puntos adicionales. Las subtareas no se vuelven a sumar: las divisiones de historias de 13 puntos reparten esos mismos 13. Un epic supera 8 por agregación, sin ser una historia que deba dividirse otra vez.
+## Epics
 
-El porcentaje Hecho de la tabla es `historias/tareas Hecho ÷ historias/tareas del sprint × 100`, sin epics ni subtareas. Se añade porcentaje por puntos para distinguir cobertura de cantidad y tamaño. No se infieren fechas de entrega a partir de las fechas asignadas al sprint.
-
-## Archivos por epic
-
-| Epic | Documento | Estado agregado | Hijas | Puntos |
+| Epic | Documento | Estado agregado | Historias/tareas | Puntos |
 | --- | --- | --- | ---: | ---: |
-| HRL-1 | [Usuarios](epic-01-usuarios.md) | Hecho por inspección | 9 | 42 |
-| HRL-11 | [Clientes y recepción](epic-02-clientes.md) | Hecho por inspección | 12 | 58 |
-| HRL-24 | [Reparaciones](epic-03-reparaciones.md) | Hecho por inspección | 14 | 63 |
-| HRL-39 | [Bitácora](epic-04-bitacora.md) | En progreso | 8 | 39 |
-| HRL-48 | [Empresa](epic-05-empresa.md) | En progreso | 8 | 34 |
-| HRL-57 | [Base técnica](epic-06-base-tecnica.md) | En progreso | 7 | 66 |
-| HRL-65 | [Pendientes futuros](epic-07-futuros.md) | En progreso como agrupador | 5 | 45 |
-| Total | | | 63 | 347 |
+| HRL-1 | [Módulo de Usuarios, registro e inicio de sesión](epic-01-usuarios.md) | Hecho | 9 | 42 |
+| HRL-11 | [Módulo de Registro de clientes y recepción de órdenes](epic-02-clientes.md) | Hecho | 12 | 58 |
+| HRL-24 | [Módulo de Reparaciones](epic-03-reparaciones.md) | Hecho | 14 | 63 |
+| HRL-39 | [Módulo de Bitácora / Auditoría](epic-04-bitacora.md) | En progreso | 8 | 39 |
+| HRL-48 | [Módulo de Empresa](epic-05-empresa.md) | En progreso | 8 | 34 |
+| HRL-57 | [Base técnica transversal](epic-06-base-tecnica.md) | En progreso | 6 | 53 |
+| HRL-65 | [Pendientes futuros (Backlog)](epic-07-futuros.md) | En progreso | 4 | 32 |
+| HRL-71 | [Sincronización con el portal web](epic-08-sincronizacion-portal.md) | Pendiente | 5 | 29 |
+| HRL-77 | [Pruebas, instalación y entrega](epic-09-pruebas-instalacion-entrega.md) | En progreso | 5 | 36 |
+| Total conocido | | | 71 | 386 |
 
-Los estados agregados heredan la evidencia de sus hijas; no se trata la palabra «Pendientes» del título de HRL-65 como prueba de estado. HRL-69 ya está implementado aunque figure en ese agrupador.
+HRL-64 se encuentra solo en [Pruebas, instalación y entrega](epic-09-pruebas-instalacion-entrega.md), bajo HRL-77, con sus mismos 13 puntos y Sprint 4. HRL-57 queda con seis tareas y 53 puntos. HRL-66 se eliminó del alcance; HRL-71 detalla su sustitución sin conservar otra historia de portal duplicada.
 
 ## Tabla por sprint
 
-| Sprint | Fechas de 2026 | Ítems (sin epics/subtareas) | Puntos | Hechos / ítems | % Hecho | Puntos Hechos / puntos | % Hecho por puntos | % de los 302 puntos de sprints 1–4 |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| 1 | 26-30 oct | 10 | 55 | 7 / 10 | 70,0 % | 31 / 55 | 56,4 % | 18,2 % |
-| 2 | 2-6 nov | 10 | 58 | 10 / 10 | 100,0 % | 58 / 58 | 100,0 % | 19,2 % |
-| 3 | 9-13 nov | 11 | 43 | 11 / 11 | 100,0 % | 43 / 43 | 100,0 % | 14,2 % |
-| 4 | 16-20 nov | 27 | 146 | 22 / 27 | 81,5 % | 102 / 146 | 69,9 % | 48,3 % |
-| Total sprints 1–4 | | 58 | 302 | 50 / 58 | 86,2 % | 234 / 302 | 77,5 % | 100,0 % |
-| Backlog | Sin fecha | 5 | 45 | 1 / 5 | 20,0 % | 3 / 45 | 6,7 % | No aplica |
-| Total general | | 63 | 347 | 51 / 63 | 81,0 % | 237 / 347 | 68,3 % | No aplica |
+% Hecho = historias/tareas Hechas dividido entre historias/tareas del sprint. Las dos últimas columnas muestran explícitamente el aporte de los epics nuevos como **ítems/puntos**.
 
-Ítems de cada sprint, conservados de la base:
+| Sprint | Fechas de 2026 | Ítems | Puntos | Hechos/ítems | % Hecho | Puntos Hechos/total | HRL-71 sincronización | HRL-77 pruebas/entrega |
+| --- | --- | ---: | ---: | ---: | ---: | --- | ---: | ---: |
+| 1 | 26-30 oct | 10 | 55 | 7/10 | 70,0 % | 31/55 (56,4 %) | 0/0 | 0/0 |
+| 2 | 2-6 nov | 11 | 63 | 10/11 | 90,9 % | 58/63 (92,1 %) | 0/0 | 1/5 |
+| 3 | 9-13 nov | 15 | 64 | 11/15 | 73,3 % | 43/64 (67,2 %) | 3/16 | 1/5 |
+| 4 | 16-20 nov | 30 | 167 | 22/30 | 73,3 % | 102/167 (61,1 %) | 1/8 | 3/26 |
+| Backlog | Sin fecha | 5 | 37 | 1/5 | 20,0 % | 3/37 (8,1 %) | 1/5 | 0/0 |
+| Total sprints 1–4 | | 66 | 349 | 50/66 | 75,8 % | 234/349 (67,0 %) | 4/24 | 5/36 |
+| Total con Backlog | | 71 | 386 | 51/71 | 71,8 % | 237/386 (61,4 %) | 5/29 | 5/36 |
 
-- Sprint 1: HRL-2, HRL-3, HRL-4, HRL-7, HRL-10, HRL-40, HRL-58, HRL-59, HRL-60 y HRL-62.
-- Sprint 2: HRL-5, HRL-6, HRL-8, HRL-9, HRL-12, HRL-13, HRL-14, HRL-15, HRL-17 y HRL-23.
-- Sprint 3: HRL-16, HRL-19, HRL-20, HRL-21, HRL-25, HRL-26, HRL-27, HRL-28, HRL-29, HRL-30 y HRL-36.
-- Sprint 4: HRL-18, HRL-22, HRL-31, HRL-32, HRL-33, HRL-34, HRL-35, HRL-37, HRL-38, HRL-41, HRL-42, HRL-43, HRL-44, HRL-45, HRL-46, HRL-47, HRL-49, HRL-50, HRL-51, HRL-52, HRL-53, HRL-54, HRL-55, HRL-56, HRL-61, HRL-63 y HRL-64.
-- Backlog: HRL-66, HRL-67, HRL-68, HRL-69 y HRL-70.
+Las cinco tareas de sincronización están Pendientes. En HRL-77, HRL-78, HRL-79 y HRL-80 están En progreso por pruebas/configuración/procedimientos parciales localizados; HRL-64 y HRL-81 están No verificados. Ninguna tarea nueva se declara Hecha a partir de un PASS histórico o de fixtures.
 
-## Brechas de implementación localizadas
+Asignaciones preservadas:
 
-| Ítem | Estado | Qué falta | Subtareas |
-| --- | --- | --- | --- |
-| HRL-42 | En progreso | Diferencias de email/entrega estimada e identidad del registro en detalle global de auditoría | HRL-71 a HRL-74 |
-| HRL-49 | En progreso | Repetir validación de correo/web en servicio Rust; hoy solo existe en frontend | HRL-75 y HRL-76 |
-| HRL-59 | En progreso | Inyectar todos los repositorios colaboradores y cerrar la coexistencia del backend anterior con HRL-63 | HRL-77 y HRL-78 |
-| HRL-60 | En progreso | Eliminar IPC directo anterior y trasladar reglas financieras fuera de utils | HRL-79 a HRL-81 |
-| HRL-61 | En progreso | Pantallas restantes en views y lógica de cámara/cláusulas en viewmodels | HRL-82 a HRL-84 |
-| HRL-62 | En progreso | Estrategia de recuperación conjunta y verificación de custodia DPAPI | HRL-85 y HRL-86 |
-| HRL-63 | En progreso | Retirar comandos, plugin, migraciones registradas y archivos anteriores sin migrar datos por suposición | HRL-87 a HRL-90 |
-| HRL-64 | No verificado | Resultados de ejecución de suites y hardware nativo | HRL-91 a HRL-93 |
-| HRL-66 | Pendiente | Portal y publicación efectiva con contrato aprobado | HRL-94 a HRL-96 |
-| HRL-67 | No verificado | Datos origen y contrato de importación a 3FN confirmados | HRL-97 a HRL-99 |
-| HRL-68 | Pendiente | Flujo de video/documentos y política de tipos/tamaños | HRL-100 a HRL-103 |
-| HRL-70 | Pendiente | Respaldo/restauración integral y traslado de claves entre instalaciones | HRL-104 a HRL-106 |
+- Sprint 1: HRL-2, HRL-3, HRL-4, HRL-7, HRL-10, HRL-40, HRL-58, HRL-59, HRL-60, HRL-62.
+- Sprint 2: HRL-5, HRL-6, HRL-8, HRL-9, HRL-12, HRL-13, HRL-14, HRL-15, HRL-17, HRL-23, HRL-78.
+- Sprint 3: HRL-16, HRL-19, HRL-20, HRL-21, HRL-25, HRL-26, HRL-27, HRL-28, HRL-29, HRL-30, HRL-36, HRL-72, HRL-73, HRL-74, HRL-79.
+- Sprint 4: HRL-18, HRL-22, HRL-31, HRL-32, HRL-33, HRL-34, HRL-35, HRL-37, HRL-38, HRL-41, HRL-42, HRL-43, HRL-44, HRL-45, HRL-46, HRL-47, HRL-49, HRL-50, HRL-51, HRL-52, HRL-53, HRL-54, HRL-55, HRL-56, HRL-61, HRL-63, HRL-75, HRL-64, HRL-80, HRL-81.
+- Backlog: HRL-67, HRL-68, HRL-69, HRL-70, HRL-76.
 
-## Discrepancias entre documentación y código
+## Ítems con trabajo o verificación pendientes
 
-Las referencias a documentos antiguos se señalan como desactualización o coexistencia, sin cambiar sus reglas ni reinterpretar fechas de entrega. El contexto completo reciente sí recoge varias de estas transiciones.
+| Ítem | Estado | Sprint | Puntos | Subtareas pendientes |
+| --- | --- | --- | ---: | --- |
+| HRL-42 | En progreso | 4 | 5 | HRL-82, HRL-83, HRL-84, HRL-85 |
+| HRL-49 | En progreso | 4 | 5 | HRL-86, HRL-87 |
+| HRL-59 | En progreso | 1 | 8 | HRL-88, HRL-89 |
+| HRL-60 | En progreso | 1 | 8 | HRL-90, HRL-91, HRL-92 |
+| HRL-61 | En progreso | 4 | 8 | HRL-93, HRL-94, HRL-95 |
+| HRL-62 | En progreso | 1 | 8 | HRL-96, HRL-97 |
+| HRL-63 | En progreso | 4 | 13 | HRL-98, HRL-99, HRL-100, HRL-101 |
+| HRL-67 | No verificado | Backlog | 8 | HRL-105, HRL-106, HRL-107 |
+| HRL-68 | Pendiente | Backlog | 8 | HRL-108, HRL-109, HRL-110, HRL-111 |
+| HRL-70 | Pendiente | Backlog | 13 | HRL-112, HRL-113, HRL-114 |
+| HRL-72 | Pendiente | 3 | 3 | HRL-115, HRL-116 |
+| HRL-73 | Pendiente | 3 | 8 | HRL-117, HRL-118, HRL-119 |
+| HRL-74 | Pendiente | 3 | 5 | HRL-120, HRL-121 |
+| HRL-75 | Pendiente | 4 | 8 | HRL-122, HRL-123, HRL-124 |
+| HRL-76 | Pendiente | Backlog | 5 | HRL-125, HRL-126 |
+| HRL-64 | No verificado | 4 | 13 | HRL-102, HRL-103, HRL-104 |
+| HRL-78 | En progreso | 2 | 5 | HRL-127, HRL-128 |
+| HRL-79 | En progreso | 3 | 5 | HRL-129, HRL-130 |
+| HRL-80 | En progreso | 4 | 8 | HRL-131, HRL-132 |
+| HRL-81 | No verificado | 4 | 5 | HRL-133, HRL-134 |
+
+Las subtareas de HRL-64 coordinan la regresión y la validación nativa; HRL-78 y HRL-79 completan casos específicos sin volver a estimar las mismas suites. HRL-62 define custodia; HRL-70 contempla automatización/portabilidad futura; HRL-80 prepara procedimiento y comprobación de instalación/recuperación local. No se implementan tres respaldos distintos. HRL-69 conserva su clave y estado de agrupación ya implementada, sin generar nuevas tareas de las funciones que solapan HRL-9/14/16/43.
+
+## Discrepancias entre documentos y código
+
+Las discrepancias D-01 a D-17 siguen siendo hallazgos de la revisión estática previa; no se presentan como nuevas ejecuciones. Los documentos recientes ya recogen parte de la transición. Las fuentes históricas pueden explicar evolución, pero no sustituyen la fuente actual de alcance ni prueban el resultado del árbol actual.
 
 | ID | Documentación | Evidencia del código actual | Impacto / ítems |
 | --- | --- | --- | --- |
@@ -90,36 +104,45 @@ Las referencias a documentos antiguos se señalan como desactualización o coexi
 | D-15 | Documentos citan suites `.mjs` y resultados PASS anteriores | Archivos citados ausentes/eliminados en el árbol; `package.json::scripts.test:company` apunta a `tests/company.test.mjs`, ausente | No acreditar esas ejecuciones sobre este árbol; HRL-64. |
 | D-16 | HRL-69 en Backlog futuro y contexto funcional: Herramientas pendiente | `AppHeader.vue` y `useWorkshop.ts::requestAccess`/`receptionTool` conectan las cuatro funciones | Cerrar agrupador; evitar duplicar HRL-9/14/16/43. |
 | D-17 | Contexto funcional §7: Pinia no instalado y faltan stores/API | `package.json::dependencies.pinia`, `src/main.ts` registra `createPinia`, existen `src/stores/` y `src/services/api/` | Esas capas ya existen, aunque quedan infracciones en código anterior y utils; HRL-60/61/63. |
+| D-18 | La fuente anterior concentraba el portal en HRL-66 y empleaba HRL-71 en adelante para subtareas | `RepairService::save` y `RepairRepository::save` siguen siendo locales; no hay cliente remoto localizado en `BackendServices::new` ni `workshopApi` | HRL-66 sale del alcance; HRL-71 a HRL-76 lo desglosan, todos Pendientes. Subtareas desde HRL-82. |
+| D-19 | Documentos reportan PASS históricos y recorridos con IPC simulado | `tests/ui-restored.ts` contiene fixtures; `tests/phase4.test.ts` usa renderizador de prueba; `src-tauri/src/windowing.rs::tests` simula ventana | No acreditan instalación nativa ni aceptación del personal. HRL-64/81 No verificados; HRL-78/79/80 parciales. |
 
-Precisión adicional comprobada: `src-tauri/src/schema_backup.rs::before_spanish_migration`, registrado por `lib.rs::run`, puede abrir una base legacy y hacer `VACUUM INTO` antes de la 013. La ausencia de precarga en `tauri.conf.json` no prueba que el ejecutable nunca inspeccione la base anterior. No se ejecutó ese mecanismo en esta revisión.
+D-15 incluye una precisión: `docs/ventana-por-sesion.md` reporta un fallo DPAPI anterior y `docs/restauracion-diseno.md` reporta después 87 pruebas Rust aprobadas con DPAPI. Se registran ambos antecedentes sin deducir el resultado actual; no se ejecutó esa prueba aquí. `package.json::scripts.test:company` sigue apuntando a `tests/company.test.mjs`, ausente de tests.
 
-## No verificado y evidencia necesaria
+La ausencia de precarga legacy en configuración tampoco demuestra que el ejecutable nunca inspeccione una base anterior: `src-tauri/src/schema_backup.rs::before_spanish_migration`, registrado por `lib.rs::run`, puede abrirla y realizar un respaldo previo a la 013. No se ejecutó.
 
-| Ítem o aspecto | Lo que sí se comprobó | Lo que falta para verificar |
+## No verificado y qué falta
+
+| Ítem o aspecto | Evidencia localizada | Necesario para verificar |
 | --- | --- | --- |
-| HRL-64 completo | Existen suites Rust/TS y casos de ventana/DPAPI | Ejecutar las suites sobre el árbol exacto y comprobar cámara, impresión, geometría y DPAPI en aplicación Windows; registrar comandos, entorno, resultado y fallos. No autorizado en esta tarea. |
-| HRL-67 completo | Importador anterior usa otro pool; cargador 3FN rechaza esquema legacy | Confirmar datos de origen, disponer de copia autorizada y contrato de migración/conflictos; después comprobar conservación y resultado en destino. No escribir migración de datos antes. |
-| HRL-10, HRL-19, HRL-22, HRL-37, HRL-50 y HRL-53: componente nativo | Rutas, preparación y manejo de errores están implementados | Recorrido de ventana, cámara/portapapeles concedidos y denegados e impresión real. Se concentra en HRL-93; no se confunde con los estados estáticos de estas historias. |
-| HRL-62: DPAPI y recuperación | Código cifra la clave externa y contiene prueba de reapertura bajo Windows | Resultado con la identidad real, restauración del conjunto y estrategia aprobada para pérdida de custodia. El fallo DPAPI histórico de `docs/ventana-por-sesion.md` no se volvió a reproducir ni se declara resuelto. |
-| HRL-66: infraestructura externa y reglas del portal | La ruta del repositorio solo guarda preferencias | Especificación de acceso/publicación y repositorio/contrato del portal si existe. No se infiere inexistencia de servicios fuera del repo. |
-| HRL-68: nuevos formatos | Validadores operativos rechazan video/documento; SQL contempla tipos | Formatos, límites, tratamiento de archivos y consulta aprobados; después flujo funcional y pruebas. No extender por suposición el máximo de fotografía. |
-| HRL-70: portabilidad/automatización | Existe respaldo preventivo legacy, sin flujo integral normalizado | Estrategia de claves, consistencia, paquete, autorización, frecuencia/retención y dos instalaciones conocidas para restaurar. |
-| Todas las historias Hechas: resultado ejecutado | Implementación y pruebas citadas se localizaron por lectura | Una ejecución posterior, si se quiere usar «Hecho» como cierre QA o entrega real. Esta revisión no acredita que una prueba pase ni que se haya entregado en el sprint fechado. |
+| HRL-64 | Suites Rust/TS y prueba DPAPI `services/tests.rs::windows_key_custody_reopens_dpapi_key_without_storing_it_in_sqlite` | Ejecutar sobre versión identificada y registrar cámara, impresora, geometría y DPAPI en Windows. Fuera de esta revisión. |
+| HRL-81 | Solo fixtures, mocks y procedimientos generales; no acta de personas del taller localizada | Recorrido acordado, versión instalada, entorno, participantes/roles autorizados y resultados reales. No inventar aceptación. |
+| HRL-67 | Importador anterior usa pool/sesión legacy; `db/migrations.rs::apply` rechaza el esquema viejo | Confirmar origen y alcance de migración, copia autorizada y reglas de correspondencia/conflictos antes de escribir migración. |
+| HRL-72 a HRL-76 | Persistencia local de modo/visibilidad; sin cliente, endpoint o pruebas remotas localizados | Contrato acordado con responsable, entorno y resultados de intercambio real. La tarea queda Pendiente; infraestructura externa y políticas no disponibles están No verificadas. |
+| HRL-78/79 | Pruebas reales de revisión, permisos, evidencias, garantías y saldos; fixtures de UI | Completar huecos y registrar ejecución integrada del flujo normalizado. No usar pruebas legacy para acreditar 3FN. |
+| HRL-80 | Configuración bundle, binario de desarrollo y rutas de DB/assets/claves; respaldo preventivo legacy | Instalador y procedimiento integral, instalación/reapertura y recuperación en Windows. Un ejecutable debug o configuración no acreditan entrega instalada. |
+| HRL-62/70 | Código DPAPI y recursos externos a DB | Estrategia aprobada y restauración conjunta con identidad Windows conocida; no suponer portabilidad por copiar el archivo. |
+| HRL-68 | Validadores operativos de fotos rechazan video/documentos | Especificar formatos, tamaños y consulta de archivos; después implementar y verificar el flujo. |
+| Historias Hechas por inspección | Implementación localizada y evidencias citadas | Ejecución/aceptación posterior si se exige cierre QA. Cámara e impresión físicas no se infieren del código. |
 
-## Rebalanceo recomendado
+## Carga del Sprint 4 y rebalanceo
 
-Sprint 4 concentra **146/302 = 48,3 %** de los puntos de los cuatro sprints y **146/347 = 42,1 %** incluso incluyendo el Backlog. Supera el 40 % con ambos denominadores. Por cantidad concentra 27 de las 58 historias/tareas programadas. Las fechas y asignaciones originales se conservan en todos los archivos.
+**Sprint 4 supera el 40 %:** concentra **167/349 = 47,9 %** de los puntos programados y **167/386 = 43,3 %** incluso contando Backlog. Tiene 30 historias/tareas conocidas. Los cinco ítems faltantes de HRL-77 podrían aumentar esta carga; no se les asignaron puntos o sprint por suposición.
 
-No se deben mover historias a sprints ya concluidos para aparentar entregas históricas: el código actual no acredita fecha de terminación. Tampoco hay datos de capacidad o velocidad para prometer que un número de puntos cabe en cinco días.
+Como propuesta, separar HRL-63 (13), HRL-64 (13) y HRL-81 (5) en un cierre posterior: Sprint 4 quedaría con 136/349 = 39,0 % y el cierre con 31/349 = 8,9 %. No es un cambio aplicado, ni un compromiso de capacidad o fechas. Los controles de seguridad, dinero y auditoría que bloqueen una entrega deben verificarse antes de usarla; agrupar aceptación final no autoriza omitirlos.
 
-Como propuesta de planificación, separar el cierre técnico HRL-63 (13) y HRL-64 (13) en un sprint adicional de cierre posterior al 20 de noviembre. Sprint 4 quedaría con 120/302 = 39,7 % y el cierre con 26/302 = 8,6 %. Esto es una recomendación documental, no un cambio aplicado al backlog ni una fecha comprometida. No aplazaría las comprobaciones de seguridad y dinero que bloqueen el uso: HRL-91/92 deben ejecutarse para cada entrega afectada; el cierre agrupa el retiro final y la aceptación integral.
+No mover trabajo a sprints pasados para aparentar entregas. Primero reestimar esfuerzo pendiente de los ítems En progreso y recoger los cinco faltantes; los 386 puntos describen alcance total, no esfuerzo restante. Acordar HRL-72 antes de implementar/probar la integración; HRL-38 no sustituye HRL-73/75. Las pruebas con personal requieren coordinación real y no se programan con participantes inventados.
 
-Antes de fijar esa propuesta, reestimar trabajo restante. Hay 24 puntos de alcance completo todavía no Hechos en Sprint 1 (HRL-59/60/62) y 44 en Sprint 4 (HRL-42/49/61/63/64): **68 puntos de alcance implicado**, no 68 puntos de esfuerzo restante. Resolver primero HRL-42, HRL-49 y custodia HRL-62 por auditoría, validación de datos y secretos; coordinar HRL-59/60/61 antes de cerrar HRL-63, y verificar con HRL-64. Las divisiones de 13 puntos propuestas en los epics permiten ejecutar entregas revisables de 3 o 5 puntos.
+## Preparación del proyecto Jira nuevo
 
-HRL-69 solapa funciones ya estimadas en HRL-9/14/16/43; los 3 puntos se mantienen en la tabla para conservar el alcance original, pero no deben generar nueva capacidad ni implementación al planificar. HRL-62 define custodia; HRL-70 implementa automatización/portabilidad futura. Mantener esa frontera evita contar dos veces el mismo trabajo.
+El usuario pidió un proyecto nuevo llamado **HRL registro**, con clave **HRL** y numeración desde **HRL-1**. No se actualizó el proyecto anterior con esta revisión ni se reinició su contador. El conector no ofrece crear/renombrar proyectos y el intento de acceso administrativo al navegador agotó su autorización; el proyecto previo se mantiene intacto.
 
-## Registro de entrega documental
+Se prepara una carga derivada de estos documentos, no una importación de la copia anterior. Hay un hueco intencional en HRL-66 y un padre posterior (HRL-64 → HRL-77). Por eso, crear simplemente 80 ítems en orden no garantiza que sus números coincidan con las 80 referencias. La carga con claves explícitas requiere validar el importador y sus campos administrativos; no se consume HRL-66 creando una tarea ficticia. Las subtareas se cargan después de todos los ítems base.
 
-Se hicieron commits descriptivos por cada epic. Un commit final agrupa este resumen, criterios agregados de los epics y la corrección del total de Clientes a 58. Git ignora `docs/`; se incluyeron únicamente los archivos solicitados mediante rutas explícitas, sin cambiar `.gitignore` ni añadir cambios ajenos.
+La correspondencia y el reporte de la sincronización anterior se conservarán como históricos, no como prueba de que el proyecto solicitado ya exista. Falta disponibilidad de la clave HRL y acceso administrativo para crear/verificar el destino. No se elimina el proyecto anterior ni se liberan claves por una acción no autorizada.
 
-La revisión de documentos comprueba cobertura de claves, unicidad y continuidad de HRL-71 a HRL-106, de 3 a 6 criterios por historia/tarea y de 2 a 5 subtareas para ítems no Hechos. Son comprobaciones del entregable Markdown mediante lectura, no suites del proyecto.
+## Alcance incompleto y verificación documental
+
+**HRL-77 tiene cinco ítems faltantes por incorporar.** No se inventaron claves, nombres, subtareas, puntos ni criterios de esos ítems.
+
+La lectura estructural verifica: 80 claves base únicas, nueve epics, 71 historias/tareas, HRL-64 solo bajo HRL-77, ausencia de HRL-66 como ítem vigente, códigos originales conservados, 53 subtareas únicas HRL-82 a HRL-134 y criterios Dado/Cuando/Entonces de 3 a 6 por historia/tarea. Es una comprobación de Markdown/CSV; no son suites ni builds del proyecto.
