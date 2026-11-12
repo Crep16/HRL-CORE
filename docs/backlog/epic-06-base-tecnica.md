@@ -1,10 +1,12 @@
 # HRL-57 [Epic] Base técnica transversal
 
-Estado: En progreso. Hay base normalizada y rutas nuevas operativas por lectura, pero persisten capas anteriores, reglas fuera de su capa y validación de ejecución No verificada.
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
+Estado: En progreso. Hay base normalizada y rutas nuevas operativas por lectura, pero persisten capas anteriores y reglas fuera de su capa. La validación de ejecución se concentra en HRL-77/HRL-64.
 Prioridad: Alta, porque sostiene integridad, seguridad y cierre de la refactorización.
-Puntos: 66 (suma de tareas; no sumar el epic de nuevo).
+Puntos: 53 (suma de tareas; no sumar el epic de nuevo).
 Sprint: 1 y 4.
-Subtareas: agrupador de HRL-58 a HRL-64; nuevas subtareas HRL-77 a HRL-93.
+Subtareas: agrupador de HRL-58 a HRL-63; HRL-64 pertenece ahora al epic HRL-77.
 
 Criterios de aceptación del epic (fuentes: arquitectura objetivo, `docs/sqlite.md`, `docs/reglas-pagos.md`):
 
@@ -36,8 +38,8 @@ Puntos: 8
 Sprint: 1
 Subtareas:
 
-- HRL-77 [Servicio Rust] Recibir por constructor los repositorios colaboradores que hoy se instancian en RepairService, EvidenceService y ReportService, conservando la transacción única y la composición.
-- HRL-78 [Pruebas] Probar las colaboraciones mediante contratos de repositorio sustituibles donde permitan simular fallos, sin convertir los comandos en acceso directo a SQL. El retiro de rutas anteriores se concentra en HRL-63.
+- HRL-88 [Servicio Rust] Recibir por constructor los repositorios colaboradores que hoy se instancian en RepairService, EvidenceService y ReportService, conservando la transacción única y la composición.
+- HRL-89 [Pruebas] Probar las colaboraciones mediante contratos de repositorio sustituibles donde permitan simular fallos, sin convertir los comandos en acceso directo a SQL. El retiro de rutas anteriores se concentra en HRL-63.
 
 Criterios de aceptación (fuente: arquitectura objetivo §§3, 4 y restauración de apartados):
 
@@ -54,9 +56,9 @@ Puntos: 8
 Sprint: 1
 Subtareas:
 
-- HRL-79 [Composable/store] Cerrar la coexistencia de acceso a Tauri directo en composables con HRL-63 y mantener `services/api` como único adaptador IPC de aplicación.
-- HRL-80 [Servicio Rust] Trasladar las reglas financieras de exclusión, periodos y agregación de `utils/finances.ts` a servicio/modelo de dominio según arquitectura, dejando formato y fechas puras en utils.
-- HRL-81 [Pruebas] Verificar equivalencia de los filtros e indicadores, denegaciones en backend y descarte de respuestas de una sesión anterior tras completar la separación.
+- HRL-90 [Composable/store] Cerrar la coexistencia de acceso a Tauri directo en composables con HRL-63 y mantener `services/api` como único adaptador IPC de aplicación.
+- HRL-91 [Servicio Rust] Trasladar las reglas financieras de exclusión, periodos y agregación de `utils/finances.ts` a servicio/modelo de dominio según arquitectura, dejando formato y fechas puras en utils.
+- HRL-92 [Pruebas] Verificar equivalencia de los filtros e indicadores, denegaciones en backend y descarte de respuestas de una sesión anterior tras completar la separación.
 
 Criterios de aceptación (fuente: arquitectura objetivo y `docs/bitacora.md`):
 
@@ -73,9 +75,9 @@ Puntos: 8
 Sprint: 4
 Subtareas:
 
-- HRL-82 [Vista] Trasladar las pantallas completas restantes a views y actualizar la composición de WorkshopApp conservándolo como contenedor.
-- HRL-83 [Composable/store] Extraer estado y operaciones de cámara y editor de cláusulas; llevar al viewmodel la selección de días sugeridos que hoy calcula la plantilla de RepairWorkspace.
-- HRL-84 [Pruebas] Verificar guardas, eventos, foco y errores de las pantallas trasladadas sin cambiar permisos ni comportamiento del taller.
+- HRL-93 [Vista] Trasladar las pantallas completas restantes a views y actualizar la composición de WorkshopApp conservándolo como contenedor.
+- HRL-94 [Composable/store] Extraer estado y operaciones de cámara y editor de cláusulas; llevar al viewmodel la selección de días sugeridos que hoy calcula la plantilla de RepairWorkspace.
+- HRL-95 [Pruebas] Verificar guardas, eventos, foco y errores de las pantallas trasladadas sin cambiar permisos ni comportamiento del taller.
 
 Criterios de aceptación (fuente: arquitectura objetivo, `docs/acceso-validacion.md`, `docs/evidencias.md`):
 
@@ -91,8 +93,8 @@ Puntos: 8
 Sprint: 1
 Subtareas:
 
-- HRL-85 [Servicio Rust] Precisar el contrato de custodia/restauración conjunta de DB, assets y clave protegida, distinguiendo recuperación con el mismo usuario Windows de portabilidad. No elegir exportación o cambio de protección sin definición de HRL-70.
-- HRL-86 [Pruebas] Verificar reapertura DPAPI con la identidad real de destino y fallos por archivo ausente/corrupto o identidad no válida; comprobar que no aparece material de clave en SQLite ni auditoría.
+- HRL-96 [Servicio Rust] Precisar el contrato de custodia/restauración conjunta de DB, assets y clave protegida, distinguiendo recuperación con el mismo usuario Windows de portabilidad. No elegir exportación o cambio de protección sin definición de HRL-70.
+- HRL-97 [Pruebas] Verificar reapertura DPAPI con la identidad real de destino y fallos por archivo ausente/corrupto o identidad no válida; comprobar que no aparece material de clave en SQLite ni auditoría.
 
 Criterios de aceptación (fuentes: arquitectura objetivo §7, `docs/evidencias.md`, alcance HRL-62 del backlog):
 
@@ -109,13 +111,13 @@ Estado: En progreso (evidencia: `src-tauri/src/lib.rs::run` registra plugin SQL 
 Prioridad: Alta, porque mantiene rutas alternativas de autorización y persistencia fuera de la arquitectura objetivo.
 Puntos: 13
 Sprint: 4
-División propuesta: tres entregas de 5, 5 y 3 puntos representadas por HRL-87, HRL-88 y HRL-89; HRL-90 verifica las tres y no añade puntos al padre.
+División propuesta: tres entregas de 5, 5 y 3 puntos representadas por HRL-98, HRL-99 y HRL-100; HRL-101 verifica las tres y no añade puntos al padre.
 Subtareas:
 
-- HRL-87 [Repositorio/SQL] Archivar migraciones anteriores en legacy y retirar su registro del cargador anterior sin ejecutar ni migrar datos reales (5 puntos de los 13 del padre).
-- HRL-88 [Servicio Rust] Retirar comandos/módulos anteriores de lib.rs y el plugin ligado a esa ruta, conservando solo servicios normalizados y el mecanismo de seguridad vigente (5 puntos).
-- HRL-89 [Composable/store] Retirar composables/componentes Legacy y datos de demostración sin uso como fuente de verdad, tras comprobar referencias y conservar utilidades puras aún necesarias (3 puntos).
-- HRL-90 [Pruebas] Comprobar ausencia de invocaciones antiguas y regresión de permisos, recepción, reparación y dinero sobre la única ruta vigente (incluida en las entregas anteriores).
+- HRL-98 [Repositorio/SQL] Archivar migraciones anteriores en legacy y retirar su registro del cargador anterior sin ejecutar ni migrar datos reales (5 puntos de los 13 del padre).
+- HRL-99 [Servicio Rust] Retirar comandos/módulos anteriores de lib.rs y el plugin ligado a esa ruta, conservando solo servicios normalizados y el mecanismo de seguridad vigente (5 puntos).
+- HRL-100 [Composable/store] Retirar composables/componentes Legacy y datos de demostración sin uso como fuente de verdad, tras comprobar referencias y conservar utilidades puras aún necesarias (3 puntos).
+- HRL-101 [Pruebas] Comprobar ausencia de invocaciones antiguas y regresión de permisos, recepción, reparación y dinero sobre la única ruta vigente (incluida en las entregas anteriores).
 
 Criterios de aceptación (fuentes: arquitectura objetivo, `AGENTS.md` §5, `docs/sqlite.md`):
 
@@ -127,25 +129,3 @@ Criterios de aceptación (fuentes: arquitectura objetivo, `AGENTS.md` §5, `docs
 Discrepancia D-13: `AGENTS.md` exige archivar 001-013; arquitectura §7 documenta una conservación transitoria autorizada. El código conserva registro y archivos anteriores después de añadir las rutas nuevas. Se reporta deuda; no se ejecuta una retirada en esta tarea documental.
 
 Hallazgo adicional D-14: `src/data/orders.ts::initialOrders` contiene órdenes, contactos, importes y una contraseña de demostración. No es un catálogo estático de presentación; la búsqueda de referencias en src solo localiza la definición de `initialOrders`. No se usó como evidencia de órdenes reales ni como fuente de verdad.
-
-## HRL-64 [Tarea] Pruebas frontend y Rust, y validación nativa (cámara, impresora, DPAPI)
-
-Estado: No verificado (evidencia de pruebas presentes: `tests/ipc-stores.test.ts`, `tests/phase4.test.ts`, `src-tauri/src/db/tests.rs`, `src-tauri/src/services/tests.rs::windows_key_custody_reopens_dpapi_key_without_storing_it_in_sqlite`, `src-tauri/src/windowing.rs::tests`). Se comprueba existencia de casos, no su resultado. Falta ejecutar suites y recorridos con cámara, impresora y DPAPI en Windows; está expresamente fuera de esta solicitud.
-Prioridad: Alta, porque valida seguridad, dinero, auditoría y dependencias nativas antes del cierre.
-Puntos: 13
-Sprint: 4
-División propuesta: HRL-91 (5), HRL-92 (5) y HRL-93 (3), sin sumar estos puntos de nuevo a los 13 del padre.
-Subtareas:
-
-- HRL-91 [Pruebas] Ejecutar y completar regresión frontend de sesión, borradores y reintentos; reparar en una tarea posterior la referencia `test:company` a `tests/company.test.mjs`, ausente del árbol revisado (5 puntos).
-- HRL-92 [Pruebas] Ejecutar y completar cobertura Rust de migraciones/FK, permisos, concurrencia, libros inmutables y rollback de auditoría, reportando resultados del árbol exacto (5 puntos).
-- HRL-93 [Pruebas] Validar en la aplicación Windows cámara concedida/denegada y liberación, impresora carta/ticket, geometría de ventana y reapertura DPAPI; registrar entorno y evidencia reproducible (3 puntos).
-
-Criterios de aceptación (fuentes: límites de `docs/evidencias.md`, `docs/auditoria-empresa.md`, `docs/ventana-por-sesion.md`):
-
-- Dado el árbol final, cuando se ejecutan sus suites, entonces se registra el resultado real y las pruebas de permiso denegado y rollback sin retirar pruebas para forzar éxito.
-- Dado hardware Windows, cuando se captura, imprime y reabre custodia, entonces se documenta lo observado separándolo de mocks y comprobaciones de compilación.
-- Dada cámara denegada, impresora no disponible o fallo DPAPI, cuando se produce, entonces el flujo presenta error y no afirma éxito ni pierde silenciosamente datos.
-- Dada una comprobación que no pudo realizarse, cuando se entrega el resultado, entonces figura No verificado con entorno y condición faltantes.
-
-Discrepancia D-15: documentos antiguos citan suites `.mjs` que aparecen eliminadas o ausentes en el árbol actual; `package.json::scripts.test:company` todavía referencia `tests/company.test.mjs`. Los PASS históricos no prueban el estado actual. `docs/ventana-por-sesion.md` además reporta un fallo DPAPI previo; no se afirma que persista ni que esté resuelto sin ejecutarlo.
