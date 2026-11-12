@@ -1,10 +1,12 @@
 # HRL-65 [Epic] Pendientes futuros (Backlog)
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: En progreso como agrupador: Herramientas ya tiene implementación, mientras las otras capacidades están pendientes o carecen de verificación suficiente.
 Prioridad: Alta, porque publicación, importación y respaldo afectan privacidad, integridad y custodia de secretos.
-Puntos: 45 (suma de historias; estimación preliminar, sin sumar otra vez el epic).
+Puntos: 32 (suma de historias; estimación preliminar, sin sumar otra vez el epic).
 Sprint: Backlog, sin fecha.
-Subtareas: conserva HRL-66 a HRL-70; nuevas subtareas HRL-94 a HRL-106.
+Subtareas: conserva HRL-67 a HRL-70. La sincronización con portal se detalla en el epic HRL-71 de la fuente actualizada.
 
 Criterios de aceptación del epic (fuentes: contexto completo §§6.4 y 9, `docs/evidencias.md`, `AGENTS.md` §6):
 
@@ -14,27 +16,6 @@ Criterios de aceptación del epic (fuentes: contexto completo §§6.4 y 9, `docs
 
 Fuentes: `docs/contexto-completo-proyecto.md` §§6.4 y 9; `docs/contexto-funcional-vistas-y-estructura.md` §§1 y pendientes; `docs/evidencias.md`; `AGENTS.md` §6. No hay especificación suficiente para inventar autenticación del portal, formatos y tamaños de video/documento, resolución de conflictos de importación o transporte de claves entre equipos. Los criterios siguientes recogen límites ya documentados y condiciones de entrada; no sustituyen la especificación faltante. Los puntos son provisionales de alcance completo.
 
-## HRL-66 [Historia] Portal web del cliente y publicación de avances
-
-Estado: Pendiente (evidencia: `src-tauri/src/services/repairs.rs::RepairService::save` y `src-tauri/src/repositories/repairs.rs::RepairRepository::save` solo guardan preferencias locales; `src/services/api/workshop.ts` no contiene publicación remota; `src-tauri/src/commands/mod.rs` y `src-tauri/src/lib.rs::run` no registran un comando de publicación). La búsqueda en src y src-tauri/src no localizó implementación del portal. Una infraestructura externa no incluida en el repositorio está No verificada.
-Prioridad: Alta, porque la publicación debe proteger notas internas y secretos del equipo frente al acceso externo.
-Puntos: 13
-Sprint: Backlog
-División propuesta: alcance/presentación de información pública (5), servicio de publicación (5), validación de privacidad y fallos (3). Reestimar al tener contrato externo; no se selecciona proveedor ni autenticación.
-Subtareas:
-
-- HRL-94 [Vista] Definir con producto el contrato de consulta del cliente y construir la vista del portal después de aprobarlo, usando solo datos públicos previstos (5 puntos).
-- HRL-95 [Servicio Rust] Implementar publicación real según contrato y autorización definidos, separada del guardado local y con trazabilidad de la operación efectiva (5 puntos).
-- HRL-96 [Pruebas] Verificar distinción entre guardado local/publicación, aislamiento de notas internas y manejo del fallo de conexión conforme al contrato que se apruebe (3 puntos).
-
-Criterios de aceptación documentados (fuentes: contexto funcional §§1 y 2, `docs/bitacora.md`, `docs/reparaciones-permisos.md`):
-
-- Dadas preferencias de publicación guardadas localmente, cuando se guardan sin conexión al portal, entonces no se presentan como publicación realizada.
-- Dadas notas internas y contraseña del equipo, cuando se prepara información para el cliente, entonces esos datos no forman parte del resumen público.
-- Dado un operador sin permiso de modificar publicación, cuando intenta cambiar las preferencias o iniciar la operación protegida correspondiente, entonces se deniega sin alterar permisos permanentes.
-
-No verificado: contrato de acceso del cliente, destino, transporte, reintentos y evidencia de despliegue externo. Se necesita especificación funcional/técnica y acceso de lectura al proyecto del portal, si existe.
-
 ## HRL-67 [Historia] Importación de datos desde la base legacy
 
 Estado: No verificado para una importación a la base normalizada (evidencia: `src-tauri/src/orders.rs::import_orders` usa `access::pool` y sesión anteriores; `src/composables/useOrders.ts::importLegacy` importa desde localStorage al comando anterior; `src-tauri/src/db/migrations.rs::apply` rechaza una base con `Ordenes.datos_json`). Esos importadores no acreditan migración a 3FN. No se confirmó existencia, contenido ni necesidad de migrar datos reales.
@@ -43,9 +24,9 @@ Puntos: 8
 Sprint: Backlog
 Subtareas:
 
-- HRL-97 [Repositorio/SQL] Inventariar una copia autorizada de la base origen y definir correspondencias a 3FN, conservando libros, identificadores de referencia y fechas desconocidas; no escribir migración de datos sin confirmar el alcance.
-- HRL-98 [Servicio Rust] Diseñar la importación transaccional al destino normalizado después de confirmar datos y reglas de conflictos, sin reutilizar la sesión ni el pool del importador anterior.
-- HRL-99 [Pruebas] Con fixtures autorizadas, comprobar conservación de originales, dinero y auditoría, rechazo de datos ambiguos y ausencia de duplicación al repetir la importación según el contrato aprobado.
+- HRL-105 [Repositorio/SQL] Inventariar una copia autorizada de la base origen y definir correspondencias a 3FN, conservando libros, identificadores de referencia y fechas desconocidas; no escribir migración de datos sin confirmar el alcance.
+- HRL-106 [Servicio Rust] Diseñar la importación transaccional al destino normalizado después de confirmar datos y reglas de conflictos, sin reutilizar la sesión ni el pool del importador anterior.
+- HRL-107 [Pruebas] Con fixtures autorizadas, comprobar conservación de originales, dinero y auditoría, rechazo de datos ambiguos y ausencia de duplicación al repetir la importación según el contrato aprobado.
 
 Criterios de aceptación documentados (fuentes: `AGENTS.md` §6, `docs/sqlite.md`, `docs/reparaciones-permisos.md`, `docs/bitacora.md`):
 
@@ -63,10 +44,10 @@ Puntos: 8
 Sprint: Backlog
 Subtareas:
 
-- HRL-100 [Vista] Diseñar selección y consulta de archivos adicionales después de definir formatos, tamaños y comportamiento de visualización; no reutilizar silenciosamente el límite fotográfico de 20 MiB.
-- HRL-101 [Composable/store] Extender contratos de evidencia y estados de reintento manteniendo identificadores, alcance y errores de sesión.
-- HRL-102 [Servicio Rust] Ampliar validación y almacenamiento controlado por tipo junto al repositorio normalizado, una vez aprobada la política de archivo.
-- HRL-103 [Pruebas] Cubrir tipos autorizados/no autorizados, tamaños definidos, rollback de metadatos/auditoría y conservación del original retirado.
+- HRL-108 [Vista] Diseñar selección y consulta de archivos adicionales después de definir formatos, tamaños y comportamiento de visualización; no reutilizar silenciosamente el límite fotográfico de 20 MiB.
+- HRL-109 [Composable/store] Extender contratos de evidencia y estados de reintento manteniendo identificadores, alcance y errores de sesión.
+- HRL-110 [Servicio Rust] Ampliar validación y almacenamiento controlado por tipo junto al repositorio normalizado, una vez aprobada la política de archivo.
+- HRL-111 [Pruebas] Cubrir tipos autorizados/no autorizados, tamaños definidos, rollback de metadatos/auditoría y conservación del original retirado.
 
 Criterios de aceptación documentados (fuentes: `docs/evidencias.md`, contexto completo §9):
 
@@ -101,9 +82,9 @@ Sprint: Backlog
 División propuesta: contrato y custodia de recuperación (5), paquete consistente DB/assets y restauración (5), validación entre instalaciones (3). No se elige formato, cifrado de exportación, frecuencia ni política de retención sin definición del producto.
 Subtareas:
 
-- HRL-104 [Servicio Rust] Definir e implementar, tras aprobar la estrategia de HRL-62, el procedimiento autorizado para recuperar claves junto con la instalación, distinguiéndolo del restablecimiento Ed25519 de contraseñas de acceso (5 puntos).
-- HRL-105 [Repositorio/SQL] Implementar captura y restauración consistentes de DB normalizada y assets, conservando referencias, libros y secuencias; el respaldo legacy existente no sustituye esta entrega (5 puntos).
-- HRL-106 [Pruebas] Probar restauración conjunta en origen/destino y rechazos por paquete incompleto, clave no recuperable o esquema incompatible, sin alterar el original hasta validar el resultado (3 puntos).
+- HRL-112 [Servicio Rust] Definir e implementar, tras aprobar la estrategia de HRL-62, el procedimiento autorizado para recuperar claves junto con la instalación, distinguiéndolo del restablecimiento Ed25519 de contraseñas de acceso (5 puntos).
+- HRL-113 [Repositorio/SQL] Implementar captura y restauración consistentes de DB normalizada y assets, conservando referencias, libros y secuencias; el respaldo legacy existente no sustituye esta entrega (5 puntos).
+- HRL-114 [Pruebas] Probar restauración conjunta en origen/destino y rechazos por paquete incompleto, clave no recuperable o esquema incompatible, sin alterar el original hasta validar el resultado (3 puntos).
 
 Criterios de aceptación documentados (fuentes: contexto completo §6.4, `docs/evidencias.md`, `AGENTS.md` §6):
 
