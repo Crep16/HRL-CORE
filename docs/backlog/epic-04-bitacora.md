@@ -1,10 +1,12 @@
 # HRL-39 [Epic] Módulo de Bitácora / Auditoría
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: En progreso, por detalles de cambios incompletos en HRL-42. El resto tiene implementación localizada por inspección estática.
 Prioridad: Alta, porque garantiza trazabilidad y presenta resultados financieros.
 Puntos: 39 (suma de historias; no duplicar al sumar sprints).
 Sprint: 1 y 4.
-Subtareas: agrupador de HRL-40 a HRL-47; las nuevas claves comienzan en HRL-71.
+Subtareas: agrupador de HRL-40 a HRL-47; las nuevas claves comienzan en HRL-82.
 
 Criterios de aceptación del epic (fuentes: `docs/bitacora.md`, `docs/reglas-pagos.md`):
 
@@ -50,10 +52,10 @@ Puntos: 5
 Sprint: 4
 Subtareas:
 
-- HRL-71 [Servicio Rust] Completar en `OrderService::edit` las diferencias de email y entrega estimada, y revisar cobertura de cada campo editable sin registrar el secreto del equipo.
-- HRL-72 [Repositorio/SQL] Transportar entidad e identificador afectado desde la consulta de auditoría en el contrato de detalle; no alterar el libro inmutable existente.
-- HRL-73 [Composable/store] Mostrar la identidad del registro y los nuevos campos de diferencia en el detalle de Bitácora.
-- HRL-74 [Pruebas] Cubrir edición de email/entrega estimada, comparación anterior/nuevo y ausencia de contraseñas en todos los eventos y DTO públicos de auditoría.
+- HRL-82 [Servicio Rust] Completar en `OrderService::edit` las diferencias de email y entrega estimada, y revisar cobertura de cada campo editable sin registrar el secreto del equipo.
+- HRL-83 [Repositorio/SQL] Transportar entidad e identificador afectado desde la consulta de auditoría en el contrato de detalle; no alterar el libro inmutable existente.
+- HRL-84 [Composable/store] Mostrar la identidad del registro y los nuevos campos de diferencia en el detalle de Bitácora.
+- HRL-85 [Pruebas] Cubrir edición de email/entrega estimada, comparación anterior/nuevo y ausencia de contraseñas en todos los eventos y DTO públicos de auditoría.
 
 Criterios de aceptación (fuente: `docs/bitacora.md`):
 
