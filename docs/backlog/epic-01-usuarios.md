@@ -1,5 +1,7 @@
 # HRL-1 [Epic] Módulo de Usuarios, registro e inicio de sesión
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: Hecho por inspección estática de sus historias. La ejecución y el recorrido nativo no están verificados en esta revisión.
 Prioridad: Alta, porque autentica y autoriza los demás módulos.
 Puntos: 42 (suma de historias; no se suman otra vez al sprint).
@@ -60,7 +62,7 @@ Prioridad: Alta, porque restablece credenciales privilegiadas.
 Puntos: 8
 Sprint: 2 (2-6 nov de 2026)
 Subtareas: ninguna faltante detectada en el código. Prueba presente, no ejecutada: `src-tauri/src/services/tests.rs::recovery_audit_failure_rolls_back_credentials_and_loan_closure_and_consumes_signature`.
-Criterios de aceptación (fuentes: `docs/backlog-base.md` HRL-5, `docs/contexto-completo-proyecto.md`, `docs/acceso-validacion.md` para la prohibición de puertas predeterminadas):
+Criterios de aceptación (fuentes: `docs/backlog-base (1).md` HRL-5, `docs/contexto-completo-proyecto.md`, `docs/acceso-validacion.md` para la prohibición de puertas predeterminadas):
 
 - Dada una instalación configurada, cuando soporte firma el desafío vigente con Ed25519, entonces se pueden restablecer la clave maestra y la del administrador sin sesión previa.
 - Dado un desafío vencido a los 15 minutos, alterado o consumido, cuando se presenta su firma, entonces se rechaza el restablecimiento.
