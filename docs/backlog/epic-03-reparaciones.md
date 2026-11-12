@@ -1,5 +1,7 @@
 # HRL-24 [Epic] Módulo de Reparaciones
 
+Fuente de alcance vigente: `docs/backlog-base (1).md` (80 ítems, sin HRL-66). Actualización documental del 12 de noviembre de 2026. Los estados de ítems sin cambio de alcance conservan la evidencia de la revisión estática previa; no se ejecutaron pruebas.
+
 Estado: Hecho por inspección estática de las historias; validación ejecutada y nativa No verificada (HRL-64).
 Prioridad: Alta, porque reúne seguimiento técnico, cobros, ajustes y devoluciones.
 Puntos: 63 (suma de historias; epic sin cómputo adicional).
@@ -194,7 +196,7 @@ Estado: Hecho (evidencia: `src-tauri/src/domain/repair_contracts.rs::operations`
 Prioridad: Baja, porque prepara configuración local para una integración futura.
 Puntos: 5
 Sprint: 4
-Subtareas: ninguna faltante detectada para el alcance local. El portal queda separado en HRL-66.
+Subtareas: ninguna faltante detectada para el alcance local. El portal queda separado en HRL-71.
 Criterios de aceptación (fuentes: `docs/reparaciones-permisos.md`, contexto funcional §§1 y 2):
 
 - Dado permiso `publication.edit`, cuando cambia modo manual/automático y visibilidad, entonces conserva las preferencias localmente con revisión y auditoría.
