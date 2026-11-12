@@ -133,13 +133,13 @@ Como propuesta, separar HRL-63 (13), HRL-64 (13) y HRL-81 (5) en un cierre poste
 
 No mover trabajo a sprints pasados para aparentar entregas. Primero reestimar esfuerzo pendiente de los ítems En progreso y recoger los cinco faltantes; los 386 puntos describen alcance total, no esfuerzo restante. Acordar HRL-72 antes de implementar/probar la integración; HRL-38 no sustituye HRL-73/75. Las pruebas con personal requieren coordinación real y no se programan con participantes inventados.
 
-## Preparación del proyecto Jira nuevo
+## Sincronización del proyecto Jira existente
 
-El usuario pidió un proyecto nuevo llamado **HRL registro**, con clave **HRL** y numeración desde **HRL-1**. No se actualizó el proyecto anterior con esta revisión ni se reinició su contador. El conector no ofrece crear/renombrar proyectos y el intento de acceso administrativo al navegador agotó su autorización; el proyecto previo se mantiene intacto.
+Por la última instrucción del usuario se actualizó **HRL CORE**, tablero 34. Se comprobaron en Jira los 133 ítems vigentes: nueve epics, 71 historias/tareas y 53 subtareas, sin diferencias de título, padre, estado, puntos o sprint. El [resumen de Jira](https://utrivieramaya-team-z3bsbh6g.atlassian.net/browse/HRL-161) queda como documento auxiliar sin puntos.
 
-Se prepara una carga derivada de estos documentos, no una importación de la copia anterior. Hay un hueco intencional en HRL-66 y un padre posterior (HRL-64 → HRL-77). Por eso, crear simplemente 80 ítems en orden no garantiza que sus números coincidan con las 80 referencias. La carga con claves explícitas requiere validar el importador y sus campos administrativos; no se consume HRL-66 creando una tarea ficticia. Las subtareas se cargan después de todos los ítems base.
+Las historias/tareas llevan números visibles **[001] a [071]**. Los epics usan [E01] a [E09] y las subtareas el número de su padre con sufijo. **Las claves nativas HRL-N conservan su contador**; Jira Cloud mantiene abierta la [petición de reiniciarlo](https://jira.atlassian.com/browse/JRACLOUD-34286). El mapa de referencias documentales, números visibles y claves reales está en [jira-correspondencia.json](jira-correspondencia.json).
 
-La correspondencia y el reporte de la sincronización anterior se conservarán como históricos, no como prueba de que el proyecto solicitado ya exista. Falta disponibilidad de la clave HRL y acceso administrativo para crear/verificar el destino. No se elimina el proyecto anterior ni se liberan claves por una acción no autorizada.
+Se añadieron los epics Jira HRL-162 y HRL-163, se reutilizaron las nueve tareas con códigos originales y se trasladó HRL-64 al epic documental HRL-77. El portal retirado y sus tres subtareas (Jira HRL-143 a HRL-146) quedan marcados como reemplazados. Se conservan los sprints existentes; no se aplicó el rebalanceo. El [informe de sincronización](jira-sincronizacion.md) recoge los detalles.
 
 ## Alcance incompleto y verificación documental
 

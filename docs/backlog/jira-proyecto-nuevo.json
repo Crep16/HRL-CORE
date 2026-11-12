@@ -1,11 +1,11 @@
 {
   "requestedProject": {
-    "name": "HRL registro",
+    "name": "HRL CORE",
     "key": "HRL"
   },
-  "status": "pending_project_creation",
-  "projectId": null,
-  "boardId": null,
+  "status": "synchronized_existing_project",
+  "projectId": 10066,
+  "boardId": 34,
   "sourceDate": "2026-11-12",
   "sourceFiles": [
     "docs/backlog-base (1).md",
@@ -27,8 +27,14 @@
   "points": 386,
   "unavailableSourceItems": 5,
   "intentionallyUnusedSourceKey": "HRL-66",
-  "numbering": "Las requestedKey son objetivos de importación, no claves Jira ya creadas. Validar importación con claves explícitas para omitir HRL-66 sin crear una tarea ficticia. No usar asignación secuencial suponiendo coincidencia.",
-  "hierarchy": "HRL-64 depende de HRL-77 aunque aparezca antes por número; resolver por Parent ID/clave validada antes de importar.",
+  "numbering": {
+    "nativeCounterReset": false,
+    "visibleStories": "001–071",
+    "epics": "E01–E09",
+    "subtasks": "número visible del padre + sufijo",
+    "note": "Las referencias HRL documentales no son necesariamente claves nativas. El nombre de este archivo proviene de una propuesta sustituida."
+  },
+  "hierarchy": "La referencia documental HRL-64 pertenece a HRL-77; los campos parentJiraKey registran los padres comprobados en el proyecto existente.",
   "sprints": [
     {
       "number": 1,
@@ -36,7 +42,8 @@
         "2026-10-26",
         "2026-10-30"
       ],
-      "points": 55
+      "points": 55,
+      "jiraSprintId": 104
     },
     {
       "number": 2,
@@ -44,7 +51,8 @@
         "2026-11-02",
         "2026-11-06"
       ],
-      "points": 63
+      "points": 63,
+      "jiraSprintId": 105
     },
     {
       "number": 3,
@@ -52,7 +60,8 @@
         "2026-11-09",
         "2026-11-13"
       ],
-      "points": 64
+      "points": 64,
+      "jiraSprintId": 106
     },
     {
       "number": 4,
@@ -60,16 +69,12 @@
         "2026-11-16",
         "2026-11-20"
       ],
-      "points": 167
+      "points": 167,
+      "jiraSprintId": 107
     }
   ],
   "preflight": [
-    "Comprobar creación del proyecto nuevo y disponibilidad de HRL sin eliminar el proyecto anterior.",
-    "Comprobar tipos, prioridades, estados y campo de puntos del proyecto nuevo; statusIntent no acredita una transición ya realizada.",
-    "Comprobar que el importador admite Issue key explícita y Parent ID con padre posterior; no importar sobre el proyecto anterior.",
-    "Crear/verificar los cuatro sprints del tablero nuevo; no reutilizar IDs 104-107 del tablero anterior.",
-    "Importar los 80 ítems base antes de las 53 subtareas y verificar claves, omisión de HRL-66, jerarquía y totales.",
-    "No generar los cinco ítems faltantes de HRL-77 ni un resumen adicional antes de fijar la numeración de base/subtareas."
+    "Sincronización comprobada en Jira el 2026-11-12: 133 ítems vigentes, sin diferencias de título, estado, padre, puntos ni sprint."
   ],
   "items": [
     {
@@ -84,7 +89,12 @@
       "statusIntent": "Terminado",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-55",
+      "displayNumber": "E01",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-55",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-2",
@@ -98,7 +108,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "1",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-56",
+      "displayNumber": "001",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-56",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-3",
@@ -112,7 +127,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "1",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-57",
+      "displayNumber": "002",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-57",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-4",
@@ -126,7 +146,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "1",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-58",
+      "displayNumber": "003",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-58",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-5",
@@ -140,7 +165,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "2",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-59",
+      "displayNumber": "004",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-59",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-6",
@@ -154,7 +184,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "2",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-60",
+      "displayNumber": "005",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-60",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-7",
@@ -168,7 +203,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "1",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-61",
+      "displayNumber": "006",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-61",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-8",
@@ -182,7 +222,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "2",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-62",
+      "displayNumber": "007",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-62",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-9",
@@ -196,7 +241,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "2",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-63",
+      "displayNumber": "008",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-63",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-10",
@@ -210,7 +260,12 @@
       "statusIntent": "Terminado",
       "points": 2,
       "sprint": "1",
-      "sourceFile": "epic-01-usuarios.md"
+      "sourceFile": "epic-01-usuarios.md",
+      "key": "HRL-64",
+      "displayNumber": "009",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-64",
+      "parentJiraKey": "HRL-55"
     },
     {
       "reference": "HRL-11",
@@ -224,7 +279,12 @@
       "statusIntent": "Terminado",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-65",
+      "displayNumber": "E02",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-65",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-12",
@@ -238,7 +298,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-66",
+      "displayNumber": "010",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-66",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-13",
@@ -252,7 +317,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-67",
+      "displayNumber": "011",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-67",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-14",
@@ -266,7 +336,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-68",
+      "displayNumber": "012",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-68",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-15",
@@ -280,7 +355,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-69",
+      "displayNumber": "013",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-69",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-16",
@@ -294,7 +374,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-70",
+      "displayNumber": "014",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-70",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-17",
@@ -308,7 +393,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-71",
+      "displayNumber": "015",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-71",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-18",
@@ -322,7 +412,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-72",
+      "displayNumber": "016",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-72",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-19",
@@ -336,7 +431,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-73",
+      "displayNumber": "017",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-73",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-20",
@@ -350,7 +450,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-74",
+      "displayNumber": "018",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-74",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-21",
@@ -364,7 +469,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-75",
+      "displayNumber": "019",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-75",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-22",
@@ -378,7 +488,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-76",
+      "displayNumber": "020",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-76",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-23",
@@ -392,7 +507,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "2",
-      "sourceFile": "epic-02-clientes.md"
+      "sourceFile": "epic-02-clientes.md",
+      "key": "HRL-77",
+      "displayNumber": "021",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-77",
+      "parentJiraKey": "HRL-65"
     },
     {
       "reference": "HRL-24",
@@ -406,7 +526,12 @@
       "statusIntent": "Terminado",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-78",
+      "displayNumber": "E03",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-78",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-25",
@@ -420,7 +545,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-79",
+      "displayNumber": "022",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-79",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-26",
@@ -434,7 +564,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-80",
+      "displayNumber": "023",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-80",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-27",
@@ -448,7 +583,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-81",
+      "displayNumber": "024",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-81",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-28",
@@ -462,7 +602,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-82",
+      "displayNumber": "025",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-82",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-29",
@@ -476,7 +621,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-83",
+      "displayNumber": "026",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-83",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-30",
@@ -490,7 +640,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-84",
+      "displayNumber": "027",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-84",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-31",
@@ -504,7 +659,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-85",
+      "displayNumber": "028",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-85",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-32",
@@ -518,7 +678,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-86",
+      "displayNumber": "029",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-86",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-33",
@@ -532,7 +697,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-87",
+      "displayNumber": "030",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-87",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-34",
@@ -546,7 +716,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-88",
+      "displayNumber": "031",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-88",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-35",
@@ -560,7 +735,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-89",
+      "displayNumber": "032",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-89",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-36",
@@ -574,7 +754,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-90",
+      "displayNumber": "033",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-90",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-37",
@@ -588,7 +773,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-91",
+      "displayNumber": "034",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-91",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-38",
@@ -602,7 +792,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-03-reparaciones.md"
+      "sourceFile": "epic-03-reparaciones.md",
+      "key": "HRL-92",
+      "displayNumber": "035",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-92",
+      "parentJiraKey": "HRL-78"
     },
     {
       "reference": "HRL-39",
@@ -616,7 +811,12 @@
       "statusIntent": "En curso",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-93",
+      "displayNumber": "E04",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-93",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-40",
@@ -630,7 +830,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "1",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-94",
+      "displayNumber": "036",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-94",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-41",
@@ -644,7 +849,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-95",
+      "displayNumber": "037",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-95",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-42",
@@ -658,7 +868,12 @@
       "statusIntent": "En curso",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-96",
+      "displayNumber": "038",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-96",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-43",
@@ -672,7 +887,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-101",
+      "displayNumber": "039",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-101",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-44",
@@ -686,7 +906,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-102",
+      "displayNumber": "040",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-102",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-45",
@@ -700,7 +925,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-103",
+      "displayNumber": "041",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-103",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-46",
@@ -714,7 +944,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-104",
+      "displayNumber": "042",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-104",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-47",
@@ -728,7 +963,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-105",
+      "displayNumber": "043",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-105",
+      "parentJiraKey": "HRL-93"
     },
     {
       "reference": "HRL-48",
@@ -742,7 +982,12 @@
       "statusIntent": "En curso",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-106",
+      "displayNumber": "E05",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-106",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-49",
@@ -756,7 +1001,12 @@
       "statusIntent": "En curso",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-107",
+      "displayNumber": "044",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-107",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-50",
@@ -770,7 +1020,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-110",
+      "displayNumber": "045",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-110",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-51",
@@ -784,7 +1039,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-111",
+      "displayNumber": "046",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-111",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-52",
@@ -798,7 +1058,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-112",
+      "displayNumber": "047",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-112",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-53",
@@ -812,7 +1077,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-113",
+      "displayNumber": "048",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-113",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-54",
@@ -826,7 +1096,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-114",
+      "displayNumber": "049",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-114",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-55",
@@ -840,7 +1115,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-115",
+      "displayNumber": "050",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-115",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-56",
@@ -854,7 +1134,12 @@
       "statusIntent": "Terminado",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-116",
+      "displayNumber": "051",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-116",
+      "parentJiraKey": "HRL-106"
     },
     {
       "reference": "HRL-57",
@@ -868,7 +1153,12 @@
       "statusIntent": "En curso",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-117",
+      "displayNumber": "E06",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-117",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-58",
@@ -882,7 +1172,12 @@
       "statusIntent": "Terminado",
       "points": 8,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-118",
+      "displayNumber": "052",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-118",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-59",
@@ -896,7 +1191,12 @@
       "statusIntent": "En curso",
       "points": 8,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-119",
+      "displayNumber": "053",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-119",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-60",
@@ -910,7 +1210,12 @@
       "statusIntent": "En curso",
       "points": 8,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-122",
+      "displayNumber": "054",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-122",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-61",
@@ -924,7 +1229,12 @@
       "statusIntent": "En curso",
       "points": 8,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-126",
+      "displayNumber": "055",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-126",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-62",
@@ -938,7 +1248,12 @@
       "statusIntent": "En curso",
       "points": 8,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-130",
+      "displayNumber": "056",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-130",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-63",
@@ -952,7 +1267,12 @@
       "statusIntent": "En curso",
       "points": 13,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-133",
+      "displayNumber": "057",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-133",
+      "parentJiraKey": "HRL-117"
     },
     {
       "reference": "HRL-64",
@@ -966,7 +1286,12 @@
       "statusIntent": "En prueba",
       "points": 13,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-138",
+      "displayNumber": "058",
+      "jiraStatus": "En prueba",
+      "jiraKey": "HRL-138",
+      "parentJiraKey": "HRL-163"
     },
     {
       "reference": "HRL-65",
@@ -980,7 +1305,12 @@
       "statusIntent": "En curso",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-142",
+      "displayNumber": "E07",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-142",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-67",
@@ -994,7 +1324,12 @@
       "statusIntent": "En prueba",
       "points": 8,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-147",
+      "displayNumber": "059",
+      "jiraStatus": "En prueba",
+      "jiraKey": "HRL-147",
+      "parentJiraKey": "HRL-142"
     },
     {
       "reference": "HRL-68",
@@ -1008,7 +1343,12 @@
       "statusIntent": "Por hacer",
       "points": 8,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-151",
+      "displayNumber": "060",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-151",
+      "parentJiraKey": "HRL-142"
     },
     {
       "reference": "HRL-69",
@@ -1022,7 +1362,12 @@
       "statusIntent": "Terminado",
       "points": 3,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-156",
+      "displayNumber": "061",
+      "jiraStatus": "Terminado",
+      "jiraKey": "HRL-156",
+      "parentJiraKey": "HRL-142"
     },
     {
       "reference": "HRL-70",
@@ -1036,7 +1381,12 @@
       "statusIntent": "Por hacer",
       "points": 13,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-157",
+      "displayNumber": "062",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-157",
+      "parentJiraKey": "HRL-142"
     },
     {
       "reference": "HRL-71",
@@ -1050,7 +1400,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-162",
+      "displayNumber": "E08",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-162",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-72",
@@ -1064,7 +1419,12 @@
       "statusIntent": "Por hacer",
       "points": 3,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-10",
+      "displayNumber": "063",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-10",
+      "parentJiraKey": "HRL-162"
     },
     {
       "reference": "HRL-73",
@@ -1078,7 +1438,12 @@
       "statusIntent": "Por hacer",
       "points": 8,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-31",
+      "displayNumber": "064",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-31",
+      "parentJiraKey": "HRL-162"
     },
     {
       "reference": "HRL-74",
@@ -1092,7 +1457,12 @@
       "statusIntent": "Por hacer",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-32",
+      "displayNumber": "065",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-32",
+      "parentJiraKey": "HRL-162"
     },
     {
       "reference": "HRL-75",
@@ -1106,7 +1476,12 @@
       "statusIntent": "Por hacer",
       "points": 8,
       "sprint": "4",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-36",
+      "displayNumber": "066",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-36",
+      "parentJiraKey": "HRL-162"
     },
     {
       "reference": "HRL-76",
@@ -1120,7 +1495,12 @@
       "statusIntent": "Por hacer",
       "points": 5,
       "sprint": "Backlog",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-50",
+      "displayNumber": "067",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-50",
+      "parentJiraKey": "HRL-162"
     },
     {
       "reference": "HRL-77",
@@ -1134,7 +1514,12 @@
       "statusIntent": "En curso",
       "points": null,
       "sprint": null,
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-163",
+      "displayNumber": "E09",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-163",
+      "parentJiraKey": null
     },
     {
       "reference": "HRL-78",
@@ -1148,7 +1533,12 @@
       "statusIntent": "En curso",
       "points": 5,
       "sprint": "2",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-24",
+      "displayNumber": "068",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-24",
+      "parentJiraKey": "HRL-163"
     },
     {
       "reference": "HRL-79",
@@ -1162,7 +1552,12 @@
       "statusIntent": "En curso",
       "points": 5,
       "sprint": "3",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-33",
+      "displayNumber": "069",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-33",
+      "parentJiraKey": "HRL-163"
     },
     {
       "reference": "HRL-80",
@@ -1176,7 +1571,12 @@
       "statusIntent": "En curso",
       "points": 8,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-37",
+      "displayNumber": "070",
+      "jiraStatus": "En curso",
+      "jiraKey": "HRL-37",
+      "parentJiraKey": "HRL-163"
     },
     {
       "reference": "HRL-81",
@@ -1190,7 +1590,12 @@
       "statusIntent": "En prueba",
       "points": 5,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-38",
+      "displayNumber": "071",
+      "jiraStatus": "En prueba",
+      "jiraKey": "HRL-38",
+      "parentJiraKey": "HRL-163"
     },
     {
       "reference": "HRL-82",
@@ -1204,7 +1609,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-97",
+      "displayNumber": "038.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-97",
+      "parentJiraKey": "HRL-96"
     },
     {
       "reference": "HRL-83",
@@ -1218,7 +1628,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-98",
+      "displayNumber": "038.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-98",
+      "parentJiraKey": "HRL-96"
     },
     {
       "reference": "HRL-84",
@@ -1232,7 +1647,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-99",
+      "displayNumber": "038.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-99",
+      "parentJiraKey": "HRL-96"
     },
     {
       "reference": "HRL-85",
@@ -1246,7 +1666,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-04-bitacora.md"
+      "sourceFile": "epic-04-bitacora.md",
+      "key": "HRL-100",
+      "displayNumber": "038.4",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-100",
+      "parentJiraKey": "HRL-96"
     },
     {
       "reference": "HRL-86",
@@ -1260,7 +1685,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-108",
+      "displayNumber": "044.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-108",
+      "parentJiraKey": "HRL-107"
     },
     {
       "reference": "HRL-87",
@@ -1274,7 +1704,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-05-empresa.md"
+      "sourceFile": "epic-05-empresa.md",
+      "key": "HRL-109",
+      "displayNumber": "044.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-109",
+      "parentJiraKey": "HRL-107"
     },
     {
       "reference": "HRL-88",
@@ -1288,7 +1723,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-120",
+      "displayNumber": "053.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-120",
+      "parentJiraKey": "HRL-119"
     },
     {
       "reference": "HRL-89",
@@ -1302,7 +1742,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-121",
+      "displayNumber": "053.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-121",
+      "parentJiraKey": "HRL-119"
     },
     {
       "reference": "HRL-90",
@@ -1316,7 +1761,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-123",
+      "displayNumber": "054.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-123",
+      "parentJiraKey": "HRL-122"
     },
     {
       "reference": "HRL-91",
@@ -1330,7 +1780,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-124",
+      "displayNumber": "054.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-124",
+      "parentJiraKey": "HRL-122"
     },
     {
       "reference": "HRL-92",
@@ -1344,7 +1799,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-125",
+      "displayNumber": "054.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-125",
+      "parentJiraKey": "HRL-122"
     },
     {
       "reference": "HRL-93",
@@ -1358,7 +1818,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-127",
+      "displayNumber": "055.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-127",
+      "parentJiraKey": "HRL-126"
     },
     {
       "reference": "HRL-94",
@@ -1372,7 +1837,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-128",
+      "displayNumber": "055.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-128",
+      "parentJiraKey": "HRL-126"
     },
     {
       "reference": "HRL-95",
@@ -1386,7 +1856,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-129",
+      "displayNumber": "055.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-129",
+      "parentJiraKey": "HRL-126"
     },
     {
       "reference": "HRL-96",
@@ -1400,7 +1875,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-131",
+      "displayNumber": "056.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-131",
+      "parentJiraKey": "HRL-130"
     },
     {
       "reference": "HRL-97",
@@ -1414,7 +1894,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "1",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-132",
+      "displayNumber": "056.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-132",
+      "parentJiraKey": "HRL-130"
     },
     {
       "reference": "HRL-98",
@@ -1428,7 +1913,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-134",
+      "displayNumber": "057.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-134",
+      "parentJiraKey": "HRL-133"
     },
     {
       "reference": "HRL-99",
@@ -1442,7 +1932,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-135",
+      "displayNumber": "057.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-135",
+      "parentJiraKey": "HRL-133"
     },
     {
       "reference": "HRL-100",
@@ -1456,7 +1951,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-136",
+      "displayNumber": "057.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-136",
+      "parentJiraKey": "HRL-133"
     },
     {
       "reference": "HRL-101",
@@ -1470,7 +1970,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-06-base-tecnica.md"
+      "sourceFile": "epic-06-base-tecnica.md",
+      "key": "HRL-137",
+      "displayNumber": "057.4",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-137",
+      "parentJiraKey": "HRL-133"
     },
     {
       "reference": "HRL-102",
@@ -1484,7 +1989,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-139",
+      "displayNumber": "058.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-139",
+      "parentJiraKey": "HRL-138"
     },
     {
       "reference": "HRL-103",
@@ -1498,7 +2008,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-140",
+      "displayNumber": "058.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-140",
+      "parentJiraKey": "HRL-138"
     },
     {
       "reference": "HRL-104",
@@ -1512,7 +2027,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-141",
+      "displayNumber": "058.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-141",
+      "parentJiraKey": "HRL-138"
     },
     {
       "reference": "HRL-105",
@@ -1526,7 +2046,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-148",
+      "displayNumber": "059.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-148",
+      "parentJiraKey": "HRL-147"
     },
     {
       "reference": "HRL-106",
@@ -1540,7 +2065,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-149",
+      "displayNumber": "059.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-149",
+      "parentJiraKey": "HRL-147"
     },
     {
       "reference": "HRL-107",
@@ -1554,7 +2084,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-150",
+      "displayNumber": "059.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-150",
+      "parentJiraKey": "HRL-147"
     },
     {
       "reference": "HRL-108",
@@ -1568,7 +2103,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-152",
+      "displayNumber": "060.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-152",
+      "parentJiraKey": "HRL-151"
     },
     {
       "reference": "HRL-109",
@@ -1582,7 +2122,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-153",
+      "displayNumber": "060.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-153",
+      "parentJiraKey": "HRL-151"
     },
     {
       "reference": "HRL-110",
@@ -1596,7 +2141,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-154",
+      "displayNumber": "060.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-154",
+      "parentJiraKey": "HRL-151"
     },
     {
       "reference": "HRL-111",
@@ -1610,7 +2160,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-155",
+      "displayNumber": "060.4",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-155",
+      "parentJiraKey": "HRL-151"
     },
     {
       "reference": "HRL-112",
@@ -1624,7 +2179,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-158",
+      "displayNumber": "062.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-158",
+      "parentJiraKey": "HRL-157"
     },
     {
       "reference": "HRL-113",
@@ -1638,7 +2198,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-159",
+      "displayNumber": "062.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-159",
+      "parentJiraKey": "HRL-157"
     },
     {
       "reference": "HRL-114",
@@ -1652,7 +2217,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-07-futuros.md"
+      "sourceFile": "epic-07-futuros.md",
+      "key": "HRL-160",
+      "displayNumber": "062.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-160",
+      "parentJiraKey": "HRL-157"
     },
     {
       "reference": "HRL-115",
@@ -1666,7 +2236,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-164",
+      "displayNumber": "063.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-164",
+      "parentJiraKey": "HRL-10"
     },
     {
       "reference": "HRL-116",
@@ -1680,7 +2255,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-165",
+      "displayNumber": "063.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-165",
+      "parentJiraKey": "HRL-10"
     },
     {
       "reference": "HRL-117",
@@ -1694,7 +2274,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-166",
+      "displayNumber": "064.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-166",
+      "parentJiraKey": "HRL-31"
     },
     {
       "reference": "HRL-118",
@@ -1708,7 +2293,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-167",
+      "displayNumber": "064.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-167",
+      "parentJiraKey": "HRL-31"
     },
     {
       "reference": "HRL-119",
@@ -1722,7 +2312,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-168",
+      "displayNumber": "064.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-168",
+      "parentJiraKey": "HRL-31"
     },
     {
       "reference": "HRL-120",
@@ -1736,7 +2331,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-169",
+      "displayNumber": "065.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-169",
+      "parentJiraKey": "HRL-32"
     },
     {
       "reference": "HRL-121",
@@ -1750,7 +2350,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-170",
+      "displayNumber": "065.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-170",
+      "parentJiraKey": "HRL-32"
     },
     {
       "reference": "HRL-122",
@@ -1764,7 +2369,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-171",
+      "displayNumber": "066.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-171",
+      "parentJiraKey": "HRL-36"
     },
     {
       "reference": "HRL-123",
@@ -1778,7 +2388,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-172",
+      "displayNumber": "066.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-172",
+      "parentJiraKey": "HRL-36"
     },
     {
       "reference": "HRL-124",
@@ -1792,7 +2407,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-173",
+      "displayNumber": "066.3",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-173",
+      "parentJiraKey": "HRL-36"
     },
     {
       "reference": "HRL-125",
@@ -1806,7 +2426,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-174",
+      "displayNumber": "067.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-174",
+      "parentJiraKey": "HRL-50"
     },
     {
       "reference": "HRL-126",
@@ -1820,7 +2445,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "Backlog",
-      "sourceFile": "epic-08-sincronizacion-portal.md"
+      "sourceFile": "epic-08-sincronizacion-portal.md",
+      "key": "HRL-175",
+      "displayNumber": "067.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-175",
+      "parentJiraKey": "HRL-50"
     },
     {
       "reference": "HRL-127",
@@ -1834,7 +2464,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "2",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-176",
+      "displayNumber": "068.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-176",
+      "parentJiraKey": "HRL-24"
     },
     {
       "reference": "HRL-128",
@@ -1848,7 +2483,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "2",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-177",
+      "displayNumber": "068.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-177",
+      "parentJiraKey": "HRL-24"
     },
     {
       "reference": "HRL-129",
@@ -1862,7 +2502,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-178",
+      "displayNumber": "069.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-178",
+      "parentJiraKey": "HRL-33"
     },
     {
       "reference": "HRL-130",
@@ -1876,7 +2521,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "3",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-179",
+      "displayNumber": "069.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-179",
+      "parentJiraKey": "HRL-33"
     },
     {
       "reference": "HRL-131",
@@ -1890,7 +2540,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-180",
+      "displayNumber": "070.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-180",
+      "parentJiraKey": "HRL-37"
     },
     {
       "reference": "HRL-132",
@@ -1904,7 +2559,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-181",
+      "displayNumber": "070.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-181",
+      "parentJiraKey": "HRL-37"
     },
     {
       "reference": "HRL-133",
@@ -1918,7 +2578,12 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-182",
+      "displayNumber": "071.1",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-182",
+      "parentJiraKey": "HRL-38"
     },
     {
       "reference": "HRL-134",
@@ -1932,7 +2597,13 @@
       "statusIntent": "Por hacer",
       "points": null,
       "sprint": "4",
-      "sourceFile": "epic-09-pruebas-instalacion-entrega.md"
+      "sourceFile": "epic-09-pruebas-instalacion-entrega.md",
+      "key": "HRL-183",
+      "displayNumber": "071.2",
+      "jiraStatus": "Por hacer",
+      "jiraKey": "HRL-183",
+      "parentJiraKey": "HRL-38"
     }
-  ]
+  ],
+  "strategy": "update_existing"
 }

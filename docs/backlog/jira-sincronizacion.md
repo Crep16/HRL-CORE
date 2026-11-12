@@ -1,58 +1,54 @@
-# Preparación de HRL registro y estado de Jira
+# Sincronización de HRL CORE — 12 de noviembre de 2026
 
-Revisión del 12 de noviembre de 2026. Fuente única de alcance: `docs/backlog-base (1).md`; `docs/jira-import (1).csv` confirma los 80 ítems base y el cambio de padre de HRL-64. No se tomó alcance de copias anteriores.
+Se actualiza el proyecto existente **HRL CORE** (HRL, ID 10066), tablero 34, según la última instrucción del usuario. La propuesta de crear HRL registro queda sustituida.
 
-## Estado real del destino
+La única fuente de alcance es `docs/backlog-base (1).md`: 80 ítems base (9 epics y 71 historias/tareas), más 53 subtareas documentadas desde HRL-82 a HRL-134. HRL-66 queda fuera del alcance vigente.
 
-**El proyecto nuevo HRL registro no se ha creado ni cargado.** La consulta `listJiraProjects` devuelve HRL CORE con clave HRL (ID 10066, 150 ítems). La clave requerida sigue ocupada. No se reinició el contador, renombró ni borró ese proyecto, ni se actualizó su backlog con esta revisión.
+## Numeración visible
 
-El conector de Atlassian disponible no ofrece crear/renombrar un proyecto Jira ni liberar su clave anterior. El acceso del navegador informó que el host no estaba disponible; el intento de vincular la ventana Opera agotó la autorización de control. Falta acceso administrativo para revisar una vía que conserve el proyecto previo y permita usar HRL en uno nuevo. No se sustituye la solicitud por otra clave sin acordarlo.
+Las 71 historias/tareas llevan prefijos **[001] a [071]**, ordenados por referencia documental. Los nueve epics llevan [E01] a [E09]; cada subtarea usa el número de su padre y un sufijo, por ejemplo [039.1]. Se conservan los códigos originales entre corchetes.
 
-## Entregables preparados
+Las claves nativas HRL-N no se reiniciaron. Jira Cloud mantiene abierta la [solicitud de reiniciar el contador](https://jira.atlassian.com/browse/JRACLOUD-34286). La referencia de los documentos, el número visible y la clave nativa son identificadores distintos; su correspondencia está en `jira-correspondencia.json`.
 
-| Archivo | Contenido |
-| --- | --- |
-| [resumen.md](resumen.md) | Nueve epics, distribución de puntos, discrepancias y cinco ítems faltantes |
-| [jira-proyecto-nuevo.json](jira-proyecto-nuevo.json) | Manifiesto con descripciones completas, jerarquía, estado documental, puntos y condiciones previas |
-| [jira-import-actualizado.csv](jira-import-actualizado.csv) | 133 filas: 80 ítems base y 53 subtareas, claves solicitadas explícitas y Parent ID |
-| [jira-correspondencia.json](jira-correspondencia.json) | Referencias actuales y claves solicitadas; claves reales del nuevo destino todavía nulas |
-| [Histórico de correspondencia](historico/jira-correspondencia-2026-11-11.json) | Mapa de la sincronización anterior, sin aplicarlo como alcance actual |
-| [Histórico de sincronización](historico/jira-sincronizacion-2026-11-11.md) | Registro previo de Jira, conservado para trazabilidad |
+## Cambios aplicados
 
-El manifiesto y CSV contienen los títulos con [P03], [S305], [S306], [S401], [A05], [S206], [S307], [S402] y [S403]. HRL-64 apunta a HRL-77. HRL-66 no aparece como fila base ni se crea para consumir un número. Los cinco ítems faltantes no tienen filas, claves ni estimaciones.
+- Se reutilizaron las incidencias existentes y se actualizaron descripciones, prioridades, puntos, estados y jerarquía.
+- Nuevos epics: base HRL-71 → Jira HRL-162 y base HRL-77 → Jira HRL-163.
+- Se recuperaron las nueve tareas originales con códigos [P03], [S305], [S306], [S401], [A05], [S206], [S307], [S402] y [S403].
+- Base HRL-64 pertenece al epic base HRL-77.
+- Se crearon 20 subtareas nuevas; 33 subtareas previas se conservaron con referencias documentales actualizadas.
+- Jira HRL-143 a HRL-146, correspondientes al portal retirado y sus tres subtareas, quedan cerradas y etiquetadas como reemplazadas. Se conservó su historial.
+- El resumen auxiliar Jira HRL-161 no cuenta como historia ni suma puntos.
 
-## Condiciones de numeración y jerarquía
+## Distribución de puntos
 
-- Las `requestedKey` son objetivos de importación, no claves ya creadas. La correspondencia real no se rellena hasta comprobar el destino.
-- Un proyecto nuevo debe empezar desde HRL-1. Hay 80 ítems pero el último identificador base es HRL-81 porque se omite HRL-66; una creación secuencial simple desplazaría las referencias posteriores.
-- HRL-64 tiene padre HRL-77, que aparece después por número. Validar el tratamiento de `Issue ID`/`Parent ID` y claves explícitas del importador antes de cargar; con API sería necesario resolver el padre después de su creación.
-- Las 53 subtareas HRL-82 a HRL-134 se cargan después de todos los ítems base. No crear un resumen adicional ni otras tareas antes de fijar la numeración prevista.
-- Verificar tipos de incidencia, prioridades, campos de puntos y estados reales del proyecto nuevo; no reutilizar IDs de campos/tipos o sprints del proyecto anterior sin comprobarlos.
-- `Sprint documental` es una columna auxiliar. Los cuatro sprints se crean o verifican en el tablero nuevo y después se asignan; los IDs 104–107 pertenecen al tablero anterior y no son destino de esta carga.
-- Las columnas CSV se deben revisar/mapear en el importador administrativo. El CSV está preparado para revisión; no se ha probado ni importado y no certifica compatibilidad automática del importador.
+| Sprint | Historias/tareas | Puntos |
+| --- | ---: | ---: |
+| 1 | 10 | 55 |
+| 2 | 11 | 63 |
+| 3 | 15 | 64 |
+| 4 | 30 | 167 |
+| Backlog | 5 | 37 |
+| Total | 71 | 386 |
 
-## Alcance y puntos verificados por lectura
+Los sprints existentes 104–107 conservan fechas y ciclo de vida. El rebalanceo sugerido no se aplica sin acordar capacidad y alcance. **Sprint 4 supera el 40 %: 47,9 % de los puntos programados y 43,3 % de todos los puntos conocidos.**
 
-| Sprint | Ítems | Puntos | HRL-71 ítems/puntos | HRL-77 ítems/puntos |
-| --- | ---: | ---: | ---: | ---: |
-| 1 | 10 | 55 | 0/0 | 0/0 |
-| 2 | 11 | 63 | 0/0 | 1/5 |
-| 3 | 15 | 64 | 3/16 | 1/5 |
-| 4 | 30 | 167 | 1/8 | 3/26 |
-| Backlog | 5 | 37 | 1/5 | 0/0 |
-| Total | 71 | 386 | 5/29 | 5/36 |
+## Estados y límites
 
-Los puntos se asignan solo a historias/tareas. Los nueve epics y las 53 subtareas no suman puntos adicionales. Sprint 4 concentra 47,9 % de los 349 puntos programados y 43,3 % de los 386 conocidos. No se aplicó el rebalanceo propuesto.
+Hecho → Terminado; En progreso → En curso; Pendiente → Por hacer; No verificado → En prueba, con etiqueta `no-verificado`. Hecho acredita implementación localizada por lectura estática, sin afirmar ejecución de pruebas.
 
-## Estados preparados, sin afirmar ejecución
+Las cinco tareas de sincronización quedan Pendientes. HRL-64 y HRL-81 conservan No verificado; HRL-78/79/80 quedan En progreso. No se ejecutaron builds, pruebas ni validaciones nativas.
 
-Hecho documental expresa implementación localizada por inspección, no pruebas ejecutadas. En progreso conserva brechas concretas; Pendiente no implica inexistencia de infraestructura externa fuera del repo; No verificado mantiene los límites de comprobación. En particular HRL-64 y HRL-81 no acreditan hardware ni personal del taller. Los estados nativos solicitados se mapearán según el flujo real del proyecto nuevo.
+**Faltan cinco ítems por incorporar a la epic documental HRL-77.** No se inventaron nombres, claves, puntos ni criterios.
 
-Las cinco tareas de sincronización quedan Pendientes. HRL-78/79/80 tienen pruebas/configuración/procedimientos parciales localizados y quedan En progreso. No se ejecutaron builds, suites, instalación, recuperación ni pruebas con personas.
+## Archivos de trazabilidad
 
-## Historial y alcance incompleto
+- `jira-correspondencia.json`: mapa vigente con claves reales y números visibles.
+- `jira-proyecto-nuevo.json`: nombre histórico del manifiesto; su contenido ahora declara actualización del proyecto existente.
+- `jira-import-actualizado.csv`: exportación documental con claves reales; no se importó ni certifica compatibilidad con un importador.
+- `historico/`: registros de la revisión anterior, conservados sin alteración.
 
-Los registros del 11 de noviembre se archivaron como históricos y no se modificó el proyecto Jira al que se refieren. Las 33 subtareas retenidas de aquella revisión se renumeraron para no colisionar con los nuevos ítems base; la tabla de renumeración está en el JSON de correspondencia. Se descartaron del alcance actual las tres subtareas de la historia retirada HRL-66 y se añadieron 20 subtareas para las tareas nuevas.
+## Comprobación final
 
-**Faltan cinco ítems por incorporar a HRL-77.** No se inventan para completar la captura original.
+Se consultaron nuevamente las 133 incidencias del alcance vigente y se verificaron sus títulos, padres, estados, puntos y sprints sin diferencias. Los 71 números visibles principales son únicos. El resumen auxiliar HRL-161 se excluye de estas cantidades.
 
