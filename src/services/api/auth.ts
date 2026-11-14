@@ -5,6 +5,7 @@ import type {
 import { request } from "./transport.ts";
 
 export const authApi = {
+  listLoginUsers: () => request<string[]>("list_login_users"),
   refresh: () => request<SessionResponse>("refresh_normalized_session"),
   checkSetupStatus: () => request<SetupStatus>("check_setup_status"),
   initializeSetup: (payload: SetupPayload) => request<SessionResponse>("initialize_setup", { payload }),

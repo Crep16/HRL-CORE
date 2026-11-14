@@ -2,8 +2,9 @@
 import { nextTick, onMounted, ref, watch } from "vue";
 import logo from "../assets/images/brand/hrl-original.svg";
 import { useAccessForm } from "../composables/useAccessForm";
+import SearchSelect from "../components/ui/SearchSelect.vue";
 
-const { auth, recovery, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature } = useAccessForm();
+const { loginUsers, usersLoading, usersError, loadUsers, auth, recovery, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature } = useAccessForm();
 const heading = ref<HTMLElement>();
 watch(title, async () => { await nextTick(); heading.value?.focus(); });
 onMounted(check);
@@ -41,8 +42,15 @@ defineExpose({ prepareLeave: () => !busy.value && !hasSecrets.value });
           <form class="access-form" @submit.prevent="submit">
             <fieldset class="access-fields" :disabled="busy">
               <div v-if="view !== 'master'" class="access-field">
-                <label for="access-name">Usuario</label>
-                <input id="access-name" v-model="name" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100" required>
+                <template v-if="view === 'login'">
+                  <SearchSelect id="access-name" v-model="name" :options="loginUsers" label="Usuario" :disabled="busy" :maxlength="100" required allow-custom placeholder="Selecciona o escribe para buscar" :empty-text="usersLoading ? 'Consultando usuarios…' : 'No hay usuarios que coincidan. Puedes escribir tu nombre de acceso completo.'" />
+                  <p v-if="usersLoading" role="status">Consultando usuarios…</p>
+                  <p v-if="usersError" role="status">{{ usersError }} <button type="button" class="access-preview" :disabled="usersLoading" @click="loadUsers">Volver a consultar usuarios</button></p>
+                </template>
+                <template v-else>
+                  <label for="access-name">Usuario</label>
+                  <input id="access-name" v-model="name" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="100" required>
+                </template>
               </div>
               <div v-if="view === 'first'" class="access-role"><strong>Acceso completo</strong><span>Sin restricciones. Siempre debe existir un administrador activo.</span></div>
               <div class="access-field">

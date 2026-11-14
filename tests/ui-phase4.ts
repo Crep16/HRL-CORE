@@ -8,10 +8,18 @@ const orders = new Map<number, OrderResponse>();
 const seen = new Map<string, OrderResponse>();
 const summary = (order: OrderResponse) => ({ id:order.id,folio:order.folio,clientName:order.client.fullName,serial:order.equipment.serial,item:order.equipment.item,status:order.status,receivedAt:order.receivedAt,currency:order.currency,priceMinor:order.priceMinor,netMinor:order.netMinor,pendingMinor:order.pendingMinor,creditMinor:order.creditMinor,delivered:order.delivered });
 let nextId = 1;
+const loginRequests: unknown[] = [];
+Object.assign(window,{loginRequests});
 mockIPC((command, args) => {
+  if (command === 'load_normalized_company') return null;
+  if (command === 'list_login_users') {
+    if (new URLSearchParams(location.search).has('usersError')) throw {code:'STORAGE_ERROR',message:'Fallo de lista de prueba'};
+    return ['admin','ana','hector','lulu'];
+  }
   if (command === "check_setup_status") return { setupComplete: !new URLSearchParams(location.search).has('setup') };
   if (command === "access_status") return { setupComplete: true, user: null };
-  if (command === "login_user" || command === "initialize_setup") return session;
+  if (command === "login_user") { loginRequests.push(structuredClone(args)); return session; }
+  if (command === "initialize_setup") return session;
   if (command === "logout_user" || command === "finish_temporary_access" || command === "sync_normalized_window_profile") return null;
   if (command === "list_reception_orders") {
     const { query, offset, limit, field = 'all', oldestFirst = false } = (args as { payload: ListOrdersPayload }).payload;

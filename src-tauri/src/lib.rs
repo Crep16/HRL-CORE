@@ -48,6 +48,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
             commands::check_setup_status,
+            commands::list_login_users,
             commands::sync_normalized_window_profile,
             commands::load_normalized_company,
             commands::refresh_normalized_session,

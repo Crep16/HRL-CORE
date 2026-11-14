@@ -106,6 +106,7 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   return {
+    listLoginUsers: () => authApi.listLoginUsers(),
     user, permissions, temporaryAccess, setupComplete, sessionVersion, isAuthenticated,
     isLoading: task.isLoading, error: task.error,
     checkSetupStatus, loginUser, initializeSetup, logoutUser, refreshSession,

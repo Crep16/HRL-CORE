@@ -17,6 +17,24 @@ export function useAccessForm() {
   const newAdminPassword = ref("");
   const message = ref("");
   const successMessage = ref("");
+  const loginUsers = ref<string[]>([]);
+  const usersLoading = ref(false);
+  const usersError = ref("");
+  let disposed = false;
+  async function loadUsers() {
+    if (usersLoading.value || !auth.setupComplete || disposed) return;
+    usersLoading.value = true;
+    usersError.value = "";
+    try {
+      const users = await auth.listLoginUsers();
+      if (!disposed) loginUsers.value = users;
+    } catch {
+      if (!disposed) {
+        loginUsers.value = [];
+        usersError.value = "No se pudo cargar la lista. Puedes escribir tu usuario o volver a consultar.";
+      }
+    } finally { if (!disposed) usersLoading.value = false; }
+  }
   const view = computed(() => auth.setupComplete ? "login" : step.value);
   const busy = computed(() => auth.isLoading || recovery.isLoading);
   const title = computed(() => support.value ? "Recuperación con soporte" : ({ login: "Iniciar sesión", master: "Define la clave maestra", first: "Crea el primer administrador" })[view.value]);
@@ -27,7 +45,7 @@ export function useAccessForm() {
   }
   async function check() {
     message.value = "";
-    try { await auth.checkSetupStatus(); } catch { /* El store publica el error. */ }
+    try { await auth.checkSetupStatus(); await loadUsers(); } catch { /* El store publica el error. */ }
   }
   async function submit() {
     if (busy.value) return;
@@ -67,6 +85,6 @@ export function useAccessForm() {
     } catch { signature.value = newMasterPassword.value = newAdminPassword.value = ""; }
   }
   const hasSecrets = computed(() => !!(password.value || masterPassword.value || newMasterPassword.value || newAdminPassword.value));
-  onBeforeUnmount(() => { clearSecrets(); recovery.clearChallenge(); });
-  return { auth, recovery, step, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, message, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature };
+  onBeforeUnmount(() => { disposed = true; loginUsers.value = []; clearSecrets(); recovery.clearChallenge(); });
+  return { loginUsers, usersLoading, usersError, loadUsers, auth, recovery, step, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, message, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature };
 }

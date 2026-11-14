@@ -18,6 +18,14 @@ pub async fn refresh_normalized_session(
     state.services(&app).await?.access.refresh_session().await
 }
 #[tauri::command]
+pub async fn list_login_users(
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<Vec<String>, AppError> {
+    state.services(&app).await?.access.login_names().await
+}
+
+#[tauri::command]
 pub async fn list_normalized_users(
     app: tauri::AppHandle,
     state: State<'_, BackendState>,

@@ -1621,6 +1621,31 @@ fn errors_and_input_contracts_do_not_expose_storage_or_accept_float_money() {
 }
 
 #[test]
+fn login_picker_lists_only_active_names_without_authenticating_or_exposing_account_details() {
+    tauri::async_runtime::block_on(async {
+        let (pool, services) = empty().await;
+        assert!(services.access.login_names().await.unwrap().is_empty());
+        assert!(matches!(services.access.refresh_session().await, Err(AppError::Unauthorized)));
+        services.access.initialize(setup()).await.unwrap();
+        let active = add_user(&pool, "ana", "limited").await;
+        let inactive = add_user(&pool, "usuario-inactivo", "custom").await;
+        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?").bind(inactive).execute(&pool).await.unwrap();
+        services.access.logout().await.unwrap();
+        let audits = count(&pool, "auditoria").await;
+        let names = services.access.login_names().await.unwrap();
+        assert_eq!(names, vec!["admin", "ana"]);
+        assert_eq!(serde_json::to_value(&names).unwrap(), serde_json::json!(["admin", "ana"]));
+        assert_eq!(count(&pool, "auditoria").await, audits);
+        assert!(matches!(services.access.refresh_session().await, Err(AppError::Unauthorized)));
+        assert!(matches!(services.access.login(login("ana")).await, Ok(_)));
+        services.access.logout().await.unwrap();
+        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?").bind(active).execute(&pool).await.unwrap();
+        assert_eq!(services.access.login_names().await.unwrap(), vec!["admin"]);
+        assert!(matches!(services.access.login(login("ana")).await, Err(AppError::InvalidCredentials)));
+    });
+}
+
+#[test]
 fn initial_setup_and_login_return_only_public_identity_and_permanent_permissions() {
     tauri::async_runtime::block_on(async {
         let (pool, services) = empty().await;

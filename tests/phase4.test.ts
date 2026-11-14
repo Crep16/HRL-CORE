@@ -126,6 +126,46 @@ test("new receipt and payment inputs follow independent presentation permissions
   form.begin(); assert.equal(form.editing.value, false);
 });
 
+test('login loads the active-name picker without creating a session and submits the selected name',async()=>{
+  const calls:string[]=[];
+  mockIPC((command,args)=>{
+    calls.push(command);
+    if(command==='check_setup_status')return {setupComplete:true};
+    if(command==='list_login_users')return ['admin','ana','lulu'];
+    assert.equal(command,'login_user');
+    assert.deepEqual(args,{payload:{username:'lulu',password:'clave-de-prueba'}});
+    return {...session,user:{...session.user,name:'lulu',loginName:'lulu'}};
+  });
+  const form=await mountModel(useAccessForm);
+  await form.check();
+  assert.deepEqual(form.loginUsers.value,['admin','ana','lulu']);
+  assert.equal(form.auth.user,null);
+  assert.equal(form.usersLoading.value,false);
+  form.name.value='lulu';form.password.value='clave-de-prueba';
+  await form.submit();
+  assert.equal(form.auth.user?.loginName,'lulu');
+  assert.equal(form.password.value,'');
+  assert.deepEqual(calls,['check_setup_status','list_login_users','login_user']);
+});
+
+test('a failed user list keeps manual login available and can be reloaded',async()=>{
+  let fail=true;
+  mockIPC(command=>{
+    if(command==='check_setup_status')return {setupComplete:true};
+    assert.equal(command,'list_login_users');
+    if(fail)throw {code:'STORAGE_ERROR',message:'Error de prueba'};
+    return ['admin'];
+  });
+  const form=await mountModel(useAccessForm);
+  await form.check();
+  assert.match(form.usersError.value,/Puedes escribir tu usuario/);
+  assert.equal(form.busy.value,false);
+  assert.equal(form.auth.user,null);
+  fail=false;await form.loadUsers();
+  assert.deepEqual(form.loginUsers.value,['admin']);
+  assert.equal(form.usersError.value,'');
+});
+
 test("setup is atomic after the two catalog steps, failed login clears personal secrets", async () => {
   let setupPayload: unknown;
   mockIPC((command, args) => {

@@ -56,6 +56,11 @@ fn user(row: &sqlx::sqlite::SqliteRow) -> Result<AuthRecord, AppError> {
     })
 }
 impl AccessRepository {
+    pub async fn login_names(&self, db: &mut SqliteConnection) -> Result<Vec<String>, AppError> {
+        Ok(sqlx::query_scalar("SELECT nombre_acceso FROM usuarios WHERE activo=1 ORDER BY nombre_acceso COLLATE NOCASE, id")
+            .fetch_all(db).await?)
+    }
+
     pub async fn master_hash(&self, db: &mut SqliteConnection) -> Result<String, AppError> {
         Ok(
             sqlx::query_scalar("SELECT hash FROM claves_maestras WHERE id=1")

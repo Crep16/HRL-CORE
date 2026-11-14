@@ -186,6 +186,10 @@ impl AccessService {
             setup_complete: self.repository.setup_status(&mut db).await?,
         })
     }
+    pub async fn login_names(&self) -> Result<Vec<String>, AppError> {
+        let mut db = self.pool.acquire().await?;
+        self.repository.login_names(&mut db).await
+    }
     pub async fn synchronize_window(
         &self,
         apply: impl FnOnce(bool, bool) -> Result<(), String>,

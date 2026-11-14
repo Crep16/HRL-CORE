@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, useId, watch } from 'vue';
 type Option = string | { value: string; label: string };
-const props = withDefaults(defineProps<{modelValue:string;options:readonly Option[];label?:string;id?:string;disabled?:boolean;required?:boolean;allowCustom?:boolean;placeholder?:string}>(),{label:'',disabled:false,required:false,allowCustom:false,placeholder:'Selecciona o escribe para buscar'});
+const props = withDefaults(defineProps<{modelValue:string;options:readonly Option[];label?:string;id?:string;disabled?:boolean;required?:boolean;allowCustom?:boolean;placeholder?:string;emptyText?:string;maxlength?:number}>(),{label:'',disabled:false,required:false,allowCustom:false,placeholder:'Selecciona o escribe para buscar',emptyText:''});
 const emit = defineEmits<{'update:modelValue':[value:string]}>();
 const uid=useId();
 const inputId=computed(()=>props.id || `search-select-${uid}`);
@@ -33,14 +33,14 @@ async function keydown(event:KeyboardEvent){
   <div class="search-select">
     <label v-if="label" :for="inputId">{{ label }}</label>
     <div class="search-select-control">
-      <input :id="inputId" ref="input" v-model="text" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" :aria-controls="`${inputId}-options`" :aria-expanded="open" :aria-activedescendant="open&&matches.length?`${inputId}-option-${active}`:undefined" :disabled="disabled" :required="required" :placeholder="placeholder" autocomplete="off" @focus="focus" @click="!open&&show()" @input="type" @keydown="keydown" @blur="close" />
+      <input :id="inputId" ref="input" v-model="text" role="combobox" aria-autocomplete="list" aria-haspopup="listbox" :aria-controls="`${inputId}-options`" :aria-expanded="open" :aria-activedescendant="open&&matches.length?`${inputId}-option-${active}`:undefined" :disabled="disabled" :required="required" :placeholder="placeholder" :maxlength="maxlength" autocomplete="off" autocapitalize="none" spellcheck="false" @focus="focus" @click="!open&&show()" @input="type" @keydown="keydown" @blur="close" />
       <button type="button" tabindex="-1" :disabled="disabled" :aria-label="`${open?'Cerrar':'Mostrar'} opciones${label?` de ${label}`:''}`" @pointerdown.prevent @click="toggle">▾</button>
     </div>
     <div v-if="open" class="search-select-dropdown">
       <ul :id="`${inputId}-options`" ref="list" role="listbox" :aria-label="label || 'Opciones disponibles'">
         <li v-for="(option,index) in matches" :id="`${inputId}-option-${index}`" :key="option.value" role="option" :aria-selected="option.value===modelValue" :class="{active:index===active}" @pointerdown.prevent @click="choose(option.value)" @pointermove="active=index">{{ option.label }}</li>
       </ul>
-      <p v-if="!matches.length" role="status">{{ allowCustom?'Puedes usar el texto escrito como una opción nueva.':'No hay opciones que coincidan con la búsqueda.' }}</p>
+      <p v-if="!matches.length" role="status">{{ emptyText || (allowCustom?'Puedes usar el texto escrito como una opción nueva.':'No hay opciones que coincidan con la búsqueda.') }}</p>
     </div>
   </div>
 </template>
