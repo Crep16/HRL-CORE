@@ -51,3 +51,5 @@ Durante la revisión se detectó el salto de línea dentro del importe del saldo
 | Nota de salida | Renderizado SSR del componente real con resumen público simulado, garantías y exclusión de secretos |
 
 El recorrido completo con la aplicación instalada, dispositivos y personal del taller sigue pendiente. La integración del portal necesita el contrato acordado y las políticas de importación, formatos adicionales y portabilidad de respaldos conservan sus decisiones pendientes. Esta entrega conserva las reglas funcionales documentadas.
+
+La generación posterior del instalador Windows x64 terminó correctamente. Su ruta, tamaño y hashes están en `entrega-windows-2026-11-14.md`.

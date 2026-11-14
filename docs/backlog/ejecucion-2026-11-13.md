@@ -94,3 +94,7 @@ El frontend se registró en `d77be15`, incorporando también la refactorización
 El usuario eligió antislop durante los cambios y autorizó continuar. Se implementó la Fase 5 de vistas y composables, con identidad de auditoría para HRL-99 y extracción de pantallas, cámara, cláusulas y garantía sugerida para HRL-127/128/129. El detalle está en `docs/fase-5-vistas-y-validacion.md`.
 
 Pasaron el build, `cargo check`, 93 pruebas Rust, 38 pruebas frontend y la revisión de navegador con Chrome headless y datos aislados de IPC simulado. El navegador integrado y el runtime de control de Windows fallaron al inicializarse. Las comprobaciones de dispositivo físico, aplicación instalada y personal del taller siguen pendientes. La documentación de SQLite se actualizó para distinguir esquema vigente y antecedentes.
+
+La Fase 5 se registró en `770d63a`. Jira confirmó Terminado para HRL-99, HRL-127, HRL-128 y HRL-129, y para sus tareas principales HRL-96 y HRL-126. Tras comprobar que todas sus historias estaban terminadas, se cerraron los epics HRL-93 (Bitácora) y HRL-106 (Empresa). Se inició la generación del instalador NSIS de Windows como preparación de entrega, conservando pendiente su validación instalada en HRL-181.
+
+El instalador Windows x64 0.1.0 se generó correctamente en `src-tauri/target/release/bundle/nsis/hrl-core_0.1.0_x64-setup.exe` (3095457 bytes). Se comprobaron su presencia, tamaño y hash SHA-256. El manifiesto de artefactos y los límites de validación están en `docs/entrega-windows-2026-11-14.md`.
