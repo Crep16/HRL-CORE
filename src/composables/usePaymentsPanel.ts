@@ -3,6 +3,7 @@ import { useWorkshopDataStore } from '../stores/useWorkshopDataStore.ts';
 import { useWorkshopAccess } from './useWorkshopAccess.ts';
 import { useCompany } from './useCompany.ts';
 import type { PaymentState, MoneyMovement, MoneyRequest } from '../types/payments.ts';
+import { parseMinorUnits } from '../utils/minorUnits.ts';
 export function usePaymentsPanel(props:{orderId:string;currency:string;payment?:PaymentState;disabled:boolean;prepare:()=>Promise<boolean>},emit:{(event:"saved",...args:[payment:PaymentState]):void;(event:"refreshed",...args:[payment:PaymentState]):void;(event:"working",...args:[busy:boolean]):void;}){
 const {can,requestAccess}=useWorkshopAccess(),{company}=useCompany();
 const rows=ref<MoneyMovement[]>([]),busy=ref(false),error=ref(''),notice=ref(''),loaded=ref(false);
@@ -19,8 +20,12 @@ onMounted(load);
 async function submit(){
  if(!mode.value||!props.payment||busy.value||props.disabled)return;
  error.value='';notice.value='';
- const typed=Number(amount.value),minor=Math.round(typed*100);
- if(mode.value!=='refund'&&(!amount.value.trim()||!Number.isSafeInteger(minor)||!Number.isFinite(typed)||Math.abs(typed*100-minor)>.0001||minor<0)){error.value='Escribe un importe válido con hasta dos decimales.';return;}
+ let minor=0;
+ if(mode.value!=='refund'){
+  try{if(!String(amount.value).trim())throw new Error('Escribe el importe del movimiento.');minor=parseMinorUnits(String(amount.value));}
+  catch(cause){error.value=cause instanceof Error?cause.message:'Escribe un importe válido con hasta dos decimales.';return;}
+  if(mode.value==='receipt'&&(minor===0||minor>remaining.value)){error.value='El abono debe ser mayor que cero y no superar el saldo pendiente.';return;}
+ }
  const request:MoneyRequest={requestId:requestId.value,orderId:props.orderId,kind:mode.value,paymentId:mode.value==='adjustment'?paymentId.value:null,amountMinor:mode.value==='refund'?props.payment.creditMinor:mode.value==='adjustment'?minor-(original.value?.effectiveMinor??0):minor,expectedMinor:mode.value==='adjustment'?(original.value?.effectiveMinor??0):props.payment.collectedMinor,method:mode.value==='adjustment'?'':method.value,reason:reason.value};
  if(request.kind==='adjustment'&&!original.value){error.value='Selecciona el abono original.';return;}
  if(request.kind!=='adjustment'&&!method.value.trim()){error.value='Escribe el método utilizado.';return;}

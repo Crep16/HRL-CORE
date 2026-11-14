@@ -33,7 +33,7 @@ const {can,rows,busy,error,notice,loaded,mode,amount,method,reason,paymentId,att
    <fieldset :disabled="disabled||busy||attempted">
     <template v-if="mode==='adjustment'"><label for="original-payment">Abono original</label><select id="original-payment" v-model="paymentId" required><option value="">Seleccionar abono</option><option v-for="row in rows.filter(row=>row.kind==='receipt')" :key="row.id" :value="row.id">{{ row.occurredAt||'Fecha no registrada' }} · {{ money(row.effectiveMinor??row.amountMinor) }} · {{ row.id }}</option></select><p>La diferencia quedará ligada al original, que se conserva. No representa una devolución.</p></template>
     <label v-if="mode!=='refund'" for="money-amount">{{ mode==='adjustment'?'Importe correcto del abono':'Importe del abono' }}</label>
-    <input v-if="mode!=='refund'" id="money-amount" v-model="amount" type="number" :min="mode==='receipt'?'0.01':'0'" step="0.01" :max="mode==='receipt'?remaining/100:undefined" required />
+    <input v-if="mode!=='refund'" id="money-amount" v-model="amount" type="text" inputmode="decimal" maxlength="16" required />
     <p v-else>Devolverás todo el saldo a favor: <strong>{{ money(payment?.creditMinor??0) }}</strong>. Esta acción confirma que el dinero fue devuelto al cliente.</p>
     <template v-if="mode!=='adjustment'"><label for="money-method">Método utilizado</label><input id="money-method" v-model="method" maxlength="200" required placeholder="Escribe el método" /></template>
     <label for="money-reason">{{ mode==='receipt'?'Nota (opcional)':'Motivo' }}</label><textarea id="money-reason" v-model="reason" maxlength="2000" :required="mode!=='receipt'" rows="2"></textarea>
