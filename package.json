@@ -11,10 +11,9 @@
     "test:ui": "node --experimental-strip-types --test tests/phase4.test.ts",
     "test:finances": "node --experimental-strip-types --test tests/finances-model.test.ts",
     "test:phase5": "node --experimental-strip-types --test tests/phase5.test.ts",
+    "test:payments": "node --experimental-strip-types --test tests/payments-form.test.ts",
     "test:browser": "node tests/phase5-browser.mjs",
     "preview": "vite preview",
-    "export:figma-views": "node scripts/export-figma-views.mjs",
-    "validate:figma-views": "node scripts/validate-figma-views.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

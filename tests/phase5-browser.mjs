@@ -14,7 +14,7 @@ const pending = new Map();
 const errors = [];
 socket.addEventListener('message', event => {
   const message = JSON.parse(event.data);
-  if (message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails.text);
+  if (message.method === 'Runtime.exceptionThrown') errors.push(message.params.exceptionDetails.exception?.description ?? message.params.exceptionDetails.text);
   const request = pending.get(message.id);
   if (!request) return;
   clearTimeout(request.timer);
@@ -60,6 +60,7 @@ try {
   await mkdir('artifacts/phase5', { recursive: true });
   await send('Page.enable');
   await send('Runtime.enable');
+  await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   for (const name of ['clients', 'repairs', 'company', 'users', 'logbook']) {
     await view(name);
@@ -73,6 +74,29 @@ try {
     await screenshot(name);
     console.log(JSON.stringify({ view: name, ...layout }));
   }
+
+  await view('repairs');
+  await waitFor('!!document.querySelector(".payment-actions button") && !document.querySelector(".payment-actions button").disabled');
+  await button('+ Registrar abono');
+  await evaluate(`(() => { for (const [id,value] of [['money-amount','0'],['money-method','Efectivo']]) {const field=document.getElementById(id);field.value=value;field.dispatchEvent(new Event('input',{bubbles:true}));} })()`);
+  await button('Confirmar movimiento');
+  assert.equal(await evaluate('window.paymentRequests.length'),0);
+  assert.ok(await evaluate('document.querySelector("#app-notices").innerText.includes("mayor que cero")'));
+  await evaluate(`(() => { for (const [id, value] of [['money-amount','100.50'],['money-method','Efectivo']]) { const field=document.getElementById(id); field.value=value; field.dispatchEvent(new Event('input',{bubbles:true})); } })()`);
+  await evaluate('[...document.querySelectorAll(".payment-form button")].find(button=>button.textContent.trim()==="Confirmar movimiento").focus()');
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',windowsVirtualKeyCode:13,text:'\r'});
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  await waitFor('window.paymentRequests.length === 1');
+  assert.equal(await evaluate('window.paymentRequests[0].amountMinor'), 10050);
+  await waitFor('!document.querySelector(".payment-form")');
+  await screenshot('payment-confirmed');
+  console.log('Registro de abono confirmado desde el formulario.');
+  await button('+ Registrar abono');
+  await evaluate(`(() => { for (const [id,value] of [['money-amount','20,05'],['money-method','Transferencia']]) {const field=document.getElementById(id);field.value=value;field.dispatchEvent(new Event('input',{bubbles:true}));} })()`);
+  await button('Confirmar movimiento');
+  await waitFor('window.paymentRequests.length === 2');
+  assert.equal(await evaluate('window.paymentRequests[1].amountMinor'),2005);
+  await waitFor('!document.querySelector(".payment-form")');
 
   await view('company');
   await evaluate("[...document.querySelectorAll('.company-nav button')].find(button => button.querySelector('strong')?.textContent === 'Cláusulas').click()");
@@ -91,6 +115,13 @@ try {
   console.log('Borrador de cláusula, foco y guarda de navegación aprobados.');
 
   await view('clients');
+  assert.equal(await evaluate('document.querySelectorAll("#equipment-history").length'),1);
+  await button('Editar');
+  await evaluate(`(() => { const field=document.getElementById('equipment-history');field.focus();field.value='Visita a otro taller; golpe en la esquina y humedad.';field.dispatchEvent(new Event('input',{bubbles:true})); })()`);
+  await button('Guardar cambios');
+  await waitFor('document.getElementById("equipment-history").readOnly');
+  assert.equal(await evaluate('document.getElementById("equipment-history").value'),'Visita a otro taller; golpe en la esquina y humedad.');
+  await screenshot('history-unified');
   await evaluate('document.querySelector(".ev-entry").closest("details").querySelector("summary").click()');
   await settle();
   console.log(JSON.stringify(await evaluate('({evidence: !!document.querySelector(".ev-entry"), buttons: [...document.querySelectorAll(".ev-entry button")].map(button => ({text:button.textContent.trim(), disabled:button.disabled}))})')));
@@ -106,6 +137,26 @@ try {
   await settle();
   assert.equal(await evaluate('document.activeElement.textContent.trim()'), 'Abrir galería');
   console.log('Apertura y cierre de cámara con foco restaurado aprobados.');
+  await button('Abrir galería');
+  await waitFor('!!document.querySelector(".ev-detail textarea")');
+  await evaluate(`(() => {const field=document.querySelector('.ev-detail textarea');field.value='Golpe lateral documentado';field.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await button('Guardar descripción','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('document.querySelector(".ev-detail textarea").value === "Golpe lateral documentado" && document.querySelector(".ev-detail-actions .btn-p").disabled');
+  await button('Retirar esta foto','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('document.querySelector(".ev-navigation").textContent.includes("0 fotos")');
+  await button('Ver fotos retiradas','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('!!document.querySelector(".ev-detail-actions button") && document.querySelector(".ev-detail-actions button").textContent === "Restaurar esta foto" && !document.querySelector(".ev-detail-actions button").disabled');
+  await button('Restaurar esta foto','document.querySelector("dialog.evidence-gallery")');
+  await button('Volver a fotos activas','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('document.querySelector(".ev-detail textarea")?.value === "Golpe lateral documentado"');
+  await screenshot('evidence-restored');
+  await evaluate('document.querySelector("dialog.evidence-gallery .ev-close").click()');
+  for(const width of [760,375]){
+    await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
+    await settle();
+    assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),`Antecedentes a ${width}px`);
+  }
+  console.log('Antecedentes y descripción, retiro y restauración de evidencia aprobados.');
   assert.deepEqual(errors, []);
   console.log('Revisión de navegador aprobada.');
 } finally {
