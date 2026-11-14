@@ -5,23 +5,11 @@ use crate::{
 };
 
 async fn migrate(pool: &SqlitePool) {
-    for sql in [
-        include_str!("../migrations/001_access.sql"),
-        include_str!("../migrations/002_workshop.sql"),
-        include_str!("../migrations/003_authentication.sql"),
-        include_str!("../migrations/004_order_records.sql"),
-        include_str!("../migrations/005_order_visibility.sql"),
-        include_str!("../migrations/006_repair_records.sql"),
-        include_str!("../migrations/007_logbook.sql"),
-        include_str!("../migrations/008_financial_logbook.sql"),
-        include_str!("../migrations/010_payment_adjustments.sql"),
-    ] {
-        sqlx::raw_sql(sql).execute(pool).await.unwrap();
-    }
+    crate::test_support::migrate_legacy(&pool).await;
 }
 async fn seed(pool: &SqlitePool) -> AccessState {
     let state = AccessState::test_admin(pool).await;
-    let order=serde_json::from_value(serde_json::json!({"id":"TEST-1","client":"Test client","phone":"123","received":"2026-10-27","status":"Diagnóstico","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","password":"","work":"","cost":"1500","deposit":"500","depositMethod":"Efectivo de prueba","notes":"","paid":false,"delivered":false})).unwrap();
+    let order=serde_json::from_value(serde_json::json!({"id":"TEST-1","client":"Test client","phone":"123","received":"2026-10-27","status":"Diagnóstico","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","failure":"Falla de prueba", "password":"","work":"","cost":"1500","deposit":"500","depositMethod":"Efectivo de prueba","notes":"","paid":false,"delivered":false})).unwrap();
     orders::save(pool, &state, order, None).await.unwrap();
     users::save(
         pool,
@@ -157,27 +145,27 @@ fn limited_can_read_and_append_technical_work_but_cannot_edit_or_collect_money()
         );
         save(&pool, &state, "TEST-1", next, 1).await.unwrap();
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM payments")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
             1
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM repair_notes")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Notas_reparacion")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
             3
         );
-        let authors:i64=sqlx::query_scalar("SELECT count(*) FROM repair_changes JOIN users ON users.id=author_id WHERE users.name='Limited'").fetch_one(&pool).await.unwrap();
+        let authors:i64=sqlx::query_scalar("SELECT count(*) FROM Cambios_reparaciones JOIN Usuarios ON Usuarios.id=id_autor WHERE Usuarios.nombre='Limited'").fetch_one(&pool).await.unwrap();
         assert!(authors >= 5);
         let public =
             serde_json::to_string(&public_summary(&pool, &state, "TEST-1").await.unwrap()).unwrap();
         assert!(public.contains("Public test note"));
         assert!(!public.contains("Private test note"));
         assert!(!public.contains("internalNote"));
-        sqlx::query("UPDATE users SET active=0 WHERE name='Limited'")
+        sqlx::query("UPDATE Usuarios SET activo=0 WHERE nombre='Limited'")
             .execute(&pool)
             .await
             .unwrap();
@@ -214,14 +202,14 @@ fn legacy_import_requires_admin_and_does_not_duplicate_payments_or_notes() {
             .await
             .unwrap();
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT sum(amount_minor) FROM payments")
+            sqlx::query_scalar::<_, i64>("SELECT sum(importe_centavos) FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
             60000
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM repair_notes")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Notas_reparacion")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -239,15 +227,15 @@ fn legacy_import_requires_admin_and_does_not_duplicate_payments_or_notes() {
 fn repair_history_failure_rolls_back_every_related_record() {
     tauri::async_runtime::block_on(async {
         let (pool, state) = fixture().await;
-        sqlx::raw_sql("CREATE TRIGGER reject_repair_change BEFORE INSERT ON repair_changes BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER reject_repair_change BEFORE INSERT ON Cambios_reparaciones BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
         assert!(save(&pool, &state, "TEST-1", appended(), 0).await.is_err());
         for table in [
-            "repair_records",
-            "repair_notes",
-            "repair_events",
-            "warranties",
-            "order_parts",
-            "repair_changes",
+            "Seguimiento_reparaciones",
+            "Notas_reparacion",
+            "Avances_reparacion",
+            "Garantias",
+            "Refacciones_orden",
+            "Cambios_reparaciones",
         ] {
             assert_eq!(
                 sqlx::query_scalar::<_, i64>(&format!("SELECT count(*) FROM {table}"))
@@ -285,7 +273,7 @@ fn full_access_payments_use_the_same_ledger_and_respect_the_remaining_balance() 
         });
         assert!(save(&pool, &state, "TEST-1", repair, 1).await.is_err());
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT sum(amount_minor) FROM payments")
+            sqlx::query_scalar::<_, i64>("SELECT sum(importe_centavos) FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),

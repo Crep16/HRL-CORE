@@ -89,7 +89,7 @@ Nota: el proyecto ya tiene `components`, `composables` y `types`, así que el fr
 | `Configuracion_empresa.datos_json` | `empresa`, `configuracion_documentos`, `clausulas`, `secuencias_folio` |
 | `Historial_ordenes`, `Cambios_reparaciones`, `Historial_papelera`, `Bitacora_ordenes`, `Bitacora_sistema` | `auditoria` + `auditoria_detalle` |
 | `Movimientos_abonos` (tipo adjustment/refund) | `ajustes_abono` y `devoluciones` |
-| `Solicitudes_abonos` (JSON) | `id_solicitud` + `huella_solicitud` en cada tabla del libro |
+| `Solicitudes_abonos` (JSON) | `solicitudes_financieras` con id global y huella; cada libro referencia la solicitud |
 | `Permisos_usuarios` con CHECK | `permisos` (catálogo) + `usuario_permiso` |
 | `Accesos_temporales.operaciones_json` | `acceso_temporal_permiso` |
 | `Importaciones_anteriores` | Eliminada (residuo de migración) |
@@ -105,3 +105,66 @@ Nota: el proyecto ya tiene `components`, `composables` y `types`, así que el fr
    donde se pueden probar y leer.
 4. **Dinero en centavos enteros** para evitar errores de redondeo.
 5. **Transacción única cambio + auditoría**: nada queda sin rastro.
+
+## 7. Decisiones de implementación de la Fase 1
+
+Confirmadas en la conversación del 4 de noviembre de 2026:
+
+- Ampliar el esquema existente sin sustituir los niveles `complete`, `limited` y `custom` ni los permisos vigentes. El rol de trabajo Administrador/Técnico se modela separado del nivel de autorización.
+- Mantener la clave maestra como hash independiente. El estado de configuración inicial se deriva de su existencia y de un administrador activo, mediante `vista_configuracion_acceso`.
+- Conservar la contraseña del equipo recuperable mediante cifrado. `credenciales_dispositivos` guarda un sobre AES-256-GCM; la clave no se almacena en SQLite. Su gestión y conexión al guardado se implementarán con los servicios, no en esta fase de modelos.
+- Conservar estados y etapas personalizados sin modificar los catálogos al operar: texto alternativo en la orden o en su secuencia de etapas. Se preservan las siete opciones visuales actuales y se añaden Pendiente, Reparado y Cancelado de la petición, además de Irreparable.
+- Conservar método de pago libre, moneda EUR, modo de publicación y opciones actuales de documentos. Los costos de refacciones mantienen su significado vigente.
+- La conservación transitoria del cargador anterior finalizó el 13 de noviembre de 2026 (Jira HRL-134). Las migraciones 001–013 están archivadas en `src-tauri/migrations/legacy/` y no se registran en el plugin SQL. Solo las pruebas del sistema anterior las ejecutan explícitamente sobre bases aisladas mediante `test_support`. El cargador `db/migrations.rs` aplica las migraciones normalizadas 001 y 002 y rechaza bases del esquema anterior. El retiro de comandos y del plugin anterior sigue pendiente en HRL-135.
+
+Los identificadores Rust de las nuevas capas están en inglés; tablas y columnas SQL en español. `Money` encapsula centavos y operaciones comprobadas; las credenciales protegidas encapsulan su representación y no implementan `Serialize` ni `Debug`. Los structs de registros describen los datos de dominio. La inyección de repositorios y los servicios pertenecen a las fases siguientes.
+
+El SQL entregable es `schema.sql` en la raíz y su copia versionada de migración en `src-tauri/migrations/001_esquema_objetivo.sql`. Esta referencia documentada contiene el mismo DDL. El cargador no depende de que la carpeta `docs/` esté disponible.
+
+Véase [el diseño y validación de la Fase 1](fase-1-base-de-datos-y-modelos.md) para las relaciones, pruebas y límites de esta transición.
+
+## Recepción unificada sobre 3NF
+
+`App.vue` presenta acceso o recepción a partir de `useAuthStore`; no existen
+espacios de trabajo alternativos ni bases seleccionables en la interfaz.
+Se conserva el diseño original mediante las hojas de estilo existentes.
+La recuperación Ed25519 comparte `BackendState` y la base `hrl_core_3fn.db`.
+
+Listado, búsqueda, consulta por referencia e historial recorren
+`View → composable/store → services/api → commands → services → repositories → db`.
+`OrderService` encapsula validación y autorización, y recibe repositorio,
+auditoría, acceso y cifrado por constructor (composición e inyección).
+`OrderRepository` abstrae las consultas SQL y conserva las relaciones del
+esquema objetivo. Los DTO nuevos mantienen identificadores ingleses y
+serialización camelCase; las tablas conservan sus nombres españoles.
+Los componentes no importan la API ni los composables del sistema anterior.
+
+## Restauración de apartados sobre 3FN (6 de noviembre de 2026)
+
+WorkshopApp.vue queda como contenedor. useWorkshop coordina navegación,
+borradores, impresión y autorización temporal. Empresa, Usuarios, Reparaciones,
+Pagos, Evidencias, Bitácora y Finanzas conservan sus vistas originales; sus
+viewmodels residen en composables y sus consultas pasan por stores Pinia.
+useCompanyStore, useUsersStore y useWorkshopDataStore complementan los stores
+de acceso, recuperación y órdenes. legacyOrder solo adapta DTO a presentación.
+
+Los servicios Rust encapsulan autorización, concurrencia y auditoría, reciben
+su repositorio principal y dependencias por constructor y usan composición.
+Los repositorios abstraen SQL; los DTO separan almacenamiento y transporte.
+Los identificadores de código siguen en inglés/camelCase; SQL en español.
+Los importes permanecen enteros y no se añade JSON de negocio a SQLite.
+
+El cargador incorpora 002_prefijo_documentos.sql, además de la base 001.
+Los recursos binarios se guardan en assets-3fn con nombres controlados por el
+servicio y referencias en SQLite. No se migran ni modifican automáticamente
+las bases anteriores. Véase restauracion-diseno.md para cobertura y validación.
+
+## Cierre del backend normalizado del 13 de noviembre de 2026
+
+`RepairService`, `EvidenceService` y `ReportService` reciben sus repositorios colaboradores en el constructor. Los contratos `LedgerReader`, `OrderReader` y `AuditWriter` permiten sustituir lecturas y escrituras de auditoría en las pruebas. La composición conserva una transacción por operación. Los servicios encapsulan la autorización y el flujo de cambios, los traits abstraen el acceso a datos y sus implementaciones aportan polimorfismo para probar errores después de una escritura.
+
+La edición de órdenes audita los cambios de correo y entrega estimada con valores opcionales anteriores y nuevos. El contrato de Bitácora transporta `entity` y `entityId` desde las columnas existentes. Empresa valida en Rust el correo opcional y las direcciones web con dominio, siguiendo las reglas del formulario.
+
+El ejecutable registra únicamente comandos de `commands/` y el estado normalizado. Los módulos anteriores y sus pruebas se conservan en `src-tauri/legacy/`, compilados solo con `cfg(test)`. El plugin SQL queda como dependencia de desarrollo para esas pruebas. Los permisos puros están en `domain/permissions.rs`. La producción abre `hrl_core_3fn.db` mediante `db/`.
+
+`BackendServices::with_os_key_store` consulta al repositorio si hay credenciales cifradas antes de abrir DPAPI. Cuando existen, exige el archivo protegido original mediante `OsKeyStore::open_existing`. Las pruebas cubren ausencia, corrupción, conservación del archivo y recuperación al restituir la custodia correcta con el mismo usuario Windows. El procedimiento manual de instalación y respaldo conjunto se documenta en `docs/instalacion-recuperacion-local.md`.

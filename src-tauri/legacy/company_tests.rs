@@ -12,20 +12,7 @@ fn company_reopens_with_logo_and_rechecks_editor_permissions() {
             .foreign_keys(true);
         let pool = sqlx::sqlite::SqlitePoolOptions::new().max_connections(1)
             .connect_with(options.clone()).await.unwrap();
-        for schema in [
-            include_str!("../migrations/001_access.sql"),
-            include_str!("../migrations/002_workshop.sql"),
-            include_str!("../migrations/003_authentication.sql"),
-            include_str!("../migrations/004_order_records.sql"),
-            include_str!("../migrations/005_order_visibility.sql"),
-            include_str!("../migrations/006_repair_records.sql"),
-            include_str!("../migrations/007_logbook.sql"),
-            include_str!("../migrations/008_financial_logbook.sql"),
-            include_str!("../migrations/009_company_settings.sql"),
-            include_str!("../migrations/010_payment_adjustments.sql"),
-        ] {
-            sqlx::raw_sql(schema).execute(&pool).await.unwrap();
-        }
+        crate::test_support::migrate_legacy(&pool).await;
         let state = AccessState::test_admin(&pool).await;
         let original = settings();
         let mut saved = original.clone();
@@ -44,7 +31,7 @@ fn company_reopens_with_logo_and_rechecks_editor_permissions() {
         drop(pool);
         let pool = sqlx::sqlite::SqlitePoolOptions::new().max_connections(1)
             .connect_with(options).await.unwrap();
-        let stored: String = sqlx::query_scalar("SELECT record_json FROM company_settings WHERE id=1")
+        let stored: String = sqlx::query_scalar("SELECT datos_json FROM Configuracion_empresa WHERE id=1")
             .fetch_one(&pool).await.unwrap();
         assert_eq!(serde_json::from_str::<Value>(&stored).unwrap(), saved);
         let fresh_session = AccessState::default();
@@ -53,15 +40,15 @@ fn company_reopens_with_logo_and_rechecks_editor_permissions() {
         assert!(save(&pool, &fresh_session, edited.clone(), saved.clone()).await.is_err());
         fresh_session.test_login(&pool, "Company reader").await;
         assert!(save(&pool, &fresh_session, edited.clone(), saved.clone()).await.is_err());
-        let reader: String = sqlx::query_scalar("SELECT id FROM users WHERE name='Company reader'")
+        let reader: String = sqlx::query_scalar("SELECT id FROM Usuarios WHERE nombre='Company reader'")
             .fetch_one(&pool).await.unwrap();
-        sqlx::query("INSERT INTO user_permissions VALUES (?,'company','edit')")
+        sqlx::query("INSERT INTO Permisos_usuarios VALUES (?,'company','edit')")
             .bind(&reader).execute(&pool).await.unwrap();
         save(&pool, &fresh_session, edited.clone(), saved).await.unwrap();
-        sqlx::query("DELETE FROM user_permissions WHERE user_id=? AND action='edit'")
+        sqlx::query("DELETE FROM Permisos_usuarios WHERE id_usuario=? AND accion='edit'")
             .bind(&reader).execute(&pool).await.unwrap();
         assert!(save(&pool, &fresh_session, edited.clone(), edited.clone()).await.is_err());
-        let stored: String = sqlx::query_scalar("SELECT record_json FROM company_settings WHERE id=1")
+        let stored: String = sqlx::query_scalar("SELECT datos_json FROM Configuracion_empresa WHERE id=1")
             .fetch_one(&pool).await.unwrap();
         assert_eq!(serde_json::from_str::<Value>(&stored).unwrap(), edited);
         pool.close().await;
@@ -73,15 +60,15 @@ fn company_reopens_with_logo_and_rechecks_editor_permissions() {
 fn company_changes_and_audit_commit_together_and_reject_stale_or_sensitive_fields(){
  tauri::async_runtime::block_on(async{
   let pool=sqlx::sqlite::SqlitePoolOptions::new().max_connections(1).connect("sqlite::memory:").await.unwrap();
-  for schema in [include_str!("../migrations/001_access.sql"),include_str!("../migrations/002_workshop.sql"),include_str!("../migrations/003_authentication.sql"),include_str!("../migrations/004_order_records.sql"),include_str!("../migrations/005_order_visibility.sql"),include_str!("../migrations/006_repair_records.sql"),include_str!("../migrations/007_logbook.sql"),include_str!("../migrations/008_financial_logbook.sql"),include_str!("../migrations/009_company_settings.sql")]{sqlx::raw_sql(schema).execute(&pool).await.unwrap();}
+  crate::test_support::migrate_legacy(&pool).await;
   let state=AccessState::test_admin(&pool).await;let old=settings();let mut new=old.clone();new["name"]=serde_json::json!("Actualizado");new["logo"]=serde_json::json!("data:image/png;base64,test-only");
   save(&pool,&state,new.clone(),old.clone()).await.unwrap();
-  let history:String=sqlx::query_scalar("SELECT details_json FROM system_logbook_events WHERE operation='company.edit'").fetch_one(&pool).await.unwrap();assert!(history.contains("Actualizado"));assert!(history.contains("Taller"));assert!(!history.contains("base64"));
+  let history:String=sqlx::query_scalar("SELECT detalles_json FROM Bitacora_sistema WHERE operacion='company.edit'").fetch_one(&pool).await.unwrap();assert!(history.contains("Actualizado"));assert!(history.contains("Taller"));assert!(!history.contains("base64"));
   assert!(save(&pool,&state,old.clone(),old).await.is_err());
   let mut bad=new.clone();bad["password"]=serde_json::json!("never-copy");assert!(save(&pool,&state,bad,new.clone()).await.is_err());
   assert!(save(&pool,&AccessState::default(),new.clone(),new.clone()).await.is_err());
-  sqlx::raw_sql("CREATE TRIGGER fail_company_audit BEFORE INSERT ON system_logbook_events BEGIN SELECT RAISE(ABORT,'test'); END;").execute(&pool).await.unwrap();
+  sqlx::raw_sql("CREATE TRIGGER fail_company_audit BEFORE INSERT ON Bitacora_sistema BEGIN SELECT RAISE(ABORT,'test'); END;").execute(&pool).await.unwrap();
   let mut attempted=new.clone();attempted["name"]=serde_json::json!("No guardar");assert!(save(&pool,&state,attempted,new.clone()).await.is_err());
-  let stored:String=sqlx::query_scalar("SELECT record_json FROM company_settings").fetch_one(&pool).await.unwrap();assert_eq!(serde_json::from_str::<Value>(&stored).unwrap(),new);
+  let stored:String=sqlx::query_scalar("SELECT datos_json FROM Configuracion_empresa").fetch_one(&pool).await.unwrap();assert_eq!(serde_json::from_str::<Value>(&stored).unwrap(),new);
  });
 }

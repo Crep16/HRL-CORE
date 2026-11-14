@@ -6,11 +6,9 @@ async fn fixture() -> (SqlitePool, AccessState, orders::Order) {
 }
 async fn fixture_with(options:sqlx::sqlite::SqliteConnectOptions) -> (SqlitePool, AccessState, orders::Order) {
     let pool=sqlx::sqlite::SqlitePoolOptions::new().max_connections(1).connect_with(options).await.unwrap();
-    for sql in [include_str!("../migrations/001_access.sql"),include_str!("../migrations/002_workshop.sql"),include_str!("../migrations/003_authentication.sql"),include_str!("../migrations/004_order_records.sql"),include_str!("../migrations/005_order_visibility.sql"),include_str!("../migrations/006_repair_records.sql"),include_str!("../migrations/007_logbook.sql"),include_str!("../migrations/008_financial_logbook.sql"),include_str!("../migrations/009_company_settings.sql"),include_str!("../migrations/010_payment_adjustments.sql")] {
-        sqlx::raw_sql(sql).execute(&pool).await.unwrap();
-    }
+    crate::test_support::migrate_legacy(&pool).await;
     let state=AccessState::test_admin(&pool).await;
-    let order=serde_json::from_value(serde_json::json!({"id":"MONEY-1","client":"Prueba","phone":"123","received":"2026-10-28","status":"Recibido","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","password":"","work":"Prueba","cost":"750","deposit":"0","notes":"","paid":false,"delivered":false})).unwrap();
+    let order=serde_json::from_value(serde_json::json!({"id":"MONEY-1","client":"Prueba","phone":"123","received":"2026-10-28","status":"Recibido","serial":"","item":"Laptop","brand":"","model":"","otherShop":false,"otherShopReason":"","dropped":false,"dropReason":"","failure":"Falla de prueba", "password":"","work":"Prueba","cost":"750","deposit":"0","notes":"","paid":false,"delivered":false})).unwrap();
     let order=orders::save(&pool,&state,order,None).await.unwrap();
     (pool,state,order)
 }
@@ -37,10 +35,10 @@ fn credit_refund_and_retry_preserve_originals_and_reject_partial_or_stale_refund
         record(&pool,&state,refund.clone()).await.unwrap();
         assert!(record(&pool,&state,request("refund",15000,75000)).await.is_err());
         let mut conflicting=refund;conflicting.reason="Otra solicitud".into();assert!(record(&pool,&state,conflicting).await.is_err());
-        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM payment_operations").fetch_one(&pool).await.unwrap(),1);
-        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT amount_minor FROM payments").fetch_one(&pool).await.unwrap(),75000);
-        assert!(sqlx::query("UPDATE payments SET amount_minor=1").execute(&pool).await.is_err());
-        assert!(sqlx::query("DELETE FROM payment_operations").execute(&pool).await.is_err());
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM Movimientos_abonos").fetch_one(&pool).await.unwrap(),1);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT importe_centavos FROM Abonos").fetch_one(&pool).await.unwrap(),75000);
+        assert!(sqlx::query("UPDATE Abonos SET importe_centavos=1").execute(&pool).await.is_err());
+        assert!(sqlx::query("DELETE FROM Movimientos_abonos").execute(&pool).await.is_err());
         let finances=serde_json::to_value(crate::finances::list(&pool,&state).await.unwrap()).unwrap();
         assert_eq!(finances[0]["collectedMinor"],60000);assert_eq!(finances[0]["refundedMinor"],15000);
         let mut special=serde_json::to_value(&cheaper).unwrap();special["status"]=serde_json::json!("Cancelada");
@@ -61,9 +59,9 @@ fn corrections_are_linked_compensating_entries_with_admin_only_access_and_atomic
         record(&pool,&state,adjustment).await.unwrap();
         let mut stale=request("adjustment",-1000,50000);stale.payment_id=Some(receipt.request_id.clone());stale.method.clear();assert!(record(&pool,&state,stale).await.is_err());
         let mut excessive=request("adjustment",-30001,30000);excessive.payment_id=Some(receipt.request_id.clone());excessive.method.clear();assert!(record(&pool,&state,excessive).await.is_err());
-        sqlx::raw_sql("CREATE TRIGGER fail_money_history BEFORE INSERT ON logbook_events WHEN NEW.source='money' BEGIN SELECT RAISE(ABORT,'test'); END;").execute(&pool).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER fail_money_history BEFORE INSERT ON Bitacora_ordenes WHEN NEW.origen='money' BEGIN SELECT RAISE(ABORT,'test'); END;").execute(&pool).await.unwrap();
         let mut failed=request("adjustment",1000,30000);failed.payment_id=Some(receipt.request_id);failed.method.clear();assert!(record(&pool,&state,failed.clone()).await.is_err());
-        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM payment_requests WHERE id=?").bind(failed.request_id).fetch_one(&pool).await.unwrap(),0);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM Solicitudes_abonos WHERE id=?").bind(failed.request_id).fetch_one(&pool).await.unwrap(),0);
         assert_eq!(orders::payment_state(&mut *pool.acquire().await.unwrap(),"MONEY-1").await.unwrap().collected_minor,30000);
     });
 }
@@ -88,7 +86,7 @@ fn limited_and_custom_money_permissions_are_independent_and_revocation_is_immedi
         }
         state.test_login(&pool,"limited").await;
         let refund=request("refund",15000,75000);record(&pool,&state,refund.clone()).await.unwrap();
-        sqlx::query("DELETE FROM user_permissions WHERE section='payments'").execute(&pool).await.unwrap();
+        sqlx::query("DELETE FROM Permisos_usuarios WHERE apartado='payments'").execute(&pool).await.unwrap();
         assert!(record(&pool,&state,refund).await.is_err());
         assert!(record(&pool,&AccessState::default(),request("receipt",1,60000)).await.is_err());
     });

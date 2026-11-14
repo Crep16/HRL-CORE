@@ -43,12 +43,12 @@ fn complete_access_can_delete_and_restore_without_losing_records_or_reusing_foli
         );
         assert!(save(&pool, &state, order.clone(), None).await.is_err());
         for table in [
-            "orders",
-            "equipment",
-            "clients",
-            "payments",
-            "audit_events",
-            "order_visibility_events",
+            "Ordenes",
+            "Equipo",
+            "Clientes",
+            "Abonos",
+            "Historial_ordenes",
+            "Historial_papelera",
         ] {
             assert_eq!(
                 sqlx::query_scalar::<_, i64>(&format!("SELECT count(*) FROM {table}"))
@@ -59,13 +59,13 @@ fn complete_access_can_delete_and_restore_without_losing_records_or_reusing_foli
                 "{table}"
             );
         }
-        let author: String = sqlx::query_scalar("SELECT author_id FROM order_visibility_events")
+        let author: String = sqlx::query_scalar("SELECT id_autor FROM Historial_papelera")
             .fetch_one(&pool)
             .await
             .unwrap();
         assert!(!author.is_empty());
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT amount_minor FROM payments")
+            sqlx::query_scalar::<_, i64>("SELECT importe_centavos FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -83,20 +83,20 @@ fn complete_access_can_delete_and_restore_without_losing_records_or_reusing_foli
                 .is_empty()
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM order_visibility_events")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Historial_papelera")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
             2
         );
         assert!(
-            sqlx::query("DELETE FROM order_visibility_events")
+            sqlx::query("DELETE FROM Historial_papelera")
                 .execute(&pool)
                 .await
                 .is_err()
         );
         assert!(
-            sqlx::query("UPDATE order_visibility_events SET action='deleted'")
+            sqlx::query("UPDATE Historial_papelera SET accion='deleted'")
                 .execute(&pool)
                 .await
                 .is_err()
@@ -159,7 +159,7 @@ fn limited_and_revoked_custom_permissions_cannot_delete_or_restore() {
         set_deleted(&pool, &state, order.clone(), true)
             .await
             .unwrap();
-        sqlx::query("DELETE FROM user_permissions WHERE action='delete'")
+        sqlx::query("DELETE FROM Permisos_usuarios WHERE accion='delete'")
             .execute(&pool)
             .await
             .unwrap();
@@ -185,7 +185,7 @@ fn stale_order_or_failed_history_cannot_change_visibility() {
             .await
             .unwrap();
         assert!(set_deleted(&pool, &state, original, true).await.is_err());
-        sqlx::raw_sql("CREATE TRIGGER reject_visibility BEFORE INSERT ON order_visibility_events BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER reject_visibility BEFORE INSERT ON Historial_papelera BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
         assert!(
             set_deleted(&pool, &state, changed.clone(), true)
                 .await
@@ -196,7 +196,7 @@ fn stale_order_or_failed_history_cannot_change_visibility() {
             vec![changed.clone()]
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM order_visibility_events")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Historial_papelera")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),

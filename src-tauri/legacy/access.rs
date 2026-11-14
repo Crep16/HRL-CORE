@@ -399,19 +399,7 @@ mod tests {
             .connect("sqlite::memory:")
             .await
             .unwrap();
-        for schema in [
-            include_str!("../migrations/001_access.sql"),
-            include_str!("../migrations/002_workshop.sql"),
-            include_str!("../migrations/003_authentication.sql"),
-            include_str!("../migrations/004_order_records.sql"),
-            include_str!("../migrations/005_order_visibility.sql"),
-            include_str!("../migrations/006_repair_records.sql"),
-            include_str!("../migrations/007_logbook.sql"),
-            include_str!("../migrations/008_financial_logbook.sql"),
-            include_str!("../migrations/010_payment_adjustments.sql"),
-        ] {
-            sqlx::raw_sql(schema).execute(&pool).await.unwrap();
-        }
+        crate::test_support::migrate_legacy(&pool).await;
         pool
     }
     fn input() -> FirstSetup {
@@ -455,13 +443,13 @@ mod tests {
             assert!(!state.status(&pool).await.unwrap().setup_complete);
             let user = state.first_setup(&pool, input()).await.unwrap();
             assert_eq!(user.name, "Héctor");
-            let hash: String = sqlx::query_scalar("SELECT password_hash FROM users")
+            let hash: String = sqlx::query_scalar("SELECT hash_contrasena FROM Usuarios")
                 .fetch_one(&pool)
                 .await
                 .unwrap();
             assert!(hash.starts_with("$argon2id$"));
             assert!(!hash.contains("test-user"));
-            let master: String = sqlx::query_scalar("SELECT master_hash FROM access_settings")
+            let master: String = sqlx::query_scalar("SELECT hash_clave_maestra FROM Configuracion_acceso")
                 .fetch_one(&pool)
                 .await
                 .unwrap();
@@ -504,8 +492,8 @@ mod tests {
                     .is_none(),
                 "Sessions must not survive a process restart"
             );
-            sqlx::query("INSERT INTO users(id,name,password_hash,access_level,login_name) VALUES ('b','Other',?,'complete','other')").bind(hash).execute(&pool).await.unwrap();
-            sqlx::query("UPDATE users SET active=0 WHERE id=?")
+            sqlx::query("INSERT INTO Usuarios(id,nombre,hash_contrasena,nivel_acceso,nombre_acceso) VALUES ('b','Other',?,'complete','other')").bind(hash).execute(&pool).await.unwrap();
+            sqlx::query("UPDATE Usuarios SET activo=0 WHERE id=?")
                 .bind(&user.id)
                 .execute(&pool)
                 .await
@@ -534,18 +522,7 @@ mod tests {
                 .connect_with(options.clone())
                 .await
                 .unwrap();
-            for schema in [
-                include_str!("../migrations/001_access.sql"),
-                include_str!("../migrations/002_workshop.sql"),
-                include_str!("../migrations/003_authentication.sql"),
-                include_str!("../migrations/004_order_records.sql"),
-                include_str!("../migrations/005_order_visibility.sql"),
-                include_str!("../migrations/006_repair_records.sql"),
-                include_str!("../migrations/007_logbook.sql"),
-                include_str!("../migrations/008_financial_logbook.sql"),
-            ] {
-                sqlx::raw_sql(schema).execute(&pool).await.unwrap();
-            }
+            crate::test_support::migrate_legacy(&pool).await;
             AccessState::default()
                 .first_setup(&pool, input())
                 .await
@@ -641,7 +618,7 @@ mod tests {
                 assert!(state.authorize(&mut db, "orders.edit").await.is_err());
                 assert!(state.authorize(&mut db, "users.manage").await.is_err());
             }
-            sqlx::query("DELETE FROM user_permissions WHERE user_id=?")
+            sqlx::query("DELETE FROM Permisos_usuarios WHERE id_usuario=?")
                 .bind(&custom.id)
                 .execute(&pool)
                 .await
@@ -677,10 +654,10 @@ mod tests {
             let mut invalid = input();
             invalid.master_password = "short".into();
             assert!(state.first_setup(&pool, invalid).await.is_err());
-            sqlx::raw_sql("CREATE TRIGGER reject_user BEFORE INSERT ON users BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
+            sqlx::raw_sql("CREATE TRIGGER reject_user BEFORE INSERT ON Usuarios BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
             assert!(state.first_setup(&pool, input()).await.is_err());
             assert_eq!(
-                sqlx::query_scalar::<_, i64>("SELECT count(*) FROM access_settings")
+                sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Configuracion_acceso")
                     .fetch_one(&pool)
                     .await
                     .unwrap(),

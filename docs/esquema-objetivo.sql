@@ -3,8 +3,8 @@
 -- ----------------------------------------------------------------------------
 -- Reglas de diseño aplicadas respecto al esquema anterior:
 --  1. Sin JSON como almacenamiento principal: cada dato tiene su tabla y columna.
---  2. Catálogos con FK en lugar de texto libre (estado, moneda, método de pago,
---     etapa, nivel de acceso, apartados y acciones).
+--  2. Catálogos estables con FK; estados/etapas personalizados conservan su texto.
+--     El método de pago sigue siendo texto libre, conforme a reglas-pagos.md.
 --  3. PK interna (INTEGER) distinta del folio de negocio (ordenes.folio UNIQUE).
 --  4. Una sola auditoría (auditoria + auditoria_detalle) escrita por la capa de
 --     servicios dentro de la misma transacción; se eliminan los triggers que
@@ -21,7 +21,7 @@
 -- ============================================================================
 
 PRAGMA foreign_keys=ON;
-BEGIN TRANSACTION;
+-- El cargador ejecuta cada migración en su propia transacción.
 
 -- ---------------------------------------------------------------------------
 -- 1. CATÁLOGOS
@@ -30,65 +30,67 @@ CREATE TABLE niveles_acceso (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE apartados (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE acciones (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL
-);
+) STRICT;
 
 -- Combinaciones válidas apartado + acción. Reemplaza el CHECK compuesto anterior.
 CREATE TABLE permisos (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     id_apartado INTEGER NOT NULL REFERENCES apartados(id) ON DELETE RESTRICT,
     id_accion   INTEGER NOT NULL REFERENCES acciones(id)  ON DELETE RESTRICT,
+    solo_completo INTEGER NOT NULL DEFAULT 0 CHECK(solo_completo IN (0,1)),
     UNIQUE(id_apartado, id_accion)
-);
+) STRICT;
 
 CREATE TABLE monedas (
     codigo TEXT PRIMARY KEY CHECK(length(codigo) = 3 AND codigo = upper(codigo)),
     nombre TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE estados_orden (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo TEXT NOT NULL UNIQUE,
     nombre TEXT NOT NULL,
     orden  INTEGER NOT NULL DEFAULT 0
-);
+) STRICT;
 
-CREATE TABLE metodos_pago (
+CREATE TABLE roles (
     id     INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL UNIQUE COLLATE NOCASE CHECK(length(trim(nombre)) > 0)
-);
+    codigo TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL
+) STRICT;
 
 CREATE TABLE etapas (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre         TEXT NOT NULL UNIQUE COLLATE NOCASE CHECK(length(trim(nombre)) > 0),
     es_predefinida INTEGER NOT NULL DEFAULT 0 CHECK(es_predefinida IN (0,1)),
     orden          INTEGER NOT NULL DEFAULT 0
-);
+) STRICT;
 
 CREATE TABLE operaciones_auditoria (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     codigo      TEXT NOT NULL UNIQUE,
     descripcion TEXT NOT NULL
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 2. SEGURIDAD
 -- ---------------------------------------------------------------------------
-CREATE TABLE clave_maestra (
+CREATE TABLE claves_maestras (
     id   INTEGER PRIMARY KEY CHECK(id = 1),
     hash TEXT NOT NULL CHECK(length(hash) > 0)
-);
+) STRICT;
 
 CREATE TABLE usuarios (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -96,15 +98,16 @@ CREATE TABLE usuarios (
     nombre_acceso   TEXT NOT NULL UNIQUE COLLATE NOCASE CHECK(length(trim(nombre_acceso)) > 0),
     hash_contrasena TEXT NOT NULL CHECK(length(hash_contrasena) > 0),
     id_nivel        INTEGER NOT NULL REFERENCES niveles_acceso(id) ON DELETE RESTRICT,
+    id_rol          INTEGER NOT NULL REFERENCES roles(id) ON DELETE RESTRICT,
     activo          INTEGER NOT NULL DEFAULT 1 CHECK(activo IN (0,1)),
     creado_en       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 CREATE TABLE usuario_permiso (
     id_usuario INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
     id_permiso INTEGER NOT NULL REFERENCES permisos(id) ON DELETE RESTRICT,
     PRIMARY KEY(id_usuario, id_permiso)
-);
+) STRICT;
 
 -- Préstamo temporal de facultades. Los nombres se obtienen de usuarios (sin copias).
 CREATE TABLE accesos_temporales (
@@ -118,14 +121,14 @@ CREATE TABLE accesos_temporales (
     finalizado_en       TEXT,
     motivo_finalizacion TEXT,
     CHECK(id_receptor <> id_autorizador)
-);
+) STRICT;
 
 -- Lista de operaciones prestadas (antes operaciones_json).
 CREATE TABLE acceso_temporal_permiso (
     id_acceso  INTEGER NOT NULL REFERENCES accesos_temporales(id) ON DELETE RESTRICT,
     id_permiso INTEGER NOT NULL REFERENCES permisos(id) ON DELETE RESTRICT,
     PRIMARY KEY(id_acceso, id_permiso)
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 3. EMPRESA Y DOCUMENTOS (antes un solo JSON)
@@ -150,7 +153,7 @@ CREATE TABLE empresa (
     dias_garantia_mano_obra  INTEGER NOT NULL DEFAULT 0 CHECK(dias_garantia_mano_obra >= 0),
     dias_garantia_refacciones INTEGER NOT NULL DEFAULT 0 CHECK(dias_garantia_refacciones >= 0),
     revision                 INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0)
-);
+) STRICT;
 
 CREATE TABLE configuracion_documentos (
     id                   INTEGER PRIMARY KEY CHECK(id = 1),
@@ -161,15 +164,15 @@ CREATE TABLE configuracion_documentos (
     pie_entrada          TEXT NOT NULL DEFAULT '',
     pie_salida           TEXT NOT NULL DEFAULT '',
     imprimir_direccion   INTEGER NOT NULL DEFAULT 1 CHECK(imprimir_direccion IN (0,1)),
-    firma                TEXT NOT NULL DEFAULT '',
-    referencia_web       TEXT NOT NULL DEFAULT '',
-    posicion_clausulas   TEXT NOT NULL DEFAULT 'end' CHECK(posicion_clausulas IN ('start','end')),
+    pedir_firma          INTEGER NOT NULL DEFAULT 1 CHECK(pedir_firma IN (0,1)),
+    referencia_web       INTEGER NOT NULL DEFAULT 0 CHECK(referencia_web IN (0,1)),
+    posicion_clausulas   TEXT NOT NULL DEFAULT 'foot' CHECK(posicion_clausulas IN ('foot','back')),
     numerar_clausulas    INTEGER NOT NULL DEFAULT 1 CHECK(numerar_clausulas IN (0,1)),
-    papel                TEXT NOT NULL DEFAULT 'letter' CHECK(papel IN ('letter','ticket80','ticket60')),
+    papel                TEXT NOT NULL DEFAULT 'letter' CHECK(papel IN ('letter','ticket','ticket60')),
     orientacion          TEXT NOT NULL DEFAULT 'portrait' CHECK(orientacion IN ('portrait','landscape')),
-    copias               INTEGER NOT NULL DEFAULT 1 CHECK(copias BETWEEN 1 AND 10),
+    copias               INTEGER NOT NULL DEFAULT 1 CHECK(copias BETWEEN 1 AND 5),
     revision             INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0)
-);
+) STRICT;
 
 CREATE TABLE clausulas (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -178,13 +181,13 @@ CREATE TABLE clausulas (
     aplica_entrada INTEGER NOT NULL DEFAULT 1 CHECK(aplica_entrada IN (0,1)),
     aplica_salida  INTEGER NOT NULL DEFAULT 0 CHECK(aplica_salida IN (0,1)),
     posicion       INTEGER NOT NULL DEFAULT 0
-);
+) STRICT;
 
 -- Generador de folios. Sustituye a nextNumber dentro del JSON de empresa.
 CREATE TABLE secuencias_folio (
     prefijo          TEXT PRIMARY KEY,
     siguiente_numero INTEGER NOT NULL DEFAULT 1 CHECK(siguiente_numero > 0)
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 4. CLIENTES Y EQUIPOS
@@ -193,8 +196,9 @@ CREATE TABLE clientes (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre    TEXT NOT NULL CHECK(length(trim(nombre)) > 0),
     telefono  TEXT NOT NULL DEFAULT '',
+    correo    TEXT CHECK(correo IS NULL OR length(trim(correo)) > 0),
     creado_en TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 CREATE TABLE equipos (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -203,7 +207,7 @@ CREATE TABLE equipos (
     marca      TEXT NOT NULL DEFAULT '',
     modelo     TEXT NOT NULL DEFAULT '',
     serie      TEXT NOT NULL DEFAULT ''
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 5. ÓRDENES
@@ -213,40 +217,75 @@ CREATE TABLE ordenes (
     folio                 TEXT NOT NULL UNIQUE CHECK(length(trim(folio)) > 0),
     id_equipo             INTEGER NOT NULL REFERENCES equipos(id) ON DELETE RESTRICT,
     id_creador            INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
-    id_estado             INTEGER NOT NULL REFERENCES estados_orden(id) ON DELETE RESTRICT,
+    id_estado             INTEGER REFERENCES estados_orden(id) ON DELETE RESTRICT,
+    estado_personalizado  TEXT,
     codigo_moneda         TEXT NOT NULL DEFAULT 'MXN' REFERENCES monedas(codigo) ON DELETE RESTRICT,
     fecha_recepcion       TEXT NOT NULL,
+    fecha_estimada_entrega TEXT,
     fecha_entrega         TEXT,
-    falla                 TEXT NOT NULL DEFAULT '',
+    entregado             INTEGER NOT NULL DEFAULT 0 CHECK(entregado IN (0,1)),
+    falla                 TEXT NOT NULL DEFAULT '' CHECK(length(falla) <= 16000),
     trabajo               TEXT NOT NULL DEFAULT '',
     notas_recepcion       TEXT NOT NULL DEFAULT '',
-    precio_centavos       INTEGER NOT NULL DEFAULT 0 CHECK(typeof(precio_centavos)='integer' AND precio_centavos >= 0),
+    precio_centavos       INTEGER NOT NULL DEFAULT 0 CHECK(typeof(precio_centavos)='integer' AND precio_centavos BETWEEN 0 AND 9000000000000),
     paso_otro_taller      INTEGER NOT NULL DEFAULT 0 CHECK(paso_otro_taller IN (0,1)),
     detalle_otro_taller   TEXT NOT NULL DEFAULT '',
-    caida_humedad         INTEGER NOT NULL DEFAULT 0 CHECK(caida_humedad IN (0,1)),
-    detalle_caida_humedad TEXT NOT NULL DEFAULT '',
-    contrasena_equipo     TEXT NOT NULL DEFAULT '',  -- dato operativo; decidir cifrado o retiro (ver AGENTS.md)
+    sufrio_golpes         INTEGER NOT NULL DEFAULT 0 CHECK(sufrio_golpes IN (0,1)),
+    detalle_golpes        TEXT NOT NULL DEFAULT '',
+    derrame_liquidos      INTEGER NOT NULL DEFAULT 0 CHECK(derrame_liquidos IN (0,1)),
+    detalle_liquidos      TEXT NOT NULL DEFAULT '',
+    revision             INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0),
     eliminada_en          TEXT,                      -- NULL = activa; fecha = en papelera
     creado_en             TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-    CHECK(paso_otro_taller = 1 OR detalle_otro_taller = ''),
-    CHECK(caida_humedad = 1 OR detalle_caida_humedad = '')
-);
+    CHECK((id_estado IS NOT NULL AND estado_personalizado IS NULL)
+       OR (id_estado IS NULL AND estado_personalizado IS NOT NULL AND length(trim(estado_personalizado)) > 0)),
+    CHECK(fecha_entrega IS NULL OR entregado = 1)
+) STRICT;
+
+-- La clave de cifrado vive fuera de SQLite. Esta tabla nunca se serializa a IPC.
+CREATE TABLE credenciales_dispositivos (
+    id_orden INTEGER PRIMARY KEY REFERENCES ordenes(id) ON DELETE RESTRICT,
+    version INTEGER NOT NULL CHECK(version = 1),
+    id_clave TEXT NOT NULL CHECK(length(trim(id_clave)) > 0),
+    algoritmo TEXT NOT NULL CHECK(algoritmo = 'AES-256-GCM'),
+    nonce BLOB NOT NULL CHECK(length(nonce) = 12),
+    cifrado BLOB NOT NULL CHECK(length(cifrado) >= 16),
+    UNIQUE(id_clave, nonce)
+) STRICT;
+
+CREATE TABLE diagnosticos (
+    id_orden INTEGER PRIMARY KEY REFERENCES ordenes(id) ON DELETE RESTRICT,
+    id_autor INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+    texto TEXT NOT NULL CHECK(length(texto) <= 64000),
+    revision INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0),
+    actualizado_en TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+) STRICT;
 
 CREATE TABLE seguimientos (
     id_orden     INTEGER PRIMARY KEY REFERENCES ordenes(id) ON DELETE RESTRICT,
     tecnico      TEXT NOT NULL DEFAULT '',
     nota_publica TEXT NOT NULL DEFAULT '',
     nota_interna TEXT NOT NULL DEFAULT '',
+    modo_publicacion TEXT NOT NULL DEFAULT 'manual' CHECK(modo_publicacion IN ('manual','auto')),
     revision     INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0)
-);
+) STRICT;
 
--- Etapas marcadas como completadas por orden (antes "completed" dentro del JSON).
+-- Secuencia completa por orden: incluye etapas pendientes y personalizadas.
 CREATE TABLE orden_etapas (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
     id_orden      INTEGER NOT NULL REFERENCES ordenes(id) ON DELETE RESTRICT,
-    id_etapa      INTEGER NOT NULL REFERENCES etapas(id)  ON DELETE RESTRICT,
-    completada_en TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
-    PRIMARY KEY(id_orden, id_etapa)
-);
+    id_etapa      INTEGER REFERENCES etapas(id) ON DELETE RESTRICT,
+    nombre_personalizado TEXT,
+    posicion      INTEGER NOT NULL CHECK(posicion >= 0),
+    completada_en TEXT,
+    UNIQUE(id_orden, posicion),
+    UNIQUE(id_orden, id_etapa),
+    CHECK((id_etapa IS NOT NULL AND nombre_personalizado IS NULL)
+       OR (id_etapa IS NULL AND nombre_personalizado IS NOT NULL
+           AND length(trim(nombre_personalizado)) BETWEEN 1 AND 100))
+) STRICT;
+CREATE UNIQUE INDEX idx_etapas_personalizadas ON orden_etapas(id_orden, nombre_personalizado COLLATE NOCASE)
+WHERE nombre_personalizado IS NOT NULL;
 
 -- Preferencias de publicación web por orden (antes "visibility" dentro del JSON).
 CREATE TABLE seguimiento_publicacion (
@@ -254,18 +293,17 @@ CREATE TABLE seguimiento_publicacion (
     clave      TEXT NOT NULL CHECK(length(trim(clave)) > 0),
     habilitado INTEGER NOT NULL DEFAULT 0 CHECK(habilitado IN (0,1)),
     PRIMARY KEY(id_orden, clave)
-);
+) STRICT;
 
 CREATE TABLE avances (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    id_orden        INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
+    id_etapa_orden  INTEGER NOT NULL REFERENCES orden_etapas(id) ON DELETE RESTRICT,
     id_autor        INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
-    id_etapa        INTEGER NOT NULL REFERENCES etapas(id)   ON DELETE RESTRICT,
     titulo          TEXT NOT NULL CHECK(length(trim(titulo)) > 0),
     detalle         TEXT NOT NULL DEFAULT '',
     visible_cliente INTEGER NOT NULL DEFAULT 0 CHECK(visible_cliente IN (0,1)),
     fecha_evento    TEXT NOT NULL
-);
+) STRICT;
 
 CREATE TABLE notas (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -274,9 +312,9 @@ CREATE TABLE notas (
     texto           TEXT NOT NULL CHECK(length(trim(texto)) > 0),
     visible_cliente INTEGER NOT NULL DEFAULT 0 CHECK(visible_cliente IN (0,1)),
     creado_en       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
--- Piezas utilizadas/cotizadas para la orden. No es inventario.
+-- Piezas utilizadas con costo directo, conforme al resumen financiero vigente.
 CREATE TABLE refacciones (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     id_orden        INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
@@ -284,7 +322,7 @@ CREATE TABLE refacciones (
     nombre          TEXT NOT NULL CHECK(length(trim(nombre)) > 0),
     cantidad        INTEGER NOT NULL DEFAULT 1 CHECK(cantidad > 0),
     precio_centavos INTEGER NOT NULL CHECK(typeof(precio_centavos)='integer' AND precio_centavos >= 0)
-);
+) STRICT;
 
 CREATE TABLE garantias (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -292,9 +330,9 @@ CREATE TABLE garantias (
     id_autor  INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
     cobertura TEXT NOT NULL CHECK(length(trim(cobertura)) > 0),
     dias      INTEGER NOT NULL CHECK(typeof(dias)='integer' AND dias >= 0)
-);
+) STRICT;
 
--- Costo real pagado por el taller (distinto de refacciones: lo cotizado al cliente).
+-- Otros gastos directos: se suman a los costos de refacciones, sin duplicarlos.
 CREATE TABLE gastos_directos (
     id               INTEGER PRIMARY KEY AUTOINCREMENT,
     id_orden         INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
@@ -303,67 +341,78 @@ CREATE TABLE gastos_directos (
     importe_centavos INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos > 0),
     motivo           TEXT NOT NULL CHECK(length(trim(motivo)) > 0),
     fecha_evento     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 6. DINERO (libro inmutable)
 -- ---------------------------------------------------------------------------
+-- Identificador global compartido por cobros, ajustes y devoluciones.
+CREATE TABLE solicitudes_financieras (
+    id TEXT PRIMARY KEY CHECK(length(id) BETWEEN 16 AND 100),
+    id_autor INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+    tipo TEXT NOT NULL CHECK(tipo IN ('receipt','adjustment','refund')),
+    huella_solicitud BLOB NOT NULL CHECK(length(huella_solicitud) = 32),
+    creado_en TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
+) STRICT;
+
 CREATE TABLE abonos (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     id_orden          INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
     id_autor          INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
-    id_metodo_pago    INTEGER REFERENCES metodos_pago(id) ON DELETE RESTRICT, -- NULL solo en importaciones históricas
-    importe_centavos  INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos > 0),
+    metodo_pago       TEXT CHECK(metodo_pago IS NULL OR length(trim(metodo_pago)) BETWEEN 1 AND 200),
+    importe_centavos  INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos BETWEEN 1 AND 9000000000000),
     fecha_pago        TEXT,                -- fecha declarada; NULL si se desconoce (no cadena vacía)
     motivo            TEXT,
-    id_solicitud      TEXT UNIQUE,         -- reintentos idempotentes
-    huella_solicitud  TEXT,                -- hash de la solicitud para comparar reintentos
+    id_solicitud      TEXT UNIQUE REFERENCES solicitudes_financieras(id) ON DELETE RESTRICT,
     creado_en         TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 -- Corrección con signo de un abono original. La orden se obtiene vía abonos.
 CREATE TABLE ajustes_abono (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     id_abono          INTEGER NOT NULL REFERENCES abonos(id)   ON DELETE RESTRICT,
     id_autor          INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
-    importe_centavos  INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos <> 0 AND abs(importe_centavos) <= 9000000000000),
+    importe_centavos  INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos <> 0 AND importe_centavos BETWEEN -9000000000000 AND 9000000000000),
     motivo            TEXT NOT NULL CHECK(length(trim(motivo)) > 0),
-    id_solicitud      TEXT UNIQUE,
-    huella_solicitud  TEXT,
+    id_solicitud      TEXT UNIQUE REFERENCES solicitudes_financieras(id) ON DELETE RESTRICT,
     creado_en         TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 -- Dinero devuelto al cliente (siempre positivo).
 CREATE TABLE devoluciones (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     id_orden          INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
     id_autor          INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
-    id_metodo_pago    INTEGER NOT NULL REFERENCES metodos_pago(id) ON DELETE RESTRICT,
+    metodo_pago       TEXT NOT NULL CHECK(length(trim(metodo_pago)) BETWEEN 1 AND 200),
     importe_centavos  INTEGER NOT NULL CHECK(typeof(importe_centavos)='integer' AND importe_centavos > 0 AND importe_centavos <= 9000000000000),
     motivo            TEXT NOT NULL CHECK(length(trim(motivo)) > 0),
-    id_solicitud      TEXT UNIQUE,
-    huella_solicitud  TEXT,
+    id_solicitud      TEXT UNIQUE REFERENCES solicitudes_financieras(id) ON DELETE RESTRICT,
     creado_en         TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 7. EVIDENCIAS (metadatos; los bytes viven en archivos)
 -- ---------------------------------------------------------------------------
 CREATE TABLE evidencias (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
-    codigo_archivo      TEXT NOT NULL UNIQUE CHECK(length(codigo_archivo) = 32),
+    codigo_archivo      TEXT NOT NULL UNIQUE CHECK(length(codigo_archivo) = 32 AND codigo_archivo NOT GLOB '*[^0-9a-f]*'),
     id_orden            INTEGER NOT NULL REFERENCES ordenes(id)  ON DELETE RESTRICT,
     id_autor            INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
     nombre_original     TEXT NOT NULL,
-    tipo_imagen         TEXT NOT NULL CHECK(tipo_imagen IN ('image/jpeg','image/png','image/webp')),
-    tamano_bytes        INTEGER NOT NULL CHECK(tamano_bytes > 0 AND tamano_bytes <= 20971520),
+    ruta_relativa       TEXT NOT NULL UNIQUE CHECK(length(trim(ruta_relativa)) > 0
+        AND substr(ruta_relativa,1,1) <> '/' AND instr(ruta_relativa,':') = 0
+        AND instr(ruta_relativa,char(92)) = 0 AND instr('/'||ruta_relativa||'/','/../') = 0),
+    tipo_archivo        TEXT NOT NULL CHECK(tipo_archivo IN ('image','video','document')),
+    mime                TEXT NOT NULL CHECK(length(trim(mime)) > 0),
+    tamano_bytes        INTEGER NOT NULL CHECK(tamano_bytes > 0),
     origen              TEXT NOT NULL CHECK(origen IN ('camera','file')),
     descripcion         TEXT NOT NULL DEFAULT '' CHECK(length(descripcion) <= 500),
     descripcion_inicial TEXT NOT NULL DEFAULT '',
     retirada            INTEGER NOT NULL DEFAULT 0 CHECK(retirada IN (0,1)),
     revision            INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0),
-    creado_en           TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+    creado_en           TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
+    CHECK(tipo_archivo <> 'image' OR (mime IN ('image/jpeg','image/png','image/webp') AND tamano_bytes <= 20971520))
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 8. AUDITORÍA ÚNICA (la escribe la capa de servicios en la misma transacción)
@@ -378,7 +427,7 @@ CREATE TABLE auditoria (
     motivo       TEXT,
     resultado    TEXT NOT NULL DEFAULT 'success' CHECK(resultado IN ('success','denied','error')),
     creado_en    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
-);
+) STRICT;
 
 CREATE TABLE auditoria_detalle (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -386,7 +435,7 @@ CREATE TABLE auditoria_detalle (
     campo          TEXT NOT NULL,
     valor_anterior TEXT,
     valor_nuevo    TEXT
-);
+) STRICT;
 
 -- ---------------------------------------------------------------------------
 -- 9. ÍNDICES
@@ -397,7 +446,8 @@ CREATE INDEX idx_equipos_serie           ON equipos(serie);
 CREATE INDEX idx_ordenes_equipo          ON ordenes(id_equipo);
 CREATE INDEX idx_ordenes_estado          ON ordenes(id_estado);
 CREATE INDEX idx_ordenes_eliminada       ON ordenes(eliminada_en);
-CREATE INDEX idx_avances_orden           ON avances(id_orden, fecha_evento);
+CREATE INDEX idx_avances_etapa           ON avances(id_etapa_orden, fecha_evento);
+CREATE INDEX idx_orden_etapas_orden      ON orden_etapas(id_orden);
 CREATE INDEX idx_notas_orden             ON notas(id_orden);
 CREATE INDEX idx_refacciones_orden       ON refacciones(id_orden);
 CREATE INDEX idx_garantias_orden         ON garantias(id_orden);
@@ -456,7 +506,8 @@ CREATE TRIGGER evidencias_no_delete        BEFORE DELETE ON evidencias        BE
 CREATE TRIGGER evidencias_conservar_original BEFORE UPDATE ON evidencias
 WHEN NEW.id IS NOT OLD.id OR NEW.codigo_archivo IS NOT OLD.codigo_archivo OR NEW.id_orden IS NOT OLD.id_orden
   OR NEW.id_autor IS NOT OLD.id_autor OR NEW.nombre_original IS NOT OLD.nombre_original
-  OR NEW.tipo_imagen IS NOT OLD.tipo_imagen OR NEW.tamano_bytes IS NOT OLD.tamano_bytes
+  OR NEW.tipo_archivo IS NOT OLD.tipo_archivo OR NEW.mime IS NOT OLD.mime
+  OR NEW.ruta_relativa IS NOT OLD.ruta_relativa OR NEW.tamano_bytes IS NOT OLD.tamano_bytes
   OR NEW.origen IS NOT OLD.origen OR NEW.descripcion_inicial IS NOT OLD.descripcion_inicial
   OR NEW.creado_en IS NOT OLD.creado_en
 BEGIN SELECT RAISE(ABORT,'La evidencia original no puede reemplazarse'); END;
@@ -496,6 +547,8 @@ BEGIN SELECT RAISE(ABORT,'Debe conservarse un usuario activo con acceso completo
 -- Ajustar estados, etapas y operaciones a los valores reales de orders.rs.
 -- ---------------------------------------------------------------------------
 INSERT INTO niveles_acceso(codigo,nombre) VALUES ('complete','Completo'),('limited','Limitado'),('custom','Personalizado');
+-- El rol describe el trabajo; el nivel y los permisos determinan las facultades.
+INSERT INTO roles(codigo,nombre) VALUES ('administrator','Administrador'),('technician','Técnico');
 
 INSERT INTO apartados(codigo,nombre) VALUES
  ('clients','Clientes'),('repairs','Reparaciones'),('logbook','Bitácora'),
@@ -503,12 +556,15 @@ INSERT INTO apartados(codigo,nombre) VALUES
 
 INSERT INTO acciones(codigo,nombre) VALUES
  ('view','Consultar'),('create','Crear'),('edit','Editar'),('delete','Eliminar'),
- ('add','Registrar'),('refund','Devolver');
+ ('add','Registrar'),('refund','Devolver'),('adjust','Corregir'),('manage','Administrar');
 
 INSERT INTO permisos(id_apartado,id_accion)
 SELECT a.id, c.id FROM apartados a JOIN acciones c
  ON (a.codigo IN ('clients','repairs','logbook','company') AND c.codigo IN ('view','create','edit','delete'))
  OR (a.codigo = 'payments' AND c.codigo IN ('add','refund'));
+INSERT INTO permisos(id_apartado,id_accion,solo_completo)
+SELECT a.id,c.id,1 FROM apartados a JOIN acciones c
+ON (a.codigo='payments' AND c.codigo='adjust') OR (a.codigo='users' AND c.codigo='manage');
 
 -- El catálogo de permisos es de solo lectura tras el sembrado: sin estos triggers
 -- se podría insertar una combinación inválida (p. ej. payments + view), algo que el
@@ -517,14 +573,17 @@ CREATE TRIGGER permisos_no_insert BEFORE INSERT ON permisos BEGIN SELECT RAISE(A
 CREATE TRIGGER permisos_no_update BEFORE UPDATE ON permisos BEGIN SELECT RAISE(ABORT,'El catálogo de permisos solo cambia mediante migración'); END;
 CREATE TRIGGER permisos_no_delete BEFORE DELETE ON permisos BEGIN SELECT RAISE(ABORT,'El catálogo de permisos solo cambia mediante migración'); END;
 
-INSERT INTO monedas(codigo,nombre) VALUES ('MXN','Peso mexicano'),('USD','Dólar estadounidense');
+INSERT INTO monedas(codigo,nombre) VALUES ('MXN','Peso mexicano'),('USD','Dólar estadounidense'),('EUR','Euro');
 
 INSERT INTO estados_orden(codigo,nombre,orden) VALUES
- ('received','Recibido',1),('diagnosis','En diagnóstico',2),('repair','En reparación',3),
- ('ready','Listo',4),('irreparable','Irreparable',5),('cancelled','Cancelado',6);
+ ('diagnosis','En diagnóstico',1),('awaiting_authorization','Esperando autorización',2),
+ ('authorized','Autorizado',3),('awaiting_part','Esperando refacción',4),
+ ('repair','En reparación',5),('ready','Listo para entrega',6),('delivered','Entregado',7),
+ ('pending','Pendiente',8),('repaired','Reparado',9),('cancelled','Cancelado',10),('irreparable','Irreparable',11);
 
 INSERT INTO etapas(nombre,es_predefinida,orden) VALUES
- ('Recepción',1,1),('Diagnóstico',1,2),('Reparación',1,3),('Pruebas',1,4),('Entrega',1,5);
+ ('Recibido',1,1),('Diagnóstico',1,2),('Autorización',1,3),('Refacciones',1,4),
+ ('Reparación',1,5),('Pruebas',1,6),('Entregado',1,7),('Entrega',0,8);
 
 INSERT INTO operaciones_auditoria(codigo,descripcion) VALUES
  ('orders.create','Alta de orden'),('orders.edit','Edición de orden'),
@@ -533,9 +592,122 @@ INSERT INTO operaciones_auditoria(codigo,descripcion) VALUES
  ('payments.add','Abono registrado'),('payments.adjust','Corrección de abono'),('payments.refund','Devolución'),
  ('costs.add','Gasto directo'),
  ('evidence.add','Evidencia agregada'),('evidence.edit','Evidencia editada'),
- ('evidence.remove','Evidencia retirada'),('evidence.restore','Evidencia restaurada'),
+ ('evidence.delete','Evidencia retirada'),('evidence.restore','Evidencia restaurada'),
  ('company.edit','Cambio de configuración de empresa'),
  ('users.create','Alta de usuario'),('users.edit','Edición de usuario'),
- ('access.temporary.start','Inicio de acceso temporal'),('access.temporary.end','Fin de acceso temporal');
+ ('access.temporary.start','Inicio de acceso temporal'),('access.temporary.use','Uso de acceso temporal'),
+ ('access.temporary.end','Fin de acceso temporal'),('notes.add','Nota o avance agregado'),
+ ('stages.advance','Etapa completada'),('repairs.edit','Seguimiento modificado'),
+ ('warranties.add','Garantía agregada'),('parts.add','Refacción agregada'),
+ ('publication.edit','Preferencias de publicación'),('imported','Seguimiento importado'),
+ ('diagnoses.edit','Diagnóstico modificado');
 
-COMMIT;
+CREATE VIEW vista_configuracion_acceso AS
+SELECT EXISTS(SELECT 1 FROM claves_maestras WHERE id=1)
+   AND EXISTS(SELECT 1 FROM usuarios u JOIN niveles_acceso n ON n.id=u.id_nivel
+              WHERE u.activo=1 AND n.codigo='complete') AS configurado;
+
+CREATE TRIGGER solicitudes_no_update BEFORE UPDATE ON solicitudes_financieras
+BEGIN SELECT RAISE(ABORT,'Las solicitudes financieras son inmutables'); END;
+CREATE TRIGGER solicitudes_no_delete BEFORE DELETE ON solicitudes_financieras
+BEGIN SELECT RAISE(ABORT,'Las solicitudes financieras no se borran'); END;
+
+CREATE TRIGGER abonos_solicitud BEFORE INSERT ON abonos
+WHEN NEW.id_solicitud IS NOT NULL AND NOT EXISTS(SELECT 1 FROM solicitudes_financieras
+ WHERE id=NEW.id_solicitud AND id_autor=NEW.id_autor AND tipo='receipt')
+BEGIN SELECT RAISE(ABORT,'La solicitud no corresponde al autor o al tipo de movimiento'); END;
+CREATE TRIGGER ajustes_solicitud BEFORE INSERT ON ajustes_abono
+WHEN NEW.id_solicitud IS NOT NULL AND NOT EXISTS(SELECT 1 FROM solicitudes_financieras
+ WHERE id=NEW.id_solicitud AND id_autor=NEW.id_autor AND tipo='adjustment')
+BEGIN SELECT RAISE(ABORT,'La solicitud no corresponde al autor o al tipo de movimiento'); END;
+CREATE TRIGGER devoluciones_solicitud BEFORE INSERT ON devoluciones
+WHEN NEW.id_solicitud IS NOT NULL AND NOT EXISTS(SELECT 1 FROM solicitudes_financieras
+ WHERE id=NEW.id_solicitud AND id_autor=NEW.id_autor AND tipo='refund')
+BEGIN SELECT RAISE(ABORT,'La solicitud no corresponde al autor o al tipo de movimiento'); END;
+
+CREATE TRIGGER permisos_exclusivos_insert BEFORE INSERT ON usuario_permiso
+WHEN EXISTS(SELECT 1 FROM permisos p JOIN usuarios u ON u.id=NEW.id_usuario
+ JOIN niveles_acceso n ON n.id=u.id_nivel WHERE p.id=NEW.id_permiso AND p.solo_completo=1 AND n.codigo<>'complete')
+BEGIN SELECT RAISE(ABORT,'La facultad requiere acceso completo'); END;
+CREATE TRIGGER permisos_exclusivos_update BEFORE UPDATE ON usuario_permiso
+WHEN EXISTS(SELECT 1 FROM permisos p JOIN usuarios u ON u.id=NEW.id_usuario
+ JOIN niveles_acceso n ON n.id=u.id_nivel WHERE p.id=NEW.id_permiso AND p.solo_completo=1 AND n.codigo<>'complete')
+BEGIN SELECT RAISE(ABORT,'La facultad requiere acceso completo'); END;
+
+CREATE TRIGGER niveles_acceso_no_insert BEFORE INSERT ON niveles_acceso
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER niveles_acceso_no_update BEFORE UPDATE ON niveles_acceso
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER niveles_acceso_no_delete BEFORE DELETE ON niveles_acceso
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER apartados_no_insert BEFORE INSERT ON apartados
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER apartados_no_update BEFORE UPDATE ON apartados
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER apartados_no_delete BEFORE DELETE ON apartados
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER acciones_no_insert BEFORE INSERT ON acciones
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER acciones_no_update BEFORE UPDATE ON acciones
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER acciones_no_delete BEFORE DELETE ON acciones
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER monedas_no_insert BEFORE INSERT ON monedas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER monedas_no_update BEFORE UPDATE ON monedas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER monedas_no_delete BEFORE DELETE ON monedas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER estados_orden_no_insert BEFORE INSERT ON estados_orden
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER estados_orden_no_update BEFORE UPDATE ON estados_orden
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER estados_orden_no_delete BEFORE DELETE ON estados_orden
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER etapas_no_insert BEFORE INSERT ON etapas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER etapas_no_update BEFORE UPDATE ON etapas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER etapas_no_delete BEFORE DELETE ON etapas
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER operaciones_auditoria_no_insert BEFORE INSERT ON operaciones_auditoria
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER operaciones_auditoria_no_update BEFORE UPDATE ON operaciones_auditoria
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER operaciones_auditoria_no_delete BEFORE DELETE ON operaciones_auditoria
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER roles_no_insert BEFORE INSERT ON roles
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER roles_no_update BEFORE UPDATE ON roles
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER roles_no_delete BEFORE DELETE ON roles
+BEGIN SELECT RAISE(ABORT,'El catalogo solo cambia mediante migracion'); END;
+
+CREATE TRIGGER acceso_temporal_permiso_no_update BEFORE UPDATE ON acceso_temporal_permiso
+BEGIN SELECT RAISE(ABORT,'Las facultades prestadas son inmutables'); END;
+
+CREATE TRIGGER acceso_temporal_permiso_no_delete BEFORE DELETE ON acceso_temporal_permiso
+BEGIN SELECT RAISE(ABORT,'Las facultades prestadas son inmutables'); END;

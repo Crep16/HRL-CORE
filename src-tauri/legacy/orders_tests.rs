@@ -2,25 +2,13 @@ use crate::{access::AccessState, orders::*};
 use sqlx::SqlitePool;
 
 pub(super) async fn migrate(pool: &SqlitePool) {
-    for schema in [
-        include_str!("../migrations/001_access.sql"),
-        include_str!("../migrations/002_workshop.sql"),
-        include_str!("../migrations/003_authentication.sql"),
-        include_str!("../migrations/004_order_records.sql"),
-        include_str!("../migrations/005_order_visibility.sql"),
-        include_str!("../migrations/006_repair_records.sql"),
-        include_str!("../migrations/007_logbook.sql"),
-        include_str!("../migrations/008_financial_logbook.sql"),
-        include_str!("../migrations/010_payment_adjustments.sql"),
-    ] {
-        sqlx::raw_sql(schema).execute(pool).await.unwrap();
-    }
+    crate::test_support::migrate_legacy(&pool).await;
 }
 pub(super) fn order() -> Order {
     serde_json::from_value(serde_json::json!({
         "id":"ORD-001", "client":"Cliente", "phone":"9980000000", "received":"27/10/2026", "status":"Diagnóstico",
         "serial":"SERIE", "item":"Laptop", "brand":"HP", "model":"14", "otherShop":false, "otherShopReason":"", "dropped":false, "dropReason":"",
-        "password":"equipment-secret-test-only", "work":"Diagnóstico", "cost":"$1,500.00", "deposit":"$500.00", "depositMethod":"Efectivo de prueba", "notes":"Nota", "paid":false, "delivered":false
+        "failure":"Falla de prueba", "password":"equipment-secret-test-only", "work":"Diagnóstico", "cost":"$1,500.00", "deposit":"$500.00", "depositMethod":"Efectivo de prueba", "notes":"Nota", "paid":false, "delivered":false
     })).unwrap()
 }
 
@@ -49,8 +37,8 @@ fn final_repair_payment_updates_clients_and_price_changes_recalculate_paid_witho
         let higher=save(&pool,&state,higher,Some(delivered)).await.unwrap();
         assert!(!higher.paid);assert!(higher.delivered);
         assert_eq!(list(&pool,&state).await.unwrap().orders[0],higher);
-        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT sum(amount_minor) FROM payments").fetch_one(&pool).await.unwrap(),75000);
-        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM payments").fetch_one(&pool).await.unwrap(),2);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT sum(importe_centavos) FROM Abonos").fetch_one(&pool).await.unwrap(),75000);
+        assert_eq!(sqlx::query_scalar::<_,i64>("SELECT count(*) FROM Abonos").fetch_one(&pool).await.unwrap(),2);
         set_deleted(&pool,&state,higher.clone(),true).await.unwrap();
         set_deleted(&pool,&state,higher.clone(),false).await.unwrap();
         assert_eq!(list(&pool,&state).await.unwrap().orders[0],higher);
@@ -93,7 +81,7 @@ fn order_and_audit_survive_reopen_and_reject_stale_updates() {
             vec![original.clone()]
         );
         assert_eq!(
-            sqlx::query_scalar::<_, String>("SELECT currency FROM orders")
+            sqlx::query_scalar::<_, String>("SELECT moneda FROM Ordenes")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -118,7 +106,7 @@ fn order_and_audit_survive_reopen_and_reject_stale_updates() {
         );
         assert_eq!(list(&pool, &state).await.unwrap().orders, vec![changed]);
         let history: String = sqlx::query_scalar(
-            "SELECT group_concat(coalesce(old_value,'') || new_value) FROM audit_events",
+            "SELECT group_concat(coalesce(valor_anterior,'') || valor_nuevo) FROM Historial_ordenes",
         )
         .fetch_one(&pool)
         .await
@@ -127,7 +115,7 @@ fn order_and_audit_survive_reopen_and_reject_stale_updates() {
         assert!(history.contains("Reparación"));
         assert!(!history.contains("equipment-secret"));
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT amount_minor FROM payments")
+            sqlx::query_scalar::<_, i64>("SELECT importe_centavos FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -149,9 +137,9 @@ fn failed_audit_or_duplicate_import_leaves_no_partial_records() {
             .unwrap();
         migrate(&pool).await;
         let state = AccessState::test_admin(&pool).await;
-        sqlx::raw_sql("CREATE TRIGGER reject_audit BEFORE INSERT ON audit_events BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER reject_audit BEFORE INSERT ON Historial_ordenes BEGIN SELECT RAISE(ABORT,'Test failure'); END").execute(&pool).await.unwrap();
         assert!(save(&pool, &state, order(), None).await.is_err());
-        for table in ["orders", "clients", "equipment", "payments", "audit_events"] {
+        for table in ["Ordenes", "Clientes", "Equipo", "Abonos", "Historial_ordenes"] {
             assert_eq!(
                 sqlx::query_scalar::<_, i64>(&format!("SELECT count(*) FROM {table}"))
                     .fetch_one(&pool)
@@ -167,14 +155,14 @@ fn failed_audit_or_duplicate_import_leaves_no_partial_records() {
             .unwrap();
         assert!(import(&pool, &state, vec![order(), order()]).await.is_err());
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM orders")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Ordenes")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
             0
         );
         assert_eq!(
-            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM legacy_imports")
+            sqlx::query_scalar::<_, i64>("SELECT count(*) FROM Importaciones_anteriores")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -187,7 +175,7 @@ fn failed_audit_or_duplicate_import_leaves_no_partial_records() {
         assert!(list(&pool, &state).await.unwrap().legacy_imported);
         assert!(import(&pool, &state, vec![order()]).await.is_err());
         assert_eq!(
-            sqlx::query_scalar::<_, Option<String>>("SELECT delivered_at FROM orders")
+            sqlx::query_scalar::<_, Option<String>>("SELECT fecha_entrega FROM Ordenes")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
@@ -195,7 +183,7 @@ fn failed_audit_or_duplicate_import_leaves_no_partial_records() {
             "Do not invent historical delivery dates"
         );
         assert_eq!(
-            sqlx::query_scalar::<_, String>("SELECT occurred_at FROM payments")
+            sqlx::query_scalar::<_, String>("SELECT fecha_evento FROM Abonos")
                 .fetch_one(&pool)
                 .await
                 .unwrap(),
