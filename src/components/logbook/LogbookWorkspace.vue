@@ -1,51 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
 import SearchSelect from '../ui/SearchSelect.vue';
 import AppNotice from '../ui/AppNotice.vue';
 import FinancialWorkspace from './FinancialWorkspace.vue';
-import { utcDayBoundary } from '../../utils/finances';
-import { useCompany } from '../../composables/useCompany';
-import type { LogbookEntry, LogbookFilters, LogbookPage } from '../../types/logbook';
-import { entryChanges, logbookFields, logbookOperations, logbookValue } from '../../utils/logbook';
+import { useLogbookWorkspace } from '../../composables/useLogbookWorkspace';
 
-const { company } = useCompany();
-const tab=ref<'history'|'finances'>('history');
-const filters = reactive({query:'', operation:'', authorId:'',orderId:'',from:'',to:''});
-const applied = ref({...filters});
-const result = ref<LogbookPage>({entries:[],total:0,page:0,pageSize:50,authors:[]});
-const selected = ref<LogbookEntry>();
-const busy = ref(false);
-const error = ref('');
-const changes = computed(() => selected.value ? entryChanges(selected.value) : []);
-const pages = computed(() => Math.max(1,Math.ceil(result.value.total/result.value.pageSize)));
-const hasFilters = computed(() => Object.values(applied.value).some(Boolean));
-async function load(page = result.value.page) {
-  if (busy.value) return;
-  busy.value = true; error.value = '';
-  try {
-    const current = selected.value?.id;
-    if(applied.value.from&&applied.value.to&&applied.value.from>applied.value.to)throw new Error('La fecha inicial debe ser anterior o igual a la final.');
-    const {from,to,...rest}=applied.value;
-    result.value = await invoke<LogbookPage>('list_logbook',{filters:{...rest,page,fromUtc:utcDayBoundary(from,company.value.timezone),toUtc:utcDayBoundary(to,company.value.timezone,true)} satisfies LogbookFilters});
-    selected.value = result.value.entries.find(entry => entry.id === current) ?? result.value.entries[0];
-  } catch (cause) {
-    result.value = {...result.value,entries:[],total:0,page:0,authors:[]}; selected.value = undefined;
-    error.value = typeof cause === 'string' ? cause : cause instanceof Error?cause.message:'No se pudo consultar la bitácora. Vuelve a intentar.';
-  } finally { busy.value = false; }
-}
-function apply() { applied.value = {...filters}; void load(0); }
-function clear() { Object.assign(filters,{query:'',operation:'',authorId:'',orderId:'',from:'',to:''}); apply(); }
-function orderHistory(orderId:string){Object.assign(filters,{query:'',operation:'',authorId:'',orderId,from:'',to:''});tab.value='history';apply();}
-function date(value: string | null) {
-  if (!value) return 'Sin fecha de registro';
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : new Intl.DateTimeFormat(company.value.locale,{timeZone:company.value.timezone,dateStyle:'medium',timeStyle:'short'}).format(parsed);
-}
-function description(entry: LogbookEntry) {
-  return entryChanges(entry).map(change => logbookFields[change.field] ?? 'Campo actualizado').join(' · ') || 'Operación del sistema';
-}
-onMounted(() => load(0));
+const {company,tab,filters,result,selected,busy,error,changes,pages,hasFilters,load,apply,clear,orderHistory,date,description,logbookFields,logbookOperations,logbookValue}=useLogbookWorkspace();
+
 </script>
 
 <template>

@@ -1,4 +1,4 @@
-import type { Tone } from "../types/order";
+import type { Tone } from "../types/order.ts";
 
 export const orderStatuses: { label: string; tone: Tone }[] = [
   { label: "En diagnóstico", tone: "d-blue" },

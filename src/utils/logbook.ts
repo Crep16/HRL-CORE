@@ -1,6 +1,7 @@
-import type { LogbookChange, LogbookEntry } from '../types/logbook';
+import type { LogbookChange, LogbookEntry } from '../types/logbook.ts';
 
 export const logbookOperations: Record<string, string> = {
+  'repairs.save':'Detalle del seguimiento guardado',
   'evidence.add':'Foto de evidencia agregada','evidence.edit':'Descripción de evidencia modificada','evidence.delete':'Foto de evidencia retirada','evidence.restore':'Foto de evidencia restaurada',
   'access.temporary.start':'Acceso temporal autorizado','access.temporary.use':'Autorización temporal utilizada','access.temporary.end':'Acceso temporal finalizado',
   'payments.refund':'Saldo a favor devuelto','payments.adjust':'Abono corregido',
@@ -39,7 +40,7 @@ export function entryChanges(entry: LogbookEntry): LogbookChange[] {
 }
 export function logbookValue(field: string, value: unknown, currency: string, locale: string): string {
   if (value === null || value === undefined || value === '') return 'Sin registrar';
-  if (field === 'price_minor' || field === 'amount_minor'||field==='direct_cost_minor') return new Intl.NumberFormat(locale,{style:'currency',currency}).format(Number(value)/100);
+  if (['price_minor','amount_minor','direct_cost_minor','amountMinor','priceMinor'].includes(field)||field.endsWith('.priceMinor')) return new Intl.NumberFormat(locale,{style:'currency',currency}).format(Number(value)/100);
   if (typeof value === 'boolean') return value ? 'Sí' : 'No';
   if (field==='temporaryScope') return ({clients:'Clientes',repairs:'Reparaciones',logbook:'Bitácora',company:'Empresa',users:'Usuarios'} as Record<string,string>)[String(value)]??String(value);
   if ((field==='temporaryOperation'||field==='temporaryOperations')&&typeof value==='string') return logbookOperations[value]??value;

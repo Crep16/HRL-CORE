@@ -1,4 +1,4 @@
-import type { Order } from "../types/order";
+import type { Order } from "../types/order.ts";
 
 type OrderBase = Pick<Order, "id" | "client" | "serial" | "status"> & Partial<Order>;
 

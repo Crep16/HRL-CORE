@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import OrderForm from "./OrderForm.vue";
-import OrderSidePanel from "./OrderSidePanel.vue";
+import OrderForm from "./LegacyOrderForm.vue";
+import OrderSidePanel from "./LegacyOrderSidePanel.vue";
 import AppIcon from '../ui/AppIcon.vue';
 import type { Order } from "../../types/order";
 import { useAccess } from '../../composables/useAccess';

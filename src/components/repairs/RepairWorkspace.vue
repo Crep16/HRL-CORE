@@ -1,86 +1,13 @@
-﻿<script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+<script setup lang="ts">
 import SearchSelect from '../ui/SearchSelect.vue';
 import AppNotice from '../ui/AppNotice.vue';
 import PaymentsPanel from './PaymentsPanel.vue';
-import { invoke } from '@tauri-apps/api/core';
-import { defaultStageOptions, includeRepairStage } from '../../composables/useRepair';
 import type { Order } from '../../types/order';
-import { useRepairWorkspace } from '../../composables/useRepairWorkspace';
-import { useAccess } from '../../composables/useAccess';
-import { useCompany } from '../../composables/useCompany';
-import { companyDateTime } from '../../utils/companyDate';
-import { orderDisplayStatus } from '../../utils/orderStatus';
+import { useRepairScreen } from '../../composables/useRepairScreen';
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ back: []; saved: [] }>();
-const { repair, payment, save, commit, message, busy:repairBusy, ready, dirty, reload } = useRepairWorkspace(props.order.id, () => emit('saved'));
-const moneyBusy=ref(false);
-const busy=computed(()=>repairBusy.value||moneyBusy.value);
-const { can } = useAccess();
-const newNote = ref('');
-const { company } = useCompany();
+const {repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus}=useRepairScreen(props,emit);
 defineExpose({ save });
-const stages = computed(() => repair.value.stages);
-const savedStages = ref<string[]>([]);
-const customStage = ref(false);
-const customStageName = ref('');
-const stageOptions = computed(() => {
-  const names = [...defaultStageOptions, ...savedStages.value, ...stages.value];
-  return names.filter((name, index) => names.findIndex(item => item.toLocaleLowerCase('es') === name.toLocaleLowerCase('es')) === index);
-});
-onMounted(async () => {
-  try { savedStages.value = await invoke<string[]>('list_repair_stages',{orderId:props.order.id}); }
-  catch { message.value = 'No se pudieron cargar las etapas guardadas. Puedes usar las opciones predeterminadas o escribir una personalizada.'; }
-});
-const noteType = ref<'publicNote' | 'internalNote'>('publicNote');
-const title = ref('');
-const detail = ref('');
-const stage = ref('Reparación');
-const publicEvent = ref(true);
-const workspaceTab = ref<'work' | 'history'>('work');
-const now = () => companyDateTime(company.value.timezone);
-const date = ref(now());
-const addingWarranty = ref(false);
-const warranty = ref('');
-const warrantyType = ref<'parts' | 'labor'>('parts');
-const days = ref(company.value.partsDays);
-const addingPart = ref(false);
-const part = ref('');
-const price = ref(0);
-const money = (value: number) => new Intl.NumberFormat(company.value.locale, { style:'currency', currency:props.order.currency ?? company.value.currency }).format(value);
-const nextEventId = () => repair.value.events.reduce((id, event) => Math.max(id, event.id), Date.now() - 1) + 1;
-async function addEvent() {
-  if (!title.value.trim() || !can('notes.add')) return;
-  const name = (customStage.value ? customStageName.value : stage.value).trim();
-  if (!name) { message.value = 'Selecciona o escribe una etapa.'; return; }
-  try {
-    if (await commit(next => {
-      const selected = includeRepairStage(next, name);
-      next.events.unshift({ id:nextEventId(), date:date.value, title:title.value.trim(), detail:detail.value, stage:selected, public:publicEvent.value });
-    })) {
-      savedStages.value.push(name); stage.value = name; title.value = ''; detail.value = '';
-      customStage.value = false; customStageName.value = '';
-    }
-  } catch (cause) { message.value = cause instanceof Error ? cause.message : 'No se pudo agregar la etapa.'; }
-}
-async function complete() {
-  if (repair.value.completed >= stages.value.length || !can('stages.advance')) return;
-  await commit(next => { next.events.unshift({ id:nextEventId(), date:now(), title:`${next.stages[next.completed]}: etapa completada`, detail:'', stage:next.stages[next.completed]!, public:true }); next.completed++; });
-}
-async function addWarranty() {
-  if (!warranty.value.trim() || !can('warranties.add')) return;
-  if (await commit(next => next.warranties.push({ name:warranty.value.trim(), days:days.value }))) { warranty.value=''; addingWarranty.value=false; }
-}
-async function addPart() {
-  if (!part.value.trim() || !can('parts.add')) return;
-  if (await commit(next => next.parts.push({ name:part.value.trim(), price:price.value }))) { part.value=''; price.value=0; addingPart.value=false; }
-}
-async function appendNote() {
-  if (!newNote.value.trim() || !can('notes.add')) return;
-  const text = newNote.value.trim();
-  if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
-}
-async function back() { if (await save()) emit('back'); }
 </script>
 
 <template>
@@ -98,7 +25,7 @@ async function back() { if (await save()) emit('back'); }
           </details>
           <div class="fld"><label for="technician">Técnico</label><input id="technician" v-model="repair.technician" :readonly="!can('repairs.edit') || !ready || busy" placeholder="Sin asignar" /></div>
         </section>
-        <PaymentsPanel :order-id="order.id" :currency="order.currency??company.currency" :payment="payment" :disabled="busy||!ready" :prepare="save" @refreshed="payment=$event" @working="moneyBusy=$event" @saved="async result=>{payment=result;await reload();emit('saved');}" />
+        <PaymentsPanel :order-id="String(order.databaseId)" :currency="order.currency??company.currency" :payment="payment" :disabled="busy||!ready" :prepare="save" @refreshed="payment=$event" @working="moneyBusy=$event" @saved="async result=>{payment=result;await reload();emit('saved');}" />
       </aside>
       <section class="sheet" aria-label="Gestión de la reparación">
         <div class="sh-h"><div><h1 class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" :disabled="!ready || busy || !dirty" @click="save">Guardar cambios</button></div></div>

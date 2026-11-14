@@ -1,34 +1,24 @@
-import { computed, ref } from 'vue';
-import { invoke,isTauri } from '@tauri-apps/api/core';
-import type { CompanySettings } from '../types/company';
-import type { Order } from '../types/order';
-
-const key = 'hrl.company.v1';
+import { computed } from 'vue';
+import { useCompanyStore } from '../stores/useCompanyStore.ts';
+import type { CompanySettings } from '../types/company.ts';
+import type { Order } from '../types/order.ts';
 export function defaultCompany(): CompanySettings {
   return {
-    name: 'Héctor Refacciones Laptop', taxId: '', phone: '', whatsapp: '', email: '', website: '', address: '', hours: '',
+    name: '', taxId: '', phone: '', whatsapp: '', email: '', website: '', address: '', hours: '',
     logo: '', logoName: '', logoPrint: true, logoWeb: true,
     entryFooter: 'Conserva esta nota para recoger tu equipo.',
     exitFooter: 'Gracias por tu confianza. La garantía aplica presentando esta nota.',
     printAddress: true, signature: true, webReference: false,
-    clauses: [
-      { id: 'diagnosis', title: 'Diagnóstico con costo', text: 'Si el cliente no autoriza la reparación, el diagnóstico tiene un costo de $150.', entry: true, exit: false },
-      { id: 'backup', title: 'Respaldo de información', text: 'El taller no se hace responsable por la pérdida de información. Se recomienda respaldar antes de dejar el equipo.', entry: true, exit: true },
-      { id: 'unclaimed', title: 'Equipos no reclamados', text: 'Si el equipo no se recoge en 30 días después de avisar que está listo, se cobran $20 por día de almacenaje.', entry: true, exit: true },
-      { id: 'warranty', title: 'Alcance de la garantía', text: 'La garantía cubre solo la falla reparada y se pierde por golpes, humedad o manipulación de terceros.', entry: false, exit: true },
-      { id: 'receipt', title: 'Presentar la nota', text: 'Presenta esta nota al recoger tu equipo.', entry: false, exit: false },
-    ],
+    clauses: [],
     clausePosition: 'foot', numberClauses: true,
     paper: 'letter', orientation: 'portrait', copies: 2,
-    prefix: 'ORD-', nextNumber: 12, laborDays: 30, partsDays: 90,
+    prefix: 'ORD-', nextNumber: 1, laborDays: 30, partsDays: 90,
     country: 'México', locale: 'es-MX', currency: 'MXN', timezone: 'America/Cancun',
     showTax: false, taxRate: 16, taxName: 'IVA',
   };
 }
 export const cloneCompany = (value: CompanySettings): CompanySettings => JSON.parse(JSON.stringify(value));
-const settings = ref(defaultCompany());
-const storageError = ref('');
-let loaded = false;
+
 
 export function companyErrors(value: CompanySettings): string[] {
   const errors: string[] = [];
@@ -50,56 +40,16 @@ export function companyErrors(value: CompanySettings): string[] {
   return errors;
 }
 
-function validStored(value: unknown): value is CompanySettings {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const v = value as Record<string, unknown>;
-  const defaults = defaultCompany();
-  if (!Object.entries(defaults).every(([name, sample]) => Array.isArray(sample) ? Array.isArray(v[name]) : typeof v[name] === typeof sample)) return false;
-  if (!['letter', 'ticket', 'ticket60'].includes(String(v.paper)) || !['portrait', 'landscape'].includes(String(v.orientation)) || !['foot', 'back'].includes(String(v.clausePosition))) return false;
-  if (!['es-MX', 'en-US', 'es-ES'].includes(String(v.locale)) || !['MXN', 'USD', 'EUR'].includes(String(v.currency))) return false;
-  if (v.logo && !/^data:image\/(png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(String(v.logo))) return false;
-  if (!(v.clauses as unknown[]).every(c => c && typeof c === 'object' && ['id', 'title', 'text'].every(k => typeof (c as Record<string,unknown>)[k] === 'string') && typeof (c as Record<string,unknown>).entry === 'boolean' && typeof (c as Record<string,unknown>).exit === 'boolean')) return false;
-  try { new Intl.DateTimeFormat('es-MX', {timeZone: String(v.timezone)}); return companyErrors(value as CompanySettings).length === 0; } catch { return false; }
-}
 
 export function useCompany() {
-  if (!loaded) {
-    loaded = true;
-    try {
-      const stored = localStorage.getItem(key);
-      if (stored) {
-        const value: unknown = JSON.parse(stored);
-        if (value && typeof value==='object' && 'paper' in value && value.paper==='half') value.paper='letter';
-        if (!validStored(value)) throw new Error(); settings.value = value;
-      }
-    } catch { storageError.value = 'No se pudo recuperar la configuración de Empresa. Revisa los datos antes de guardar.'; }
-  }
-  function saveCompany(value: CompanySettings): boolean {
-    try {
-      if (companyErrors(value).length) return false;
-      const copy = cloneCompany(value);
-      localStorage.setItem(key, JSON.stringify(copy));
-      settings.value = copy;
-      storageError.value = '';
-      return true;
-    } catch { storageError.value = 'No se pudo guardar la configuración. Revisa el espacio disponible e inténtalo de nuevo; tus cambios siguen en pantalla.'; return false; }
-  }
-  async function loadPersistedCompany(){
-    if(!isTauri())return true;
-    try{const value=await invoke<CompanySettings|null>('load_company_settings');if(value){if(!validStored(value))throw new Error('La configuración guardada necesita revisión.');settings.value=cloneCompany(value);}storageError.value='';return true;}
-    catch(cause){storageError.value=typeof cause==='string'?cause:'No se pudo consultar Empresa en la base local.';return false;}
-  }
-  async function persistCompany(value:CompanySettings){
-    if(!isTauri())return saveCompany(value);
-    if(companyErrors(value).length)return false;
-    const copy=cloneCompany(value);
-    try{await invoke('save_company_settings',{value:copy,expected:cloneCompany(settings.value)});settings.value=copy;storageError.value='';try{localStorage.setItem(key,JSON.stringify(copy));}catch{/* SQLite conserva la configuración aunque falle la copia local. */}return true;}
-    catch(cause){storageError.value=typeof cause==='string'?cause:'No se pudo guardar Empresa y su historial.';return false;}
-  }
-  const nextFolio = computed(() => formatFolio(settings.value.prefix, settings.value.nextNumber));
-  return { company: settings, companyStorageError: storageError, saveCompany, persistCompany, loadPersistedCompany, nextFolio };
+  const store = useCompanyStore();
+  const defaults = defaultCompany();
+  const company = computed(() => store.settings ?? defaults);
+  const companyStorageError = computed(() => store.error?.message ?? '');
+  async function loadPersistedCompany() { try { await store.load(); return true; } catch { return false; } }
+  async function persistCompany(value: CompanySettings) { if (companyErrors(value).length) return false; try { await store.save(cloneCompany(value)); return true; } catch { return false; } }
+  return { company, companyStorageError, persistCompany, saveCompany: persistCompany, loadPersistedCompany, nextFolio: computed(() => formatFolio(company.value.prefix, company.value.nextNumber)) };
 }
-
 export const formatFolio = (prefix: string, number: number) => `${prefix}${String(number).padStart(3, '0')}`;
 export function nextAvailableNumber(company: CompanySettings, orders: Order[]): number {
   const ids = new Set(orders.map(order => order.id));

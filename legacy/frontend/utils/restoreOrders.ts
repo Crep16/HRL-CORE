@@ -1,4 +1,4 @@
-import type { Order } from '../types/order';
+import type { Order } from '../types/order.ts';
 
 export function restoreOrders(raw: string): Order[] {
   const parsed: unknown = JSON.parse(raw);

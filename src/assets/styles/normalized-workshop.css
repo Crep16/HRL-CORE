@@ -1,0 +1,103 @@
+.normalized-workshop { font-family: var(--body); }
+#app-notices { position:fixed;right:20px;bottom:20px;z-index:1000;display:grid;justify-items:end;gap:10px;max-width:min(560px,calc(100vw - 40px));max-height:calc(100vh - 40px);overflow:auto;pointer-events:none; }
+.workshop-heading { display:flex;align-items:center;gap:10px;color:#fff;font-size:15px;min-width:0; }
+.normalized-workshop .notice { flex-wrap:wrap;gap:12px; }
+.normalized-workshop .workshop-error { background:#fff0ee;color:#91251d; }
+.normalized-workshop .workshop-list-error { color:#91251d; }
+.normalized-workshop .workshop-warning { background:#fff5d9;color:#714311; }
+.normalized-workshop .workshop-warning p { margin:0; }
+.normalized-workshop .rail { overflow-wrap:anywhere; }
+.normalized-workshop .order-lookup { display:grid;gap:12px;border-top:1px solid var(--line2);padding-top:16px; }
+.normalized-workshop .order-balance { margin:0; }
+.normalized-workshop .history-check { display:flex;flex-direction:row-reverse;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:44px;font-size:14px;font-weight:600;cursor:pointer; }
+.normalized-workshop .history-check input { width:18px;height:18px;flex:none;accent-color:var(--acc); }
+.normalized-workshop .order-balance dd { margin:0;text-align:right; }
+.normalized-workshop .status-value { display:flex;align-items:center;gap:4px;margin:0; }
+.reception-details{font-size:13px;color:var(--muted)}
+.normalized-reception .repa .facts{flex-direction:column;align-items:flex-start}
+.reception-details>summary{min-height:32px;padding-block:7px;cursor:pointer;font-weight:600}
+.reception-details[open]>summary{margin-bottom:8px}
+.damage-details{display:grid;gap:10px;padding:10px;border:1px solid var(--line);border-radius:8px}
+.normalized-workshop .evidence-section>summary{font-size:16px;font-weight:600;cursor:pointer;padding-block:8px}
+.normalized-workshop .evidence-section[open]>summary{margin-bottom:12px}
+.normalized-workshop .navgrp button:disabled{color:var(--muted);cursor:not-allowed}
+.normalized-workshop .num { overflow-wrap:anywhere; }
+.normalized-workshop .orow .o-top,.normalized-workshop .orow .o-bot { flex-wrap:nowrap; }
+.normalized-workshop .orow .o-id { max-width:55%;overflow:hidden;text-overflow:ellipsis; }
+.normalized-workshop .stored-device-password input::-ms-reveal { display:none; }
+.workshop-dialog { width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow-y:auto;margin:auto;padding:24px;border:1px solid var(--line2);border-radius:14px;background:#fff;color:var(--ink);font-family:var(--body);box-shadow:0 18px 40px -12px #12222d55; }
+.workshop-dialog::backdrop { background:#12222d80; }
+.workshop-dialog h2 { margin:0;font:600 24px/1.2 var(--disp); }
+.workshop-dialog p { font-size:14px;line-height:1.5; }
+.workshop-dialog header,.workshop-dialog footer { display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px; }
+.workshop-dialog footer { justify-content:flex-end;margin-top:20px; }
+.workshop-dialog .btn { white-space:normal; }
+.workshop-dialog fieldset { display:grid;gap:16px;min-width:0;margin:0;padding:0;border:0; }
+.workshop-dialog label { display:block;margin-bottom:6px;font-size:14px;font-weight:600; }
+.workshop-dialog input,.workshop-dialog textarea,.workshop-dialog select { width:100%;min-width:0;min-height:44px;border:1px solid var(--line2);border-radius:6px;padding:9px 11px;font:inherit;color:var(--ink);background:white; }
+.workshop-dialog textarea { resize:vertical; }
+.workshop-dialog .workshop-error { border:1px solid #ce7a70;background:#fff0ee;color:#91251d;padding:12px;border-radius:6px; }
+.workshop-dialog .workshop-status { color:var(--acc-ink); }
+.workshop-danger { background:#91251d;color:white; }
+.normalized-workshop .empty-work { min-height:240px; }
+.normalized-workshop .empty-work p { line-height:1.5; }
+.app .top.reception-header { display:flex;flex-wrap:wrap; }
+.reception-header .workshop-heading { flex:1;min-height:44px; }
+.reception-header .header-actions,.reception-header .header-session { grid-column:auto; }
+.workshop-dialog.order-history-dialog { width:min(1180px,calc(100vw - 32px));background:var(--bench); }
+.history-layout { display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;margin-top:20px;align-items:start; }
+.history-layout h3 { margin:0;font:600 21px/1.3 var(--body); }
+.history-layout h4 { margin:20px 0 12px;font-size:16px; }
+.history-movements,.history-detail { min-width:0;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden; }
+.history-movements>header { padding:20px; }
+.history-movements>header span { font-size:13px;color:var(--muted); }
+.history-table-scroll { overflow:auto;max-height:55dvh; }
+.history-table { width:100%;border-collapse:collapse;font-size:14px;line-height:1.5; }
+.history-table th { background:var(--tint);color:var(--muted);font-size:13px;text-align:left; }
+.history-table th,.history-table td { padding:12px 16px;border-block:1px solid var(--line);vertical-align:top;overflow-wrap:anywhere; }
+.history-table tr.selected { background:var(--acc-soft); }
+.history-select { padding:0;min-height:44px;border:0;background:transparent;color:var(--acc-ink);font:600 14px/1.5 var(--body);text-align:left; }
+.history-select small { display:block;font-size:12px;color:var(--ink);font-weight:500;margin-top:8px; }
+.history-select:hover { text-decoration:underline; }
+.history-detail { padding:20px;overflow-wrap:anywhere; }
+.history-facts { margin:16px 0;display:grid;gap:10px;font-size:14px; }
+.history-facts>div { display:grid;grid-template-columns:minmax(90px,1fr) minmax(0,1.5fr);gap:12px; }
+.history-facts dt,.history-change dt { color:var(--muted); }
+.history-facts dd { margin:0;font-weight:600; }
+.history-change { border-top:1px solid var(--line); }
+.history-change dl { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 20px; }
+.history-change dl>div { padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--tint);font-size:14px; }
+.history-change dt { font-size:13px;font-weight:600; }
+.history-change dd { margin:8px 0 0;white-space:pre-wrap; }
+.history-detail>.help { border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px; }
+@media (min-width:1101px) {
+  .normalized-workshop .form { grid-template-areas:"client equipment" "work equipment" "notes equipment"; }
+  .normalized-workshop .form>.client-block { grid-area:client; }
+  .normalized-workshop .form>.equipment-block { grid-area:equipment; }
+  .normalized-workshop .form>.work-block { grid-area:work; }
+  .normalized-workshop .form>.notes-block { grid-area:notes; }
+}
+@media (min-width:1440px) {
+  .normalized-workshop .reception>.rail { flex-basis:334px;padding-left:22px;padding-right:14px; }
+  .normalized-workshop .reception .side { flex-basis:294px;padding:20px; }
+  .normalized-workshop .rail-h { flex-wrap:nowrap; }
+  .normalized-workshop .company-workspace { padding-inline:28px; }
+  .normalized-workshop .company-layout { grid-template-columns:250px minmax(380px,1.15fr) minmax(340px,1fr);gap:24px; }
+  .normalized-workshop .company-nav button.active { border-color:var(--acc); }
+  .normalized-workshop .users-workspace { padding-inline:28px; }
+  .normalized-workshop .users-layout { grid-template-columns:310px minmax(0,1fr);gap:24px; }
+}
+@media (max-width:900px) { .history-layout { grid-template-columns:minmax(0,1fr); } }
+@media (max-width:1100px) { .normalized-workshop .form { flex-basis:100%; } }
+@media (min-width:1101px) and (max-width:1200px) { .normalized-workshop .reception .side { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:760px) { .normalized-workshop .workshop-heading { padding-block:4px; } .normalized-workshop .side { display:flex; } .workshop-dialog { padding:20px; } }
+@media (max-width:760px) {
+  .reception-header .header-actions,.reception-header .header-session { flex-basis:100%; }
+  .normalized-workshop .btn { min-height:44px; }
+  .history-table th,.history-table td { padding:10px; }
+}
+.normalized-workshop .seg button {
+  flex: 1 1 auto;
+  padding-inline: 5px;
+  white-space: nowrap;
+}

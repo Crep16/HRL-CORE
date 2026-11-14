@@ -1,1 +1,15 @@
-@import "tailwindcss";
+@layer theme, base, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+  html { font-family: 'Segoe UI', system-ui, sans-serif; font-size: 16px; line-height: 1.5; }
+  body { margin: 0; min-width: 320px; color: #12222d; background: #e7ecf0; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button, input, select, textarea { font: inherit; }
+  button { cursor: pointer; }
+  button:disabled { cursor: default; }
+}
+.window-profile-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 24px; background: #fff0ee; color: #91251d; }
+.window-profile-notice button { min-height: 44px; border: 1px solid currentColor; border-radius: 6px; padding: 8px 12px; background: white; color: inherit; }
+.window-profile-notice button:focus-visible { outline: 3px solid #1b72ad; outline-offset: 3px; }

@@ -15,6 +15,13 @@
 .access-shell .access-prototype{padding-top:12px;margin-top:16px;font-size:12px}
 .access-fields{border:0;padding:0;margin:0;min-width:0;display:grid;gap:16px}.access-shell button:disabled{cursor:wait;opacity:.65}
 .company-permission-fields{display:contents}
+.access-main{min-width:0}
+.access-field textarea{width:100%;min-width:0;padding:9px 11px;border:1px solid var(--access-border);border-radius:6px;background:#fff;color:var(--access-ink);font:inherit;line-height:1.5;resize:vertical;overflow-wrap:anywhere}
+.access-shell textarea:focus-visible{outline:3px solid #1b72ad;outline-offset:3px}
+.access-recovery{display:grid;gap:16px;padding-bottom:24px}
+.access-recovery .access-lead{margin:0}
+.access-feedback{margin-bottom:12px}
+.access-shell .access-failure{background:#fff0ee;color:#91251d;border:1px solid #ce7a70}
 .access-brand{height:82px;padding:16px 28px;display:flex;align-items:center;gap:18px;border-bottom:1px solid #d5dde4;background:#fff}
 .access-brand img{object-fit:contain}.access-brand strong,.access-brand span{display:block}.access-brand span{font-size:14px;color:var(--access-muted)}
 .access-layout{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:calc(100dvh - 82px)}

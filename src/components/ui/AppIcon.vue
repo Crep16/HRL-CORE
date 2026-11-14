@@ -3,6 +3,7 @@ defineProps<{ name: string }>();
 const paths: Record<string, string> = {
   search: 'M18 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0ZM16 16l5 5',
   add: 'M12 5v14M5 12h14',
+  edit: 'M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z',
   save: 'M4 3h13l4 4v14H3V3h1ZM7 3v6h10V3M7 21v-8h10v8',
   clients: 'M5 3h14v18H5zM2 7h4M2 12h4M2 17h4M9 17v-1a3 3 0 0 1 6 0v1M14 9a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z',
   logbook: 'M4 3h16v18H4zM8 3v18M11 8h6M11 12h6M11 16h4',

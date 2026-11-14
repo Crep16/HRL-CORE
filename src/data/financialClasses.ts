@@ -1,0 +1,1 @@
+export const financialClasses:Record<string,string>={all:'Todas',incomplete:'Incompletas',completed:'Completadas',paid_uncollected:'Pagadas sin entregar',delivered_unpaid:'Entregadas con saldo pendiente',pending:'Sin liquidar ni entregar'};

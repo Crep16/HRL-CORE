@@ -1,51 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, reactive, ref } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
-import { useAccess } from '../../composables/useAccess';
-import AppIcon from '../ui/AppIcon.vue';
-import SearchSelect from '../ui/SearchSelect.vue';
-import AppNotice from '../ui/AppNotice.vue';
-type Grant = { section: string; action: string };
-type Account = { id: string; name: string; accessLevel: string; active: boolean; permissions: Grant[] };
-const { refresh, user } = useAccess();
-const accounts = ref<Account[]>([]);
-const search = ref('');
-const busy = ref(false);
-const loaded = ref(false);
-const message = ref('');
-const failed = ref(false);
-const selectedGrants = ref<string[]>([]);
-const empty = () => ({ id: null as string | null, name: '', password: '', confirmation: '', masterPassword: '', accessLevel: 'limited', active: true });
-const draft = reactive(empty());
-const sections = [{ id: 'clients', name: 'Clientes' }, { id: 'repairs', name: 'Reparaciones' }, { id: 'logbook', name: 'Bitácora' }, { id: 'company', name: 'Empresa' }];
-const actions = [{ id: 'view', name: 'Visualizar' }, { id: 'create', name: 'Crear' }, { id: 'edit', name: 'Editar' }, { id: 'delete', name: 'Borrar' }];
-const roles: Record<string, string> = { complete: 'Completo', limited: 'Limitado', custom: 'Personalizado' };
-const filtered = computed(() => {
-  const text = search.value.trim().toLocaleLowerCase('es');
-  return accounts.value.filter(account => `${account.name} ${roles[account.accessLevel]}`.toLocaleLowerCase('es').includes(text));
-});
-async function load() {
-  busy.value = true;
-  try { accounts.value = await invoke<Account[]>('list_users'); loaded.value = true; }
-  catch (cause) { message.value = String(cause); failed.value = true; }
-  finally { busy.value = false; }
-}
-onMounted(load);
-function clear() { Object.assign(draft, empty()); selectedGrants.value = []; message.value = ''; failed.value = false; }
-function focusName() { nextTick(() => document.getElementById('user-name')?.focus()); }
-function newAccount() { clear(); focusName(); }
-function edit(account: Account) { clear(); Object.assign(draft, { id: account.id, name: account.name, accessLevel: account.accessLevel, active: account.active }); selectedGrants.value = account.permissions.map(g => `${g.section}:${g.action}`); focusName(); }
-async function retry() { message.value = ''; failed.value = false; await load(); }
-async function save() {
-  if (busy.value) return;
-  busy.value = true; message.value = ''; failed.value = false;
-  try {
-    await invoke('save_user', { input: { ...draft, permissions: selectedGrants.value.map(value => { const [section, action] = value.split(':'); return { section, action }; }) } });
-    clear(); message.value = 'Cuenta y permisos guardados en este equipo.';
-    await refresh(); await load();
-  } catch (cause) { message.value = String(cause); failed.value = true; }
-  finally { draft.password = ''; draft.confirmation = ''; draft.masterPassword = ''; busy.value = false; }
-}
+import AppIcon from "../ui/AppIcon.vue";
+import SearchSelect from "../ui/SearchSelect.vue";
+import AppNotice from "../ui/AppNotice.vue";
+import { useUsersWorkspace } from "../../composables/useUsersWorkspace";
+const { accounts, busy, user, search, loaded, message, failed, selectedGrants, draft, sections, actions, roles, filtered, newAccount, edit, retry, save } = useUsersWorkspace();
 </script>
 
 <template>
@@ -99,7 +57,7 @@ async function save() {
                 </template>
                 <template v-else-if="draft.accessLevel === 'complete'"><p class="users-role-title">Acceso completo</p><p>Sin restricciones de acceso. Puede administrar las cuentas y sus permisos.</p><div class="users-rule"><AppIcon name="users" /><span>Siempre debe conservarse al menos un administrador activo.</span></div></template>
                 <template v-else><p class="users-role-title">Acceso limitado</p><ul class="users-role-list"><li>Consultar todas las órdenes y sus datos.</li><li>Registrar nuevas recepciones y avances técnicos.</li><li>Sin edición ni borrado de órdenes.</li></ul></template>
-                <fieldset v-if="draft.accessLevel!=='complete'" class="users-money-permissions"><legend>Operaciones de dinero</legend><p>Estos permisos son independientes de Editar en Reparaciones.</p><label><input v-model="selectedGrants" type="checkbox" value="payments:add"> Registrar abonos</label><label><input v-model="selectedGrants" type="checkbox" value="payments:refund"> Devolver todo el saldo a favor</label><p>Solo el acceso Completo puede corregir abonos.</p></fieldset>
+                <details v-if="draft.accessLevel!=='complete'" class="users-money-permissions"><summary>Operaciones de dinero</summary><p>Estos permisos son independientes de Editar en Reparaciones.</p><label><input v-model="selectedGrants" type="checkbox" value="payments:add"> Registrar abonos</label><label><input v-model="selectedGrants" type="checkbox" value="payments:refund"> Devolver todo el saldo a favor</label><p>Solo el acceso Completo puede corregir abonos.</p></details>
               </section>
             </div>
             <footer class="users-save-bar">

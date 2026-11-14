@@ -1,5 +1,5 @@
-import type { CompanySettings } from '../types/company';
-import { printLayout } from './printLayout';
+import type { CompanySettings } from '../types/company.ts';
+import { printLayout } from './printLayout.ts';
 
 // Split overflowing notes at DOM/text boundaries so both copies remain readable.
 function textSlice(source: HTMLElement, start: number, end: number): HTMLElement {

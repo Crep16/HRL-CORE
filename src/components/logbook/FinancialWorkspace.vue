@@ -1,31 +1,10 @@
 <script setup lang="ts">
-import { computed,onMounted,reactive,ref,watch } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
 import SearchSelect from '../ui/SearchSelect.vue';
 import AppNotice from '../ui/AppNotice.vue';
-import { useCompany } from '../../composables/useCompany';
-import { useAccess } from '../../composables/useAccess';
-import type { FinancialFilters,FinancialOrder } from '../../types/finances';
-import { financialClasses,filterFinancialOrders,financialTotals,calendarDate } from '../../utils/finances';
+import { useFinancialWorkspace } from '../../composables/useFinancialWorkspace';
 const emit=defineEmits<{history:[orderId:string]}>();
-const {company}=useCompany();const {can}=useAccess();
-const orders=ref<FinancialOrder[]>([]),busy=ref(false),error=ref(''),message=ref('');
-const filters=reactive<FinancialFilters>({query:'',classification:'all',dateBasis:'received',from:'',to:'',scope:'active'});
-const page=ref(0),selectedId=ref('');
-const validRange=computed(()=>!filters.from||!filters.to||filters.from<=filters.to);
-const filtered=computed(()=>validRange.value?filterFinancialOrders(orders.value,filters,company.value.timezone):[]);
-const totals=computed(()=>financialTotals(filtered.value,filters,company.value.timezone));
-const visible=computed(()=>filtered.value.slice(page.value*50,(page.value+1)*50));
-const selected=computed(()=>visible.value.find(order=>order.id===selectedId.value)??visible.value[0]);
-const cost=reactive({description:'',amount:0,reason:''});
-watch(()=>selected.value?.id,()=>{Object.assign(cost,{description:'',amount:0,reason:''});message.value='';});
-watch(()=>filtered.value.length,length=>{page.value=Math.min(page.value,Math.max(0,Math.ceil(length/50)-1));});
-watch(filters,()=>{page.value=0;},{deep:true});
-function money(value:number,currency:string){return new Intl.NumberFormat(company.value.locale,{style:'currency',currency}).format(value/100);}
-function date(value:string|null){return calendarDate(value,company.value.timezone)||'Sin fecha disponible';}
-async function load(){if(busy.value)return;busy.value=true;error.value='';try{orders.value=await invoke<FinancialOrder[]>('list_order_finances');}catch(cause){orders.value=[];error.value=typeof cause==='string'?cause:'No se pudo consultar el resumen financiero.';}finally{busy.value=false;}}
-async function addCost(){if(!selected.value||busy.value)return;const id=selected.value.id;const amountMinor=Math.round(cost.amount*100);if(!Number.isFinite(cost.amount)||amountMinor<=0||Math.abs(cost.amount*100-amountMinor)>.0001){message.value='El importe debe ser positivo y tener hasta dos decimales.';return;}busy.value=true;message.value='';try{await invoke('add_direct_expense',{orderId:id,description:cost.description,amountMinor,reason:cost.reason});Object.assign(cost,{description:'',amount:0,reason:''});message.value='Costo directo registrado y agregado al historial.';}catch(cause){message.value=String(cause);}finally{busy.value=false;}await load();}
-onMounted(load);
+const {can,busy,error,message,filters,page,selectedId,validRange,filtered,totals,visible,selected,cost,money,date,load,addCost,financialClasses}=useFinancialWorkspace();
+
 </script>
 <template>
  <section class="financial-workspace" aria-labelledby="finance-title">
@@ -43,7 +22,8 @@ onMounted(load);
   <AppNotice v-if="busy" message="Consultando importes y movimientos…" :closable="false" /><AppNotice :message="error" tone="error"><button class="btn btn-s" @click="load">Reintentar</button></AppNotice><AppNotice :message="message" @dismiss="message=''" />
   <div v-for="group in totals" :key="group.currency" class="finance-totals">
    <h3>Totales filtrados · {{ group.currency }}</h3>
-   <dl><div v-for="(value,label) in {'Total de órdenes activas':group.total,'Cobros originales':group.received,'Ajustes de cobros':group.adjusted,'Devuelto':group.refunded,[filters.dateBasis==='payment'?'Cobro neto del periodo':'Cobro neto acumulado']:group.collected,'Saldo pendiente':group.balance,'Saldo a favor':group.credit,'Costos directos registrados':group.costs,'Ganancia estimada':group.profit,'Ganancia estimada de completadas':group.completedProfit}" :key="label"><dt>{{ label }}</dt><dd>{{ money(value,group.currency) }}</dd></div></dl>
+   <dl><div v-for="(value,label) in {'Total de órdenes activas':group.total,[filters.dateBasis==='payment'?'Cobrado en el periodo':'Cobrado acumulado']:group.collected,'Saldo pendiente':group.balance,'Costos directos registrados':group.costs,'Ganancia estimada':group.profit,'Ganancia estimada de completadas':group.completedProfit}" :key="label"><dt>{{ label }}</dt><dd>{{ money(value,group.currency) }}</dd></div></dl>
+   <details class="reception-details"><summary>Desglose de cobros y saldo a favor</summary><dl><div v-for="(value,label) in {'Cobros originales':group.received,'Ajustes de cobros':group.adjusted,'Devuelto':group.refunded,'Saldo a favor':group.credit}" :key="label"><dt>{{ label }}</dt><dd>{{ money(value,group.currency) }}</dd></div></dl></details>
    <p v-if="group.excludedCollected">Cobros rastreables de canceladas o papelera: {{ money(group.excludedCollected,group.currency) }}. Se excluyen de los totales de órdenes activas.</p>
   </div>
   <p class="finance-explanation">Las ganancias son provisionales: se calculan con los costos registrados y antes de gastos generales. {{ filters.dateBasis==='payment'?'El cobrado del periodo suma solo los movimientos de pago de esas fechas; el saldo y la ganancia usan el acumulado de cada orden.':'Lo cobrado es el acumulado real de las órdenes filtradas, no un ingreso atribuido a su fecha de recepción o entrega.' }} Los pagos sin fecha conocida no se asignan a un periodo.</p>

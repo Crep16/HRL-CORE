@@ -4,6 +4,7 @@ export type Tone = "d-blue" | "d-amber" | "d-teal" | "d-slate";
 
 export type Order = {
   id: string;
+  databaseId?: number;
   currency?: 'MXN' | 'USD' | 'EUR';
   client: string;
   phone: string;

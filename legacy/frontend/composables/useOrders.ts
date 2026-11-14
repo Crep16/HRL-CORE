@@ -1,9 +1,9 @@
 import { computed, onMounted, ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { restoreOrders } from '../utils/restoreOrders';
-import { useAccess } from './useAccess';
-import { useCompany } from './useCompany';
-import type { Order, SearchField } from '../types/order';
+import { restoreOrders } from '../utils/restoreOrders.ts';
+import { useAccess } from './useAccess.ts';
+import { useCompany } from './useCompany.ts';
+import type { Order, SearchField } from '../types/order.ts';
 
 export function useOrders() {
   const { company } = useCompany();

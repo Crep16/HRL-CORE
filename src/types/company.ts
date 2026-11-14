@@ -3,6 +3,7 @@ export const paperLabels = {letter:'Carta',ticket:'Ticket de 80 mm',ticket60:'Ti
 export type CompanySection = 'general' | 'logo' | 'notes' | 'clauses' | 'paper' | 'folios' | 'region';
 export type Clause = { id: string; title: string; text: string; entry: boolean; exit: boolean };
 export type CompanySettings = {
+  revision?: number;
   name: string; taxId: string; phone: string; whatsapp: string; email: string; website: string;
   address: string; hours: string;
   logo: string; logoName: string; logoPrint: boolean; logoWeb: boolean;

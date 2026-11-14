@@ -1,4 +1,4 @@
-import type { CompanySettings } from '../types/company';
+import type { CompanySettings } from '../types/company.ts';
 
 export function printLayout(settings: CompanySettings) {
   const ticket=settings.paper!=='letter';

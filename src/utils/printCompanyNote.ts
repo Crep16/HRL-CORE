@@ -1,7 +1,7 @@
 import noteCss from '../assets/styles/company-note.css?inline';
-import type { CompanySettings } from '../types/company';
-import { printLayout } from './printLayout';
-import { paginatePrintCopies } from './paginatePrintCopies';
+import type { CompanySettings } from '../types/company.ts';
+import { printLayout } from './printLayout.ts';
+import { paginatePrintCopies } from './paginatePrintCopies.ts';
 
 export async function printCompanyNote(note: HTMLElement, settings: CompanySettings) {
   const iframe = document.createElement('iframe');

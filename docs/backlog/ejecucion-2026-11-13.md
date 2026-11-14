@@ -74,3 +74,15 @@ La custodia exige ahora el archivo DPAPI existente cuando SQLite contiene creden
 La validación tras el retiro del backend anterior aprobó 92/92 pruebas Rust. La suite final aprobó 93/93, incluyendo el arranque ante custodia ausente/corrupta. El build y las 22 pruebas frontend aprobaron. El cambio de DTO conserva el resto de los campos del contrato. La presentación de identidad y etiquetas nuevas de Bitácora corresponde a HRL-99.
 
 El commit del backend normalizado integra la refactorización de backend previamente pendiente con las correcciones de esta continuación. Los cambios de frontend previos siguen en el árbol para su fase correspondiente.
+
+## Cierre de la Fase 4
+
+El backend se registró en `e6fe2a8`. Jira confirmó Terminado para HRL-97/98/100, HRL-108/109, HRL-120/121, HRL-135, HRL-131, HRL-180 y HRL-140, junto con sus tareas principales HRL-107 y HRL-119. La verificación con otra identidad Windows y el recorrido instalado siguen en HRL-132/141/181.
+
+El frontend activo tiene una única llamada a `invoke` en la capa API. Se archivaron diez archivos del frontend anterior y se retiró su dependencia del plugin SQL. Las quince pruebas `.mjs` previamente eliminadas se conservaron desde HEAD en `legacy/frontend/tests/`. Los datos de demostración están en ese archivo histórico, fuera del árbol activo.
+
+El modelo financiero se trasladó a `src/models/finances.ts` y sus etiquetas a un catálogo estático. Las pruebas comprueban separación por moneda, cobros excluidos, ajustes/devoluciones y fechas locales. `test:company` apunta a una suite vigente con renderizado real del componente y resumen de IPC simulado. Las pruebas IPC rechazan respuestas tardías de finanzas, Bitácora y resumen público cuando cambia la sesión.
+
+La Fase 4 aprobó el build y 29 pruebas frontend (14 IPC, 9 de pantallas/viewmodels, 3 de notas y 3 de modelo financiero). El backend de referencia mantiene 93/93 pruebas y `cargo check` aprobados. La prueba de error de preparación de nota genera una advertencia Vue esperada en el entorno SSR de prueba. Las pruebas históricas Rust generan 43 advertencias de funciones archivadas sin llamadas.
+
+Para continuar con revisión o modificación de la interfaz queda pendiente elegir el modo `during` o `after` solicitado por la habilidad antislop. También se solicitaron el contrato del portal y los cinco ítems de entrega que faltan en la fuente. Las vistas, cámara y editor de cláusulas corresponden a la Fase 5.

@@ -168,3 +168,11 @@ La edición de órdenes audita los cambios de correo y entrega estimada con valo
 El ejecutable registra únicamente comandos de `commands/` y el estado normalizado. Los módulos anteriores y sus pruebas se conservan en `src-tauri/legacy/`, compilados solo con `cfg(test)`. El plugin SQL queda como dependencia de desarrollo para esas pruebas. Los permisos puros están en `domain/permissions.rs`. La producción abre `hrl_core_3fn.db` mediante `db/`.
 
 `BackendServices::with_os_key_store` consulta al repositorio si hay credenciales cifradas antes de abrir DPAPI. Cuando existen, exige el archivo protegido original mediante `OsKeyStore::open_existing`. Las pruebas cubren ausencia, corrupción, conservación del archivo y recuperación al restituir la custodia correcta con el mismo usuario Windows. El procedimiento manual de instalación y respaldo conjunto se documenta en `docs/instalacion-recuperacion-local.md`.
+
+## Cierre de la Fase 4 del 13 de noviembre de 2026
+
+`src/models/finances.ts` contiene el modelo de filtros y agregación de lectura. `src/utils/finances.ts` conserva la conversión de fechas y límites UTC. Los nombres de clasificación son un catálogo de presentación en `src/data/financialClasses.ts`. El modelo conserva las reglas de periodos, moneda y exclusiones ya documentadas. Las escrituras financieras recorren los servicios Rust.
+
+El único `invoke` del árbol activo está en `src/services/api/transport.ts`. El frontend anterior, sus composables, órdenes de demostración y pruebas históricas se conservan en `legacy/frontend/`, fuera de las entradas de compilación. El adaptador `utils/legacyOrder.ts` sigue transformando DTO normalizados para las vistas vigentes.
+
+`test:company` ejecuta las pruebas actuales de notas en `tests/company-notes.test.ts`. La suite renderiza el componente real mediante SSR y prepara el resumen con IPC simulado, incluyendo denegación, datos públicos y garantías. `test:finances` comprueba el modelo de lectura. Las pruebas IPC incluyen la invalidación de respuestas de finanzas, Bitácora y resumen público al cambiar de sesión.
