@@ -1,4 +1,4 @@
-use super::{migrations, Database};
+use super::{Database, migrations};
 use crate::error::AppError;
 use sqlx::{Row, SqlitePool};
 
@@ -34,11 +34,11 @@ fn baseline_is_explicit_reentrant_and_matches_the_sql_deliverable() {
             migrations::BASELINE_SQL,
             include_str!("../../../schema.sql")
         );
-        assert_eq!(migrations::migrator().iter().count(), 2);
+        assert_eq!(migrations::migrator().iter().count(), 3);
         let db = Database::in_memory().await.unwrap();
         seed(db.pool()).await;
         migrations::apply(db.pool()).await.unwrap();
-        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 2);
+        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 3);
         assert_eq!(count(db.pool(), "ordenes").await, 2);
         assert_eq!(
             sqlx::query_scalar::<_, String>("PRAGMA integrity_check")
@@ -47,11 +47,13 @@ fn baseline_is_explicit_reentrant_and_matches_the_sql_deliverable() {
                 .unwrap(),
             "ok"
         );
-        assert!(sqlx::query("PRAGMA foreign_key_check")
-            .fetch_all(db.pool())
-            .await
-            .unwrap()
-            .is_empty());
+        assert!(
+            sqlx::query("PRAGMA foreign_key_check")
+                .fetch_all(db.pool())
+                .await
+                .unwrap()
+                .is_empty()
+        );
         let json_columns: i64 = sqlx::query_scalar("SELECT count(*) FROM sqlite_schema s, pragma_table_info(s.name) p WHERE s.type='table' AND p.name LIKE '%json%'")
             .fetch_one(db.pool()).await.unwrap();
         assert_eq!(json_columns, 0);
@@ -87,7 +89,7 @@ fn every_pool_connection_enforces_foreign_keys_and_file_reopen_preserves_data() 
         db.close().await;
         let reopened = Database::open_file(&file).await.unwrap();
         assert_eq!(count(reopened.pool(), "ordenes").await, 2);
-        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 2);
+        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 3);
         reopened.close().await;
     });
 }
@@ -136,27 +138,33 @@ fn first_and_last_administrator_and_initial_setup_state_are_protected() {
         assert!(sqlx::query("INSERT INTO usuarios(nombre,nombre_acceso,hash_contrasena,id_nivel,id_rol) SELECT 'No admin','no-admin','hash',n.id,r.id FROM niveles_acceso n JOIN roles r WHERE n.codigo='limited' AND r.codigo='technician'")
             .execute(pool).await.is_err());
         seed(pool).await;
-        assert!(sqlx::query_scalar::<_, bool>(
-            "SELECT configurado FROM vista_configuracion_acceso"
-        )
-        .fetch_one(pool)
-        .await
-        .unwrap());
-        assert!(sqlx::query("UPDATE usuarios SET activo=0 WHERE id=1")
-            .execute(pool)
-            .await
-            .is_err());
+        assert!(
+            sqlx::query_scalar::<_, bool>("SELECT configurado FROM vista_configuracion_acceso")
+                .fetch_one(pool)
+                .await
+                .unwrap()
+        );
+        assert!(
+            sqlx::query("UPDATE usuarios SET activo=0 WHERE id=1")
+                .execute(pool)
+                .await
+                .is_err()
+        );
         assert!(sqlx::query("UPDATE usuarios SET id_nivel=(SELECT id FROM niveles_acceso WHERE codigo='limited') WHERE id=1").execute(pool).await.is_err());
-        assert!(sqlx::query("DELETE FROM usuarios WHERE id=1")
+        assert!(
+            sqlx::query("DELETE FROM usuarios WHERE id=1")
+                .execute(pool)
+                .await
+                .is_err()
+        );
+        assert!(
+            sqlx::query(
+                "INSERT INTO usuario_permiso SELECT 2,id FROM permisos WHERE solo_completo=1"
+            )
             .execute(pool)
             .await
-            .is_err());
-        assert!(sqlx::query(
-            "INSERT INTO usuario_permiso SELECT 2,id FROM permisos WHERE solo_completo=1"
-        )
-        .execute(pool)
-        .await
-        .is_err());
+            .is_err()
+        );
     });
 }
 
@@ -256,12 +264,14 @@ fn balances_keep_receipts_price_reductions_adjustments_and_total_refunds_separat
             75000
         );
         for amount in ["-1", "0", "1.25", "9000000000001", "'importe'"] {
-            assert!(sqlx::query(&format!(
-                "INSERT INTO abonos(id_orden,id_autor,importe_centavos) VALUES (1,1,{amount})"
-            ))
-            .execute(pool)
-            .await
-            .is_err());
+            assert!(
+                sqlx::query(&format!(
+                    "INSERT INTO abonos(id_orden,id_autor,importe_centavos) VALUES (1,1,{amount})"
+                ))
+                .execute(pool)
+                .await
+                .is_err()
+            );
         }
     });
 }
@@ -308,14 +318,18 @@ fn all_books_and_audit_rows_reject_edits_and_deletion() {
             "auditoria",
             "auditoria_detalle",
         ] {
-            assert!(sqlx::query(&format!("UPDATE {table} SET id=id"))
-                .execute(pool)
-                .await
-                .is_err());
-            assert!(sqlx::query(&format!("DELETE FROM {table}"))
-                .execute(pool)
-                .await
-                .is_err());
+            assert!(
+                sqlx::query(&format!("UPDATE {table} SET id=id"))
+                    .execute(pool)
+                    .await
+                    .is_err()
+            );
+            assert!(
+                sqlx::query(&format!("DELETE FROM {table}"))
+                    .execute(pool)
+                    .await
+                    .is_err()
+            );
             assert_eq!(count(pool, table).await, 1);
         }
     });
@@ -334,10 +348,12 @@ fn temporary_access_closes_only_once_and_keeps_granted_permissions() {
         .execute(pool)
         .await
         .unwrap();
-        assert!(sqlx::query("DELETE FROM acceso_temporal_permiso")
-            .execute(pool)
-            .await
-            .is_err());
+        assert!(
+            sqlx::query("DELETE FROM acceso_temporal_permiso")
+                .execute(pool)
+                .await
+                .is_err()
+        );
         assert!(
             sqlx::query("UPDATE accesos_temporales SET motivo='Reescrito'")
                 .execute(pool)
@@ -345,16 +361,20 @@ fn temporary_access_closes_only_once_and_keeps_granted_permissions() {
                 .is_err()
         );
         sqlx::query("UPDATE accesos_temporales SET finalizado_en='2026-11-04T01:00:00Z',motivo_finalizacion='Fin' WHERE id=1").execute(pool).await.unwrap();
-        assert!(sqlx::query(
-            "UPDATE accesos_temporales SET finalizado_en='2026-11-04T02:00:00Z' WHERE id=1"
-        )
-        .execute(pool)
-        .await
-        .is_err());
-        assert!(sqlx::query("DELETE FROM accesos_temporales")
+        assert!(
+            sqlx::query(
+                "UPDATE accesos_temporales SET finalizado_en='2026-11-04T02:00:00Z' WHERE id=1"
+            )
             .execute(pool)
             .await
-            .is_err());
+            .is_err()
+        );
+        assert!(
+            sqlx::query("DELETE FROM accesos_temporales")
+                .execute(pool)
+                .await
+                .is_err()
+        );
     });
 }
 
@@ -382,15 +402,19 @@ fn custom_states_ordered_stages_unknown_delivery_and_new_fields_are_preserved() 
           .execute(pool).await.unwrap();
         assert_eq!(count(pool, "orden_etapas").await, 3);
         assert!(sqlx::query("INSERT INTO orden_etapas(id_orden,nombre_personalizado,posicion) VALUES (1,'limpieza de placa',3)").execute(pool).await.is_err());
-        assert!(sqlx::query("UPDATE ordenes SET falla=? WHERE id=1")
-            .bind("x".repeat(16001))
-            .execute(pool)
-            .await
-            .is_err());
-        assert!(sqlx::query("UPDATE ordenes SET folio='ORD-002' WHERE id=1")
-            .execute(pool)
-            .await
-            .is_err());
+        assert!(
+            sqlx::query("UPDATE ordenes SET falla=? WHERE id=1")
+                .bind("x".repeat(16001))
+                .execute(pool)
+                .await
+                .is_err()
+        );
+        assert!(
+            sqlx::query("UPDATE ordenes SET folio='ORD-002' WHERE id=1")
+                .execute(pool)
+                .await
+                .is_err()
+        );
         let row = sqlx::query(
             "SELECT entregado,fecha_entrega,sufrio_golpes,derrame_liquidos FROM ordenes WHERE id=1",
         )
@@ -435,10 +459,12 @@ fn evidence_paths_originals_and_encrypted_device_credentials_have_structural_con
             .execute(pool)
             .await
             .unwrap();
-        assert!(sqlx::query("DELETE FROM evidencias")
-            .execute(pool)
-            .await
-            .is_err());
+        assert!(
+            sqlx::query("DELETE FROM evidencias")
+                .execute(pool)
+                .await
+                .is_err()
+        );
         assert!(sqlx::query("INSERT INTO credenciales_dispositivos VALUES (1,1,'clave-local','AES-256-GCM',zeroblob(11),zeroblob(16))").execute(pool).await.is_err());
         sqlx::query("INSERT INTO credenciales_dispositivos VALUES (1,1,'clave-local','AES-256-GCM',zeroblob(12),zeroblob(16))").execute(pool).await.unwrap();
         assert_eq!(count(pool, "credenciales_dispositivos").await, 1);

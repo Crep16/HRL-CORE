@@ -36,9 +36,11 @@ pub struct RequestRecord {
 
 impl OrderRepository {
     pub async fn has_credentials(&self, db: &mut SqliteConnection) -> Result<bool, AppError> {
-        Ok(sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM credenciales_dispositivos)")
-            .fetch_one(db)
-            .await?)
+        Ok(
+            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM credenciales_dispositivos)")
+                .fetch_one(db)
+                .await?,
+        )
     }
 
     pub async fn update_order(
@@ -50,8 +52,8 @@ impl OrderRepository {
         value: &CreateOrderPayload,
         delivered: bool,
     ) -> Result<(), AppError> {
-        sqlx::query("UPDATE ordenes SET id_equipo=?,id_estado=?,estado_personalizado=?,fecha_recepcion=?,fecha_estimada_entrega=?,falla=?,trabajo=?,notas_recepcion=?,precio_centavos=?,paso_otro_taller=?,detalle_otro_taller=?,sufrio_golpes=?,detalle_golpes=?,derrame_liquidos=?,detalle_liquidos=?,entregado=?,fecha_entrega=CASE WHEN ? THEN coalesce(fecha_entrega,strftime('%Y-%m-%d','now')) ELSE NULL END,revision=revision+1 WHERE id=? AND eliminada_en IS NULL")
-            .bind(equipment).bind(status).bind(if status.is_none(){Some(&value.status)}else{None}).bind(&value.received_at).bind(&value.estimated_delivery_at).bind(&value.reported_failure).bind(&value.planned_work).bind(&value.reception_notes).bind(value.price_minor).bind(value.history.previous_workshop).bind(&value.history.previous_workshop_detail).bind(value.history.suffered_impact).bind(&value.history.impact_detail).bind(value.history.liquid_spill).bind(&value.history.liquid_detail).bind(delivered).bind(delivered).bind(id).execute(db).await?;
+        sqlx::query("UPDATE ordenes SET id_equipo=?,id_estado=?,estado_personalizado=?,fecha_recepcion=?,fecha_estimada_entrega=?,falla=?,trabajo=?,notas_recepcion=?,precio_centavos=?,paso_otro_taller=?,detalle_otro_taller=?,sufrio_golpes=?,detalle_golpes=?,derrame_liquidos=?,detalle_liquidos=?,antecedentes_equipo=?,entregado=?,fecha_entrega=CASE WHEN ? THEN coalesce(fecha_entrega,strftime('%Y-%m-%d','now')) ELSE NULL END,revision=revision+1 WHERE id=? AND eliminada_en IS NULL")
+            .bind(equipment).bind(status).bind(if status.is_none(){Some(&value.status)}else{None}).bind(&value.received_at).bind(&value.estimated_delivery_at).bind(&value.reported_failure).bind(&value.planned_work).bind(&value.reception_notes).bind(value.price_minor).bind(value.history.previous_workshop).bind(&value.history.previous_workshop_detail).bind(value.history.suffered_impact).bind(&value.history.impact_detail).bind(value.history.liquid_spill).bind(&value.history.liquid_detail).bind(&value.history.notes).bind(delivered).bind(delivered).bind(id).execute(db).await?;
         Ok(())
     }
     pub async fn remove_credential(
@@ -342,10 +344,11 @@ impl OrderRepository {
         status: Option<i64>,
         payload: &CreateOrderPayload,
     ) -> Result<i64, AppError> {
-        Ok(sqlx::query("INSERT INTO ordenes(folio,id_equipo,id_creador,id_estado,estado_personalizado,codigo_moneda,fecha_recepcion,fecha_estimada_entrega,falla,trabajo,notas_recepcion,precio_centavos,paso_otro_taller,detalle_otro_taller,sufrio_golpes,detalle_golpes,derrame_liquidos,detalle_liquidos) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        Ok(sqlx::query("INSERT INTO ordenes(folio,id_equipo,id_creador,id_estado,estado_personalizado,codigo_moneda,fecha_recepcion,fecha_estimada_entrega,falla,trabajo,notas_recepcion,precio_centavos,paso_otro_taller,detalle_otro_taller,sufrio_golpes,detalle_golpes,derrame_liquidos,detalle_liquidos,antecedentes_equipo) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
             .bind(folio).bind(equipment).bind(author).bind(status).bind(if status.is_none(){Some(payload.status.as_str())}else{None}).bind(&payload.currency)
             .bind(&payload.received_at).bind(&payload.estimated_delivery_at).bind(&payload.reported_failure).bind(&payload.planned_work).bind(&payload.reception_notes).bind(payload.price_minor)
             .bind(payload.history.previous_workshop).bind(&payload.history.previous_workshop_detail).bind(payload.history.suffered_impact).bind(&payload.history.impact_detail).bind(payload.history.liquid_spill).bind(&payload.history.liquid_detail)
+            .bind(&payload.history.notes)
             .execute(db).await?.last_insert_rowid())
     }
     pub async fn insert_credential(
@@ -442,6 +445,7 @@ impl OrderRepository {
             client,
             equipment,
             history: EquipmentHistory {
+                notes: r.try_get("antecedentes_equipo")?,
                 previous_workshop: r.try_get("paso_otro_taller")?,
                 previous_workshop_detail: r.try_get("detalle_otro_taller")?,
                 suffered_impact: r.try_get("sufrio_golpes")?,

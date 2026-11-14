@@ -1,5 +1,11 @@
 # Esquema local
 
+La migración 003 añade `ordenes.antecedentes_equipo` como TEXT nullable para
+la captura libre autorizada por el usuario. Conserva las columnas y valores
+anteriores; NULL y texto vacío tienen significados distintos de presentación.
+Véase [antecedentes del equipo](antecedentes-equipo.md). La base 001 permanece
+sin modificaciones y las extensiones se cargan numeradas desde `db/`.
+
 ## Arranque unificado 3NF
 
 La interfaz de `App.vue` consulta únicamente los contratos de `commands/`

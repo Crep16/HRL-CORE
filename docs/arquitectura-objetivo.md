@@ -179,6 +179,13 @@ El único `invoke` del árbol activo está en `src/services/api/transport.ts`. E
 
 ## Fase 5 del 14 de noviembre de 2026
 
+La captura unificada de antecedentes utiliza `history.notes` y la migración
+003. `equipmentHistoryText` solo formatea la lectura histórica; el composable
+de recepción conserva el borrador y el servicio Rust autoriza, valida y audita
+la escritura. Se mantienen los identificadores en inglés de los contratos y
+las columnas SQL en español. El servicio encapsula la transacción y el
+repositorio abstrae la persistencia, siguiendo la composición ya existente.
+
 Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, LogbookView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
 
 Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Bitácora incorpora `entity` y `entityId` en sus tipos y presenta la identidad del registro mediante su viewmodel. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.

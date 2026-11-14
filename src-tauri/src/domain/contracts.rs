@@ -150,6 +150,8 @@ pub struct EquipmentInput {
 #[derive(Deserialize, Serialize, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct EquipmentHistory {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub notes: Option<String>,
     pub previous_workshop: bool,
     pub previous_workshop_detail: String,
     pub suffered_impact: bool,

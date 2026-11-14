@@ -11,6 +11,7 @@ import { useWindowProfile } from "../src/composables/useWindowProfile.ts";
 import { useTemporaryAccessForm } from "../src/composables/useTemporaryAccessForm.ts";
 import { useAuthStore } from "../src/stores/useAuthStore.ts";
 import { useOrderStore } from "../src/stores/useOrderStore.ts";
+import { equipmentHistoryText } from '../src/utils/equipmentHistoryText.ts';
 import type { CreateOrderPayload, OrderResponse, SessionResponse } from "../src/types/ipc.ts";
 
 globalThis.window = { addEventListener() {}, removeEventListener() {} } as unknown as Window & typeof globalThis;
@@ -34,6 +35,13 @@ test("decimal strings round-trip exactly at cent and safe-integer boundaries", (
   }
   for (const text of ["1.001", "1,000.00", "-1", "NaN", "Infinity", "1e3", "90071992547409.92"]) assert.throws(() => parseMinorUnits(text));
   assert.equal(formatMinorUnits(-101), "-1.01");
+});
+
+test('free-text history preserves previous details and supports explicitly clearing them', () => {
+  const history = {previousWorkshop:true,previousWorkshopDetail:'Cambió teclado',sufferedImpact:true,impactDetail:'Golpe en esquina',liquidSpill:true,liquidDetail:'Agua'};
+  assert.equal(equipmentHistoryText(history), 'Otro taller: Cambió teclado\nCaídas o golpes: Golpe en esquina\nLíquidos o humedad: Agua');
+  assert.equal(equipmentHistoryText({...history,notes:'Reparación previa; se recibe húmedo.'}), 'Reparación previa; se recibe húmedo.');
+  assert.equal(equipmentHistoryText({...history,notes:''}), '');
 });
 
 test("native window synchronization queues session changes and exposes retry without clearing authentication", async () => {
@@ -218,7 +226,9 @@ test("Vue renders the catalog fields with native limits and readonly saved order
     assert.match(html, /class="sheet"/);
     assert.match(html, /class="form"/);
     assert.match(html, /class="side"/);
-    assert.match(html, /class="yn" role="group" aria-label="¿Ha sufrido caída o humedad\?"/);
+    assert.match(html, /id="equipment-history"[^>]*readonly[^>]*maxlength="16000"/);
+    assert.match(html, /Antecedentes del equipo/);
+    assert.doesNotMatch(html, /¿Ha sufrido caída o humedad\?/);
     assert.match(html, /class="repa"/);
     assert.match(html, /class="header-tools"/);
     assert.match(html, /class="reception-details"><summary>Falla reportada/);
@@ -226,7 +236,7 @@ test("Vue renders the catalog fields with native limits and readonly saved order
   } finally { await server.close(); }
 });
 
-test("legacy order arrows cross pages and incident controls keep impact and liquid independent", async () => {
+test("order arrows cross pages and the history note retains a guarded draft", async () => {
   const auth = useAuthStore(); auth.user = session.user; auth.permissions = session.permissions;
   const form = await mountModel(createReceptionForm);
   const orders = Array.from({length:7}, (_,index) => ({...response(form.draft),id:index+1,folio:`ORD-${index+1}`}));
@@ -249,14 +259,13 @@ test("legacy order arrows cross pages and incident controls keep impact and liqu
   await form.goToOrder(0);
   assert.equal(useOrderStore().currentOrder?.id,1);
   assert.deepEqual(offsets,[0,5,0]);
-  form.begin();form.showDamageDetails(true);
+  form.begin();
   assert.equal(form.draft.history.sufferedImpact,false);
   assert.equal(form.draft.history.liquidSpill,false);
-  form.draft.history.liquidSpill=true;
-  assert.equal(form.hasDamage.value,true);
+  form.historyNotes.value='Se mojó; ya había sido revisado en otro taller.';
+  assert.equal(form.draft.history.notes,'Se mojó; ya había sido revisado en otro taller.');
   assert.equal(form.draft.history.sufferedImpact,false);
-  form.showDamageDetails(false);
-  assert.equal(form.hasDamage.value,false);
+  assert.equal(form.hasChanges.value,true);
   const selected=useOrderStore().currentOrder?.id;
   form.draft.client.fullName='Borrador';
   await form.goToOrder(6);

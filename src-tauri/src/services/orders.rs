@@ -55,6 +55,14 @@ fn validate(payload: &CreateOrderPayload) -> Result<(), AppError> {
             "Selecciona identificadores válidos de cliente y equipo.",
         ));
     }
+    if payload
+        .history
+        .notes
+        .as_ref()
+        .is_some_and(|text| text.chars().count() > 16000)
+    {
+        return Err(invalid("Los antecedentes admiten hasta 16000 caracteres."));
+    }
     if [
         &payload.client.full_name,
         &payload.client.phone,
@@ -175,6 +183,7 @@ impl OrderService {
         let mut changes = vec![];
         for (field, old_value, new_value) in [
             ("email", &old.client.email, &p.client.email),
+            ("equipmentHistory", &old.history.notes, &p.history.notes),
             (
                 "estimatedDelivery",
                 &old.estimated_delivery_at,
@@ -640,6 +649,7 @@ impl OrderService {
                     ("clientId", None, Some(client.to_string())),
                     ("equipmentId", None, Some(equipment.to_string())),
                     ("priceMinor", None, Some(payload.price_minor.to_string())),
+                    ("equipmentHistory", None, payload.history.notes.clone()),
                 ],
             )
             .await?;

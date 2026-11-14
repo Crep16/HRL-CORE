@@ -86,6 +86,7 @@ export interface EquipmentInput {
   serial: string;
 }
 export interface EquipmentHistory {
+  notes?: string | null;
   previousWorkshop: boolean;
   previousWorkshopDetail: string;
   sufferedImpact: boolean;

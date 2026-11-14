@@ -7,11 +7,12 @@ import type { CreateOrderPayload, OrderResponse, OrderSearchField } from "../typ
 
 import { useCompany } from './useCompany.ts';
 import { legacyOrder } from '../utils/legacyOrder.ts';
+import { equipmentHistoryText } from '../utils/equipmentHistoryText.ts';
 function emptyDraft(): CreateOrderPayload {
   return {
     client: { id: null, fullName: "", phone: "", email: null },
     equipment: { id: null, item: "Laptop", brand: "", model: "", serial: "" },
-    history: { previousWorkshop: false, previousWorkshopDetail: "", sufferedImpact: false, impactDetail: "", liquidSpill: false, liquidDetail: "" },
+    history: { notes: "", previousWorkshop: false, previousWorkshopDetail: "", sufferedImpact: false, impactDetail: "", liquidSpill: false, liquidDetail: "" },
     folioPrefix: "ORD-", sequenceStart: 1, status: "En diagnóstico", currency: "MXN",
     receivedAt: new Date().toLocaleDateString("en-CA"), estimatedDeliveryAt: null,
     reportedFailure: "", plannedWork: "", receptionNotes: "", priceMinor: 0, devicePassword: "", initialPayment: null,
@@ -44,15 +45,7 @@ export function createReceptionForm() {
   const folio = computed(() => editing.value && !editExisting.value ? "Se asignará al guardar" : store.currentOrder?.folio ?? "Sin orden seleccionada");
   const errorMessage = computed(() => message.value || store.error?.message || "");
   const visibleOrders = computed(() => store.orders);
-  const damageDetailsOpen = ref(false);
-  const hasDamage = computed(() => draft.history.sufferedImpact || draft.history.liquidSpill);
-  function showDamageDetails(value: boolean) {
-    damageDetailsOpen.value = value;
-    if (!value) {
-      draft.history.sufferedImpact = false; draft.history.liquidSpill = false;
-      draft.history.impactDetail = ''; draft.history.liquidDetail = '';
-    }
-  }
+  const historyNotes = computed({ get: () => equipmentHistoryText(draft.history), set: (text: string) => { draft.history.notes = text; } });
   const receivedLabel = computed(() => {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(draft.receivedAt);
     return match ? `${match[3]}/${match[2]}/${match[1]}` : draft.receivedAt;
@@ -112,13 +105,11 @@ export function createReceptionForm() {
     if (store.isLoading || uncertain.value || hasChanges.value) { message.value = "Guarda o descarta la captura actual antes de crear otra orden."; return; }
     if (!auth.can("orders.create", "clients")) { message.value = "Solicita autorización para crear órdenes."; return; }
     editExisting.value=false;trashed.value=false;delivered.value=false;changePassword.value=false;
-    damageDetailsOpen.value=false;
     Object.assign(draft, emptyDraft(), {folioPrefix:company.value.prefix,sequenceStart:company.value.nextNumber,currency:company.value.currency}); price.value = deposit.value = "0.00"; method.value = "";
     editing.value = true; message.value = ""; store.error = null; showPassword.value = false;
     baseline = snapshot();
   }
   function display(order: OrderResponse) {
-    damageDetailsOpen.value = false;
     Object.assign(draft, {
       client: { ...order.client }, equipment: { ...order.equipment }, history: { ...order.history },
       status: order.status, currency: order.currency, receivedAt: order.receivedAt,
@@ -208,7 +199,7 @@ export function createReceptionForm() {
   watch(() => auth.sessionVersion, () => { clearSecret(); });
   onBeforeUnmount(() => { clearTimeout(searchTimer); clearSecret(); if (pending) pending.devicePassword = null; pending = null; window.removeEventListener("beforeunload", beforeUnload); });
   if (store.currentOrder) display(store.currentOrder);
-  return { damageDetailsOpen,hasDamage,showDamageDetails,receivedLabel,priceLabel,depositLabel,orderPosition,goToOrder,editExisting,trashed,delivered,changePassword,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, price, deposit, method, editing, canEdit, canPay, folio, showPassword, message, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, togglePassword, prepareLeave, listPage, listPages, refreshList, changeListPage, historyOpen, historyPage, historyPages, canViewHistory, loadHistory, openHistory, closeHistory };
+  return { historyNotes,receivedLabel,priceLabel,depositLabel,orderPosition,goToOrder,editExisting,trashed,delivered,changePassword,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, price, deposit, method, editing, canEdit, canPay, folio, showPassword, message, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, togglePassword, prepareLeave, listPage, listPages, refreshList, changeListPage, historyOpen, historyPage, historyPages, canViewHistory, loadHistory, openHistory, closeHistory };
 }
 export type ReceptionForm = ReturnType<typeof createReceptionForm>;
 const key: InjectionKey<ReceptionForm> = Symbol("reception-form");

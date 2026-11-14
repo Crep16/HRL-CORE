@@ -1,7 +1,7 @@
 use crate::error::AppError;
 use sqlx::{
-    migrate::{Migration, MigrationType, Migrator},
     SqlitePool,
+    migrate::{Migration, MigrationType, Migrator},
 };
 use std::borrow::Cow;
 
@@ -22,6 +22,13 @@ pub fn migrator() -> Migrator {
                 "prefijo_documentos".into(),
                 MigrationType::Simple,
                 include_str!("../../migrations/002_prefijo_documentos.sql").into(),
+                false,
+            ),
+            Migration::new(
+                3,
+                "antecedentes_equipo".into(),
+                MigrationType::Simple,
+                include_str!("../../migrations/003_antecedentes_equipo.sql").into(),
                 false,
             ),
         ]),

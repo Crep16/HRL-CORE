@@ -1,6 +1,6 @@
 use super::{
-    crypto::{CryptoService, KeyProvider},
     BackendServices,
+    crypto::{CryptoService, KeyProvider},
 };
 use crate::{
     db::Database,
@@ -692,12 +692,14 @@ fn restored_evidence_and_company_reopen_without_business_json() {
             services.evidence.update(update()).await,
             Err(AppError::Conflict(_))
         ));
-        assert!(services
-            .evidence
-            .list(created.id, false)
-            .await
-            .unwrap()
-            .is_empty());
+        assert!(
+            services
+                .evidence
+                .list(created.id, false)
+                .await
+                .unwrap()
+                .is_empty()
+        );
         assert_eq!(
             services
                 .evidence
@@ -883,6 +885,364 @@ fn order() -> CreateOrderPayload {
         initial_payment: None,
     }
 }
+
+#[test]
+fn equipment_history_text_preserves_old_fields_audits_changes_and_rolls_back() {
+    tauri::async_runtime::block_on(async {
+        let (pool, services) = fixture().await;
+        let mut original = order();
+        original.history.previous_workshop = true;
+        original.history.previous_workshop_detail = "Revisión en otro taller".into();
+        let created = services.orders.create(original).await.unwrap();
+        assert_eq!(created.history.notes, None);
+
+        let mut value = order();
+        value.history = created.history;
+        value.history.notes = Some("Otro taller; golpe lateral y humedad.".into());
+        let saved = services
+            .orders
+            .edit(EditOrderPayload {
+                order_id: created.id,
+                revision: created.revision,
+                value,
+                delivered: false,
+                change_password: false,
+            })
+            .await
+            .unwrap();
+        assert_eq!(
+            saved.history.notes.as_deref(),
+            Some("Otro taller; golpe lateral y humedad.")
+        );
+        assert!(saved.history.previous_workshop);
+        assert_eq!(
+            saved.history.previous_workshop_detail,
+            "Revisión en otro taller"
+        );
+        let audit: (Option<String>, Option<String>) = sqlx::query_as(
+            "SELECT valor_anterior,valor_nuevo FROM auditoria_detalle WHERE campo='equipmentHistory' AND valor_nuevo IS NOT NULL ORDER BY id DESC LIMIT 1"
+        ).fetch_one(&pool).await.unwrap();
+        assert_eq!(audit, (None, saved.history.notes.clone()));
+
+        let mut empty = order();
+        empty.history = saved.history;
+        empty.history.notes = Some(String::new());
+        let cleared = services
+            .orders
+            .edit(EditOrderPayload {
+                order_id: saved.id,
+                revision: saved.revision,
+                value: empty,
+                delivered: false,
+                change_password: false,
+            })
+            .await
+            .unwrap();
+        assert_eq!(cleared.history.notes.as_deref(), Some(""));
+        assert!(cleared.history.previous_workshop);
+
+        let mut invalid = order();
+        invalid.history.notes = Some("a".repeat(16001));
+        assert!(matches!(
+            services.orders.create(invalid).await,
+            Err(AppError::Validation(_))
+        ));
+        let audits = count(&pool, "auditoria").await;
+        sqlx::query("CREATE TRIGGER history_audit_failure BEFORE INSERT ON auditoria BEGIN SELECT RAISE(ABORT,'test'); END").execute(&pool).await.unwrap();
+        let mut rejected = order();
+        rejected.history.notes = Some("No debe confirmarse".into());
+        assert!(
+            services
+                .orders
+                .edit(EditOrderPayload {
+                    order_id: cleared.id,
+                    revision: cleared.revision,
+                    value: rejected,
+                    delivered: false,
+                    change_password: false,
+                })
+                .await
+                .is_err()
+        );
+        let stored: (String, i64) =
+            sqlx::query_as("SELECT antecedentes_equipo,revision FROM ordenes WHERE id=?")
+                .bind(cleared.id)
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+        assert_eq!(stored, (String::new(), cleared.revision));
+        assert_eq!(count(&pool, "auditoria").await, audits);
+    });
+}
+
+#[test]
+fn integrated_notes_warranties_parts_receipts_adjustments_refunds_and_currencies() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::{ledger_contracts::MoneyRequest, repair_contracts::*};
+        let (pool, services) = fixture().await;
+        for currency in ["MXN", "USD"] {
+            let mut payload = order();
+            payload.currency = currency.into();
+            let created = services.orders.create(payload).await.unwrap();
+            let snapshot = services.repairs.load(created.id).await.unwrap();
+            let mut repair = snapshot.repair;
+            repair.public_note = "Cambio de conector terminado".into();
+            repair.internal_note = "Nota privada de laboratorio".into();
+            repair.technician = "Técnico de prueba".into();
+            repair.parts.push(Part {
+                name: "Conector".into(),
+                price: 12550,
+            });
+            repair.warranties.push(Warranty {
+                name: "Conector".into(),
+                days: 30,
+            });
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    revision: snapshot.revision,
+                    repair,
+                })
+                .await
+                .unwrap();
+            let request = |kind: &str, suffix: &str, amount, expected, payment_id| MoneyRequest {
+                request_id: format!("integrated-{currency}-{suffix}"),
+                order_id: created.id,
+                kind: kind.into(),
+                payment_id,
+                amount_minor: amount,
+                expected_minor: expected,
+                method: if kind == "adjustment" { "" } else { "Efectivo" }.into(),
+                reason: "Validación del flujo integrado".into(),
+            };
+            services
+                .ledger
+                .record(request("receipt", "receipt", 100000, 0, None))
+                .await
+                .unwrap();
+            let ledger = services.ledger.list(created.id).await.unwrap();
+            let receipt_id: i64 = ledger
+                .movements
+                .iter()
+                .find(|row| row.kind == "receipt")
+                .unwrap()
+                .id
+                .parse()
+                .unwrap();
+            services
+                .ledger
+                .record(request(
+                    "adjustment",
+                    "adjustment",
+                    -10000,
+                    100000,
+                    Some(receipt_id),
+                ))
+                .await
+                .unwrap();
+            let mut reduced = order();
+            reduced.currency = currency.into();
+            reduced.price_minor = 60000;
+            let edited = services
+                .orders
+                .edit(EditOrderPayload {
+                    order_id: created.id,
+                    revision: created.revision,
+                    value: reduced,
+                    delivered: true,
+                    change_password: false,
+                })
+                .await
+                .unwrap();
+            assert_eq!(edited.credit_minor, 30000);
+            services
+                .ledger
+                .record(request("refund", "refund", 30000, 90000, None))
+                .await
+                .unwrap();
+            let summary =
+                serde_json::to_value(services.repairs.summary(created.id).await.unwrap()).unwrap();
+            assert_eq!(summary["publicNote"], "Cambio de conector terminado");
+            assert_eq!(summary["warranties"][0]["days"], 30);
+            assert!(!summary.to_string().contains("Nota privada"));
+            assert!(!summary.to_string().contains("test-device-PIN"));
+        }
+        let finances = services.reports.finances().await.unwrap();
+        assert_eq!(finances.len(), 2);
+        for currency in ["MXN", "USD"] {
+            let row = finances
+                .iter()
+                .find(|row| row.currency == currency)
+                .unwrap();
+            assert_eq!(
+                (row.received_minor, row.adjusted_minor, row.refunded_minor),
+                (100000, -10000, 30000)
+            );
+            assert_eq!(
+                (
+                    row.total_minor,
+                    row.collected_minor,
+                    row.credit_minor,
+                    row.balance_minor
+                ),
+                (60000, 60000, 0, 0)
+            );
+            assert_eq!((row.costs_minor, row.profit_minor), (12550, 47450));
+            assert_eq!(row.classification, "completed");
+            assert_eq!(row.payments.len(), 3);
+        }
+        assert_eq!(count(&pool, "abonos").await, 2);
+        assert_eq!(count(&pool, "ajustes_abono").await, 2);
+        assert_eq!(count(&pool, "devoluciones").await, 2);
+    });
+}
+
+#[test]
+fn integrated_evidence_revision_restore_and_revoked_authorization_preserve_original() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::evidence_contracts::{NewEvidence, UpdateEvidence};
+        let directory = tempfile::tempdir().unwrap();
+        let db = Database::open_file(&directory.path().join("evidence-matrix.db"))
+            .await
+            .unwrap();
+        let pool = db.pool().clone();
+        let services = BackendServices::new(db, keys()).await.unwrap();
+        services.access.initialize(setup()).await.unwrap();
+        let created = services.orders.create(order()).await.unwrap();
+        let code = "11112222333344445555666677778888";
+        let bytes = b"\x89PNG\r\n\x1a\nprueba".to_vec();
+        let original = services
+            .evidence
+            .add(NewEvidence {
+                id: code.into(),
+                order_id: created.id,
+                original_name: "original.png".into(),
+                mime: "image/png".into(),
+                source: "file".into(),
+                note: "Recepción".into(),
+                bytes: bytes.clone(),
+            })
+            .await
+            .unwrap();
+        let update = |revision, deleted, note: &str| UpdateEvidence {
+            id: code.into(),
+            order_id: created.id,
+            expected_revision: revision,
+            deleted,
+            note: note.into(),
+        };
+        let edited = services
+            .evidence
+            .update(update(original.revision, false, "Golpe lateral"))
+            .await
+            .unwrap();
+        assert!(matches!(
+            services
+                .evidence
+                .update(update(original.revision, false, "Revisión antigua"))
+                .await,
+            Err(AppError::Conflict(_))
+        ));
+        let removed = services
+            .evidence
+            .update(update(edited.revision, true, &edited.note))
+            .await
+            .unwrap();
+        assert!(
+            services
+                .evidence
+                .list(created.id, false)
+                .await
+                .unwrap()
+                .is_empty()
+        );
+        let restored = services
+            .evidence
+            .update(update(removed.revision, false, &removed.note))
+            .await
+            .unwrap();
+        assert_eq!(restored.created_at, original.created_at);
+        assert_eq!(restored.author_name, original.author_name);
+        assert_eq!(restored.original_name, original.original_name);
+        assert_eq!(
+            services.evidence.read(created.id, code).await.unwrap(),
+            bytes
+        );
+
+        let reader = add_user(&pool, "evidence-reader", "custom").await;
+        let approver = add_user(&pool, "evidence-approver", "custom").await;
+        for (user_id, permissions) in [(reader, vec!["view"]), (approver, vec!["view", "edit"])] {
+            for permission in permissions {
+                sqlx::query("INSERT INTO usuario_permiso(id_usuario,id_permiso) SELECT ?,p.id FROM permisos p JOIN apartados a ON a.id=p.id_apartado JOIN acciones c ON c.id=p.id_accion WHERE a.codigo='clients' AND c.codigo=?")
+                    .bind(user_id).bind(permission).execute(&pool).await.unwrap();
+            }
+        }
+        services
+            .access
+            .login(login("evidence-reader"))
+            .await
+            .unwrap();
+        assert_eq!(
+            services
+                .evidence
+                .list(created.id, false)
+                .await
+                .unwrap()
+                .len(),
+            1
+        );
+        assert!(matches!(
+            services
+                .evidence
+                .update(update(restored.revision, false, "Sin permiso"))
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(
+            services
+                .access
+                .temporary(loan(
+                    "evidence-approver",
+                    AccessScope::Repairs,
+                    Some(created.id),
+                    "evidence.edit"
+                ))
+                .await
+                .is_err()
+        );
+        services
+            .access
+            .temporary(loan(
+                "evidence-approver",
+                AccessScope::Clients,
+                None,
+                "evidence.edit",
+            ))
+            .await
+            .unwrap();
+        sqlx::query("DELETE FROM usuario_permiso WHERE id_usuario=? AND id_permiso=(SELECT p.id FROM permisos p JOIN apartados a ON a.id=p.id_apartado JOIN acciones c ON c.id=p.id_accion WHERE a.codigo='clients' AND c.codigo='edit')")
+            .bind(approver).execute(&pool).await.unwrap();
+        let audits = count(&pool, "auditoria").await;
+        assert!(matches!(
+            services
+                .evidence
+                .update(update(restored.revision, false, "Autorización revocada"))
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        assert_eq!(
+            services.evidence.list(created.id, false).await.unwrap()[0].note,
+            "Golpe lateral"
+        );
+        assert_eq!(
+            services.evidence.read(created.id, code).await.unwrap(),
+            bytes
+        );
+        assert_eq!(count(&pool, "evidencias").await, 1);
+        assert_eq!(count(&pool, "auditoria").await, audits);
+    });
+}
 fn loan(
     username: &str,
     scope: AccessScope,
@@ -924,9 +1284,7 @@ async fn count(pool: &SqlitePool, table: &str) -> i64 {
         .unwrap()
 }
 async fn add_user(pool: &SqlitePool, name: &str, level: &str) -> i64 {
-    let encoded = super::access::hash("account-test-123")
-        .await
-        .unwrap();
+    let encoded = super::access::hash("account-test-123").await.unwrap();
     sqlx::query("INSERT INTO usuarios(nombre,nombre_acceso,hash_contrasena,id_nivel,id_rol) SELECT ?,?,?,n.id,r.id FROM niveles_acceso n JOIN roles r WHERE n.codigo=? AND r.codigo='technician'")
         .bind(name).bind(name).bind(encoded).bind(level).execute(pool).await.unwrap().last_insert_rowid()
 }
@@ -975,13 +1333,15 @@ fn reception_list_search_reference_history_and_balances_survive_reopen() {
             services.orders.list(page("", 1, 1)).await.unwrap().items[0].id,
             first.id
         );
-        assert!(services
-            .orders
-            .list(page("", 2, 1))
-            .await
-            .unwrap()
-            .items
-            .is_empty());
+        assert!(
+            services
+                .orders
+                .list(page("", 2, 1))
+                .await
+                .unwrap()
+                .items
+                .is_empty()
+        );
         for query in ["héctor", "%_", "'", "serie-unicá", first.folio.as_str()] {
             let result = services.orders.list(page(query, 0, 5)).await.unwrap();
             assert_eq!(result.total, 1, "{query}");
@@ -1008,10 +1368,12 @@ fn reception_list_search_reference_history_and_balances_survive_reopen() {
             services.orders.list(request).await.unwrap().items[0].id,
             first.id
         );
-        assert!(serde_json::from_str::<ListOrdersPayload>(
-            r#"{"query":"","limit":5,"field":"folio; DROP TABLE ordenes"}"#
-        )
-        .is_err());
+        assert!(
+            serde_json::from_str::<ListOrdersPayload>(
+                r#"{"query":"","limit":5,"field":"folio; DROP TABLE ordenes"}"#
+            )
+            .is_err()
+        );
         assert_eq!(
             services
                 .orders
@@ -1041,17 +1403,23 @@ fn reception_list_search_reference_history_and_balances_survive_reopen() {
             .await
             .unwrap();
         assert_eq!(history.total, 2);
-        assert!(history
-            .items
-            .iter()
-            .any(|item| item.operation == "orders.create"));
-        assert!(history
-            .items
-            .iter()
-            .any(|item| item.operation == "payments.add"));
-        assert!(!serde_json::to_string(&history)
-            .unwrap()
-            .contains("password-only-for-test"));
+        assert!(
+            history
+                .items
+                .iter()
+                .any(|item| item.operation == "orders.create")
+        );
+        assert!(
+            history
+                .items
+                .iter()
+                .any(|item| item.operation == "payments.add")
+        );
+        assert!(
+            !serde_json::to_string(&history)
+                .unwrap()
+                .contains("password-only-for-test")
+        );
         assert_eq!(
             services
                 .orders
@@ -1228,9 +1596,11 @@ fn crypto_authenticates_ciphertext_nonce_order_and_key_and_uses_fresh_nonces() {
         DeviceCredential::from_encrypted(1, "test-only".into(), nonce, first.ciphertext().to_vec())
             .unwrap();
     assert!(service.decrypt(&altered).is_err());
-    assert!(CryptoService::new(Arc::new(TestKeys([8; 32])))
-        .decrypt(&first)
-        .is_err());
+    assert!(
+        CryptoService::new(Arc::new(TestKeys([8; 32])))
+            .decrypt(&first)
+            .is_err()
+    );
 }
 
 #[test]
@@ -1242,10 +1612,12 @@ fn errors_and_input_contracts_do_not_expose_storage_or_accept_float_money() {
     let mut request = serde_json::to_value(order()).unwrap();
     request["priceMinor"] = serde_json::json!(100.25);
     assert!(serde_json::from_value::<CreateOrderPayload>(request).is_err());
-    assert!(serde_json::from_value::<LoginPayload>(
-        serde_json::json!({"username":"admin","password":"test","userId":1})
-    )
-    .is_err());
+    assert!(
+        serde_json::from_value::<LoginPayload>(
+            serde_json::json!({"username":"admin","password":"test","userId":1})
+        )
+        .is_err()
+    );
 }
 
 #[test]
@@ -1506,16 +1878,18 @@ fn temporary_grants_revalidate_approver_and_cannot_escape_their_order_scope() {
             .await
             .unwrap();
         assert_eq!(grant.recipient_id, custom);
-        assert!(services
-            .orders
-            .get(GetOrderPayload {
-                include_deleted: false,
-                order_id: first.id,
-                scope: AccessScope::Repairs,
-                include_device_password: true
-            })
-            .await
-            .is_ok());
+        assert!(
+            services
+                .orders
+                .get(GetOrderPayload {
+                    include_deleted: false,
+                    order_id: first.id,
+                    scope: AccessScope::Repairs,
+                    include_device_password: true
+                })
+                .await
+                .is_ok()
+        );
         assert!(matches!(
             services
                 .orders
@@ -1555,11 +1929,13 @@ fn grant_and_use_audit_failures_do_not_elevate_or_save_an_order() {
         add_user(&pool, "custom", "custom").await;
         services.access.login(login("custom")).await.unwrap();
         sqlx::raw_sql("CREATE TRIGGER fail_access_audit BEFORE INSERT ON auditoria WHEN NEW.entidad='accesos_temporales' BEGIN SELECT RAISE(ABORT,'prueba'); END;").execute(&pool).await.unwrap();
-        assert!(services
-            .access
-            .temporary(loan("admin", AccessScope::Clients, None, "orders.create"))
-            .await
-            .is_err());
+        assert!(
+            services
+                .access
+                .temporary(loan("admin", AccessScope::Clients, None, "orders.create"))
+                .await
+                .is_err()
+        );
         assert_eq!(count(&pool, "accesos_temporales").await, 0);
         assert!(matches!(
             services.orders.create(order()).await,
@@ -1776,7 +2152,10 @@ fn windows_startup_requires_the_original_key_when_encrypted_credentials_exist() 
         assert_eq!(count(&pool, "auditoria").await, audits);
         services.access.login(login("admin")).await.unwrap();
         let restored = services.orders.get(get(created.id, true)).await.unwrap();
-        assert_eq!(restored.device_password.unwrap().0.as_str(), "test-device-PIN-2048");
+        assert_eq!(
+            restored.device_password.unwrap().0.as_str(),
+            "test-device-PIN-2048"
+        );
         assert_eq!(std::fs::read(&key_path).unwrap(), protected_key);
     });
 }
@@ -1817,11 +2196,13 @@ fn recovery_resets_both_hashes_revokes_access_and_keeps_device_encryption_key() 
             services.orders.get(get(created.id, false)).await,
             Err(AppError::Unauthorized)
         ));
-        assert!(services
-            .access
-            .verify_recovery_signature(recovery_payload(&challenge.challenge))
-            .await
-            .is_err());
+        assert!(
+            services
+                .access
+                .verify_recovery_signature(recovery_payload(&challenge.challenge))
+                .await
+                .is_err()
+        );
         let closed: bool = sqlx::query_scalar(
             "SELECT finalizado_en IS NOT NULL FROM accesos_temporales WHERE id=?",
         )
@@ -1846,14 +2227,18 @@ fn recovery_resets_both_hashes_revokes_access_and_keeps_device_encryption_key() 
             .fetch_one(&pool)
             .await
             .unwrap();
-        use argon2::{password_hash::PasswordHash, Argon2, PasswordVerifier};
+        use argon2::{Argon2, PasswordVerifier, password_hash::PasswordHash};
         let parsed = PasswordHash::new(&encoded).unwrap();
-        assert!(Argon2::default()
-            .verify_password(b"new-master-test-456", &parsed)
-            .is_ok());
-        assert!(Argon2::default()
-            .verify_password(b"master-test-123", &parsed)
-            .is_err());
+        assert!(
+            Argon2::default()
+                .verify_password(b"new-master-test-456", &parsed)
+                .is_ok()
+        );
+        assert!(
+            Argon2::default()
+                .verify_password(b"master-test-123", &parsed)
+                .is_err()
+        );
         let loaded = services.orders.get(get(created.id, true)).await.unwrap();
         assert_eq!(
             loaded.device_password.unwrap().0.as_str(),
@@ -1907,11 +2292,13 @@ fn recovery_audit_failure_rolls_back_credentials_and_loan_closure_and_consumes_s
             .unwrap();
             let audits_before = count(&pool, "auditoria").await;
             sqlx::raw_sql(&format!("CREATE TRIGGER fail_recovery BEFORE INSERT ON {table} BEGIN SELECT RAISE(ABORT,'prueba rollback recuperación'); END;")).execute(&pool).await.unwrap();
-            assert!(services
-                .access
-                .verify_recovery_signature(recovery_payload(&challenge.challenge))
-                .await
-                .is_err());
+            assert!(
+                services
+                    .access
+                    .verify_recovery_signature(recovery_payload(&challenge.challenge))
+                    .await
+                    .is_err()
+            );
             let after: (String, String) = sqlx::query_as(
                 "SELECT m.hash,u.hash_contrasena FROM claves_maestras m JOIN usuarios u ON u.id=1",
             )
