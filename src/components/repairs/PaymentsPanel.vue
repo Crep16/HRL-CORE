@@ -49,7 +49,8 @@ const {can,rows,busy,error,notice,loaded,mode,amount,method,reason,paymentId,att
 .payment-progress::-webkit-progress-bar{background:var(--line)}
 .payment-progress::-webkit-progress-value{background:var(--acc);border-radius:4px}
 .payment-balance,.payment-receipt{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:14px}
-.payment-balance strong{font:800 30px/1.15 var(--disp)}
+.payment-balance{flex-wrap:wrap;row-gap:4px}
+.payment-balance strong{font:800 30px/1.15 var(--disp);white-space:nowrap;max-width:100%;overflow-x:auto}
 .payment-receipt span{font-size:13px}
 .payment-totals>div{min-height:40px;align-items:center;border-bottom:1px solid var(--line)}
 .payment-extra>.btn{width:100%;margin-top:10px}

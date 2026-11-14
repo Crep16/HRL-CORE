@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import SearchSelect from '../ui/SearchSelect.vue';
-import AppNotice from '../ui/AppNotice.vue';
-import { useFinancialWorkspace } from '../../composables/useFinancialWorkspace';
+import SearchSelect from '../components/ui/SearchSelect.vue';
+import AppNotice from '../components/ui/AppNotice.vue';
+import { useFinancialWorkspace } from '../composables/useFinancialWorkspace';
 const emit=defineEmits<{history:[orderId:string]}>();
 const {can,busy,error,message,filters,page,selectedId,validRange,filtered,totals,visible,selected,cost,money,date,load,addCost,financialClasses}=useFinancialWorkspace();
 
@@ -45,7 +45,7 @@ const {can,busy,error,message,filters,page,selectedId,validRange,filtered,totals
   </div>
  </section>
 </template>
-<style scoped src="../../assets/styles/logbook.css"></style>
+<style scoped src="../assets/styles/logbook.css"></style>
 <style scoped>
 .finance-filters{grid-template-columns:repeat(4,minmax(0,1fr))}.finance-totals{padding:20px;margin-bottom:16px;background:white;border:1px solid var(--line);border-radius:12px}.finance-totals h3{margin:0 0 16px;font:700 20px var(--disp)}.finance-totals dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:0}.finance-totals dl>div{min-width:0;border-left:3px solid var(--line);padding-left:12px}.finance-totals dt{font-size:14px;color:var(--muted)}.finance-totals dd{margin:6px 0 0;font-size:21px;font-weight:700;overflow-wrap:anywhere}.finance-explanation{color:var(--muted);font-size:14px;line-height:1.6;margin:20px 0}.finance-table th:first-child,.finance-table th:last-child{width:25%}.expense-composer{margin-top:20px;border-top:1px solid var(--line)}.expense-composer summary{min-height:44px;padding-block:12px;cursor:pointer;color:var(--acc-ink)}.expense-form{display:grid;gap:12px}.expense-form input,.expense-form textarea{width:100%;padding:10px;border:1px solid var(--line2);border-radius:8px;min-height:44px;font:inherit}.financial-workspace .logbook-heading h2{font:700 24px var(--disp);margin:0}@media(max-width:1100px){.finance-filters{grid-template-columns:1fr 1fr}.finance-totals dl{grid-template-columns:1fr 1fr}}@media(max-width:520px){.finance-filters,.finance-totals dl{grid-template-columns:1fr}.finance-totals dd{font-size:20px}}
 </style>

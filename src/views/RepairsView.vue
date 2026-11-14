@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import SearchSelect from '../ui/SearchSelect.vue';
-import AppNotice from '../ui/AppNotice.vue';
-import PaymentsPanel from './PaymentsPanel.vue';
-import type { Order } from '../../types/order';
-import { useRepairScreen } from '../../composables/useRepairScreen';
+import SearchSelect from '../components/ui/SearchSelect.vue';
+import AppNotice from '../components/ui/AppNotice.vue';
+import PaymentsPanel from '../components/repairs/PaymentsPanel.vue';
+import type { Order } from '../types/order';
+import { useRepairScreen } from '../composables/useRepairScreen';
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ back: []; saved: [] }>();
-const {repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus}=useRepairScreen(props,emit);
+const {repair,payment,save,message,ready,dirty,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged}=useRepairScreen(props,emit);
 defineExpose({ save });
 </script>
 
@@ -25,10 +25,10 @@ defineExpose({ save });
           </details>
           <div class="fld"><label for="technician">Técnico</label><input id="technician" v-model="repair.technician" :readonly="!can('repairs.edit') || !ready || busy" placeholder="Sin asignar" /></div>
         </section>
-        <PaymentsPanel :order-id="String(order.databaseId)" :currency="order.currency??company.currency" :payment="payment" :disabled="busy||!ready" :prepare="save" @refreshed="payment=$event" @working="moneyBusy=$event" @saved="async result=>{payment=result;await reload();emit('saved');}" />
+        <PaymentsPanel :order-id="String(order.databaseId)" :currency="order.currency??company.currency" :payment="payment" :disabled="busy||!ready" :prepare="save" @refreshed="payment=$event" @working="moneyBusy=$event" @saved="paymentsChanged" />
       </aside>
       <section class="sheet" aria-label="Gestión de la reparación">
-        <div class="sh-h"><div><h1 class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" :disabled="!ready || busy || !dirty" @click="save">Guardar cambios</button></div></div>
+        <div class="sh-h"><div><h1 tabindex="-1" class="num">Reparaciones</h1><p class="subt">Orden {{ order.id }} de {{ order.client }}</p></div><div class="sh-act"><button class="btn btn-p" :disabled="!ready || busy || !dirty" @click="save">Guardar cambios</button></div></div>
         <div class="perf" aria-hidden="true"></div>
         <div class="workspace-tabs" role="group" aria-label="Vista de reparación">
           <button class="btn" :class="workspaceTab === 'work' ? 'btn-p' : 'btn-s'" :aria-pressed="workspaceTab === 'work'" @click="workspaceTab = 'work'">Trabajo y notas</button>
@@ -75,7 +75,7 @@ defineExpose({ save });
           <div v-for="(item, i) in repair.warranties" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ item.days }} días de cobertura</div></div><span class="pill amber">{{ order.delivered ? 'Entrega registrada' : 'Empieza al entregar' }}</span></div>
           <p v-if="!repair.warranties.length" class="help">Sin garantías registradas.</p>
           <form v-if="addingWarranty" class="compose" :inert="busy || !ready" @submit.prevent="addWarranty">
-            <SearchSelect id="warranty-type" v-model="warrantyType" label="Tipo de garantía sugerida" :options="[{value:'parts',label:'Refacciones'},{value:'labor',label:'Mano de obra'}]" @update:model-value="days = $event === 'labor' ? company.laborDays : company.partsDays" />
+            <SearchSelect id="warranty-type" v-model="warrantyType" label="Tipo de garantía sugerida" :options="[{value:'parts',label:'Refacciones'},{value:'labor',label:'Mano de obra'}]" @update:model-value="selectWarrantyType" />
             <div class="fld"><label for="warranty">Concepto</label><input id="warranty" v-model="warranty" required /></div>
             <div class="fld"><label for="days">Días de cobertura</label><input id="days" v-model.number="days" type="number" min="1" max="3650" required /></div>
             <p v-if="days === 0" class="help">Empresa no tiene días sugeridos para este tipo. Escribe los días acordados para registrar la garantía.</p>
@@ -87,7 +87,7 @@ defineExpose({ save });
     </div>
   </div>
 </template>
-<style scoped src="../../assets/styles/repairs.css"></style>
+<style scoped src="../assets/styles/repairs.css"></style>
 <style scoped>
 .actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}.note textarea{min-height:120px;padding:14px 16px;font-size:15.5px}.row{justify-content:space-between;flex-wrap:wrap}.work{display:grid;grid-template-columns: minmax(240px, .8fr) minmax(480px, 1.65fr) minmax(280px, 1fr)}.rail,.aside{min-width:0}.sheet{margin-left:8px}.steps{overflow:auto}.st-l{font-size:11px}.notice{margin:12px 28px;padding:12px 16px}
 @media(max-width:1200px){.work{grid-template-columns:280px minmax(0,1fr)}.aside{grid-column:2;padding-left:8px}.sh-b,.sh-h{padding:24px}.num{font-size:36px}}

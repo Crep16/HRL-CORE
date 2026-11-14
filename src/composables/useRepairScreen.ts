@@ -2,6 +2,7 @@ import { computed, onMounted, ref } from 'vue';
 import { useWorkshopDataStore } from '../stores/useWorkshopDataStore.ts';
 import { defaultStageOptions, includeRepairStage } from './useRepair.ts';
 import type { Order } from '../types/order.ts';
+import type { PaymentState } from '../types/payments.ts';
 import { useRepairWorkspace } from './useRepairWorkspace.ts';
 import { useWorkshopAccess } from './useWorkshopAccess.ts';
 import { useCompany } from './useCompany.ts';
@@ -12,6 +13,11 @@ const { repair, payment, save:persist, commit, message, busy:repairBusy, ready, 
 const moneyBusy=ref(false);
 async function save(){return moneyBusy.value?false:persist();}
 const busy=computed(()=>repairBusy.value||moneyBusy.value);
+async function paymentsChanged(value: PaymentState) {
+  payment.value = value;
+  await reload();
+  emit('saved');
+}
 const { can } = useWorkshopAccess();
 const newNote = ref('');
 const { company } = useCompany();
@@ -39,6 +45,10 @@ const addingWarranty = ref(false);
 const warranty = ref('');
 const warrantyType = ref<'parts' | 'labor'>('parts');
 const days = ref(company.value.partsDays);
+function selectWarrantyType(value: string) {
+  warrantyType.value = value === 'labor' ? 'labor' : 'parts';
+  days.value = warrantyType.value === 'labor' ? company.value.laborDays : company.value.partsDays;
+}
 const addingPart = ref(false);
 const part = ref('');
 const price = ref(0);
@@ -76,5 +86,5 @@ async function appendNote() {
   if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
 }
 async function back() { if (await save()) emit('back'); }
-return {repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus};
+return {repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
 }

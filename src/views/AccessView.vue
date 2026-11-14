@@ -1,7 +1,7 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { nextTick, onMounted, ref, watch } from "vue";
-import logo from "../../assets/images/brand/hrl-original.svg";
-import { useAccessForm } from "../../composables/useAccessForm";
+import logo from "../assets/images/brand/hrl-original.svg";
+import { useAccessForm } from "../composables/useAccessForm";
 
 const { auth, recovery, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature } = useAccessForm();
 const heading = ref<HTMLElement>();
@@ -87,4 +87,4 @@ defineExpose({ prepareLeave: () => !busy.value && !hasSecrets.value });
   </section>
 </template>
 
-<style src="../../assets/styles/access.css"></style>
+<style src="../assets/styles/access.css"></style>

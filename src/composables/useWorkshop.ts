@@ -9,14 +9,14 @@ import { printCompanyNote } from '../utils/printCompanyNote.ts';
 import type { AccessScope } from '../types/ipc.ts';
 import type { NoteKind } from '../types/company.ts';
 import type ReceptionView from '../views/ReceptionView.vue';
-import type RepairWorkspace from '../components/repairs/RepairWorkspace.vue';
+import type RepairsView from '../views/RepairsView.vue';
 import type CompanyNote from '../components/company/CompanyNote.vue';
 const labels:Record<AccessScope,string>={clients:'Clientes',repairs:'Reparaciones',logbook:'Bitácora',company:'Empresa',users:'Usuarios'};
 export function useWorkshop(){
   const auth=useAuthStore(), orders=useOrderStore(), workspace=useWorkspaceStore(), companyStore=useCompanyStore();
   const {company}=useCompany();
   const reception=useTemplateRef<InstanceType<typeof ReceptionView>>('reception');
-  const repair=useTemplateRef<InstanceType<typeof RepairWorkspace>>('repair');
+  const repair=useTemplateRef<InstanceType<typeof RepairsView>>('repair');
   const printNote=useTemplateRef<InstanceType<typeof CompanyNote>>('printNote');
   const printSource=useTemplateRef<HTMLElement>('printSource');
   const notice=ref(''),companyDirty=ref(false),printing=ref(false),printKind=ref<NoteKind>('entry');

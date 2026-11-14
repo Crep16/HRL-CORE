@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import AppIcon from "../ui/AppIcon.vue";
-import SearchSelect from "../ui/SearchSelect.vue";
-import AppNotice from "../ui/AppNotice.vue";
-import { useUsersWorkspace } from "../../composables/useUsersWorkspace";
+import AppIcon from "../components/ui/AppIcon.vue";
+import SearchSelect from "../components/ui/SearchSelect.vue";
+import AppNotice from "../components/ui/AppNotice.vue";
+import { useUsersWorkspace } from "../composables/useUsersWorkspace";
 const { accounts, busy, user, search, loaded, message, failed, selectedGrants, draft, sections, actions, roles, filtered, newAccount, edit, retry, save } = useUsersWorkspace();
 </script>
 
 <template>
   <section class="users-workspace" aria-labelledby="users-title">
     <header class="users-heading">
-      <div><h1 id="users-title"><AppIcon name="users" />Usuarios</h1><p>Cuentas de este equipo y acciones que puede realizar cada persona.</p></div>
+      <div><h1 tabindex="-1" id="users-title"><AppIcon name="users" />Usuarios</h1><p>Cuentas de este equipo y acciones que puede realizar cada persona.</p></div>
       <span class="users-local"><AppIcon name="shield" />Acceso administrado con clave maestra</span>
     </header>
     <AppNotice :message="message" :tone="failed?'error':'status'" @dismiss="message=''"><button v-if="failed && !loaded" class="btn btn-s" :disabled="busy" type="button" @click="retry">Volver a consultar</button></AppNotice>
@@ -71,7 +71,7 @@ const { accounts, busy, user, search, loaded, message, failed, selectedGrants, d
   </section>
 </template>
 
-<style src="../../assets/styles/users.css"></style>
+<style src="../assets/styles/users.css"></style>
 <style scoped>
 .users-money-permissions{min-width:0;border:0;border-top:1px solid var(--line);margin:16px 0 0;padding:16px 0 0}.users-money-permissions legend{font-weight:700}.users-money-permissions label{display:flex;align-items:center;gap:12px;min-height:44px;cursor:pointer}.users-money-permissions input{width:18px;height:18px;accent-color:var(--acc)}.users-money-permissions p{color:var(--muted);font-size:14px;line-height:1.5}
 </style>

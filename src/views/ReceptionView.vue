@@ -40,7 +40,7 @@ defineExpose({ prepareLeave,editing,hasChanges,trashed,showLookup,openHistory,ca
     <p v-if="store.isLoading" role="status" class="notice">Consultando o guardando la orden…</p>
     <main class="work reception">
       <aside class="rail" aria-label="Órdenes del taller">
-        <div class="rail-h"><div><h1 class="h-disp">{{ trashed ? 'Papelera' : 'Órdenes' }}</h1><p class="subt">{{ store.total }} en total</p></div><button v-if="!trashed" type="button" class="btn btn-p" :disabled="store.isLoading || uncertain || !auth.can('orders.create', 'clients')" @click="begin"><AppIcon name="add" />Nueva orden</button></div>
+        <div class="rail-h"><div><h1 tabindex="-1" class="h-disp">{{ trashed ? 'Papelera' : 'Órdenes' }}</h1><p class="subt">{{ store.total }} en total</p></div><button v-if="!trashed" type="button" class="btn btn-p" :disabled="store.isLoading || uncertain || !auth.can('orders.create', 'clients')" @click="begin"><AppIcon name="add" />Nueva orden</button></div>
         <label for="q" class="sr">Buscar órdenes por folio, cliente o serie</label>
         <div class="search"><AppIcon name="search" /><input id="q" v-model="query" type="search" placeholder="Orden, cliente o serie" maxlength="100" :disabled="store.isLoading"></div>
         <div class="seg" role="group" aria-label="Buscar en">

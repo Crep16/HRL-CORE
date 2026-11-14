@@ -14,6 +14,7 @@ export const logbookOperations: Record<string, string> = {
   'publication.edit':'Configuración de publicación modificada', imported:'Seguimiento importado',
 };
 export const logbookFields: Record<string, string> = {
+  estimatedDelivery:'Entrega estimada',sufferedImpact:'Golpes',impactDetail:'Detalle de golpes',liquidSpill:'Derrame de líquidos',liquidDetail:'Detalle de líquidos',delivered:'Equipo entregado',revision:'Revisión',
   evidenceId:'Identificador de foto',evidenceName:'Archivo de evidencia',evidenceSource:'Origen de la foto',evidenceNote:'Descripción de la foto',evidenceRemoved:'Foto retirada',
   temporaryGrant:'Identificador de autorización',authorizedBy:'Autorizado por',performedBy:'Realizado por',temporaryScope:'Apartado autorizado',temporaryOperations:'Permisos prestados',temporaryOperation:'Acción autorizada',
   paymentMethod:'Método utilizado',paymentReference:'Abono original',

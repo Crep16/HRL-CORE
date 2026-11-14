@@ -1,49 +1,11 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue';
 import SearchSelect from '../ui/SearchSelect.vue';
 import AppNotice from '../ui/AppNotice.vue';
-import type { Clause, CompanySettings } from '../../types/company';
+import type { CompanySettings } from '../../types/company';
+import { useCompanyClauses } from '../../composables/useCompanyClauses';
 const settings = defineModel<CompanySettings>({ required: true });
 const emit = defineEmits<{ editing: [value: boolean] }>();
-const editor = ref<Clause>();
-const isNew = ref(false);
-const error = ref('');
-const removed = ref<{clause: Clause; index: number}>();
-watch(() => settings.value, () => {removed.value=undefined;});
-function edit(clause?: Clause) {
-  editor.value = clause ? {...clause} : {id:crypto.randomUUID(), title:'', text:'', entry:true, exit:false};
-  isNew.value = !clause; error.value = ''; emit('editing', true);
-  nextTick(() => document.getElementById('clause-title')?.focus());
-}
-function cancel() { editor.value = undefined; error.value = ''; emit('editing', false); }
-function apply() {
-  if (!editor.value) return;
-  const clause = {...editor.value, title:editor.value.title.trim(), text:editor.value.text.trim()};
-  if (!clause.title || !clause.text) { error.value = 'Completa el título y el texto de la cláusula.'; return; }
-  if (isNew.value) settings.value.clauses.push(clause);
-  else { const index = settings.value.clauses.findIndex(c => c.id === clause.id); if (index >= 0) settings.value.clauses[index] = clause; }
-  cancel();
-}
-function move(index: number, offset: number) {
-  const destination = index + offset;
-  if (destination < 0 || destination >= settings.value.clauses.length) return;
-  const clause = settings.value.clauses.splice(index, 1)[0]!;
-  settings.value.clauses.splice(destination, 0, clause);
-  nextTick(() => {
-    const action=document.getElementById(`clause-${clause.id}-${offset < 0 ? 'up' : 'down'}`) as HTMLButtonElement | null;
-    if(action && !action.disabled) action.focus();
-    else document.getElementById(`clause-${clause.id}`)?.focus();
-  });
-}
-function remove(index: number) {
-  removed.value = {clause:{...settings.value.clauses[index]!},index};
-  settings.value.clauses.splice(index,1);
-}
-function undo() {
-  if (!removed.value) return;
-  if (!settings.value.clauses.some(c=>c.id===removed.value!.clause.id)) settings.value.clauses.splice(Math.min(removed.value.index, settings.value.clauses.length), 0, removed.value.clause);
-  removed.value = undefined;
-}
+const {editor,isNew,error,removed,activeCount,edit,cancel,apply,move,remove,undo} = useCompanyClauses(settings, value => emit('editing', value));
 </script>
 
 <template>
@@ -52,7 +14,7 @@ function undo() {
     <label class="company-check"><input v-model="settings.numberClauses" type="checkbox" /> Numerar cláusulas</label>
   </div>
   <p class="company-help">Textos de ejemplo del prototipo. Revísalos antes de utilizarlos con clientes.</p>
-  <div class="company-section-toolbar"><p>{{ settings.clauses.length }} cláusulas · {{ settings.clauses.filter(c=>c.entry||c.exit).length }} activas</p><button class="btn btn-s" type="button" :disabled="!!editor" @click="edit()">Agregar cláusula</button></div>
+  <div class="company-section-toolbar"><p>{{ settings.clauses.length }} cláusulas · {{ activeCount }} activas</p><button id="clause-add" class="btn btn-s" type="button" :disabled="!!editor" @click="edit()">Agregar cláusula</button></div>
   <p v-if="!settings.clauses.length" class="company-empty">No hay cláusulas. Agrega una para incluir condiciones en las notas.</p>
   <ol class="company-clause-list">
     <li v-for="(clause, index) in settings.clauses" :key="clause.id" :class="{selected:editor?.id===clause.id}">

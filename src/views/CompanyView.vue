@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import CompanyClauses from './CompanyClauses.vue';
-import SearchSelect from '../ui/SearchSelect.vue';
-import AppNotice from '../ui/AppNotice.vue';
-import CompanyNote from './CompanyNote.vue';
-import brandLogo from '../../assets/images/brand/hrl-original.svg';
-import type { CompanySection } from '../../types/company';
-import { paperLabels } from '../../types/company';
-import type { Order } from '../../types/order';
-import { useCompanyWorkspace } from '../../composables/useCompanyWorkspace';
+import CompanyClauses from '../components/company/CompanyClauses.vue';
+import SearchSelect from '../components/ui/SearchSelect.vue';
+import AppNotice from '../components/ui/AppNotice.vue';
+import CompanyNote from '../components/company/CompanyNote.vue';
+import brandLogo from '../assets/images/brand/hrl-original.svg';
+import type { CompanySection } from '../types/company';
+import { paperLabels } from '../types/company';
+import type { Order } from '../types/order';
+import { useCompanyWorkspace } from '../composables/useCompanyWorkspace';
 const props = defineProps<{orders: Order[]; order?: Order}>();
 const emit = defineEmits<{dirtyChange:[value:boolean]}>();
 const { can, draft, section, noteKind, clauseEditing, message, saving, errors, fieldError, focusError, uploadError, readingLogo, printing, confirmDiscard, fileInput, dirty, hasPending, nextFolio, sections, current, descriptions, totalsExample, goTo, save, discard, upload, pasteLogo, printTest } = useCompanyWorkspace(props, emit);
@@ -15,7 +15,7 @@ const { can, draft, section, noteKind, clauseEditing, message, saving, errors, f
 
 <template>
   <main class="company-workspace" aria-labelledby="company-title">
-    <header class="company-heading"><div><h1 id="company-title">Empresa</h1><p>Configura tus datos y el formato de las notas del taller.</p></div><span class="company-save-state" :class="{pending:hasPending}" role="status">{{ hasPending ? 'Cambios sin guardar' : 'Sin cambios pendientes' }}</span></header>
+    <header class="company-heading"><div><h1 tabindex="-1" id="company-title">Empresa</h1><p>Configura tus datos y el formato de las notas del taller.</p></div><span class="company-save-state" :class="{pending:hasPending}" role="status">{{ hasPending ? 'Cambios sin guardar' : 'Sin cambios pendientes' }}</span></header>
     <AppNotice :message="message" @dismiss="message=''" />
     <div class="company-layout">
       <SearchSelect class="company-mobile-nav company-field" id="company-section-select" :model-value="section" label="Sección de Empresa" :options="sections.map(item=>({value:item.id,label:item.title}))" @update:model-value="goTo($event as CompanySection)" />
@@ -113,4 +113,4 @@ const { can, draft, section, noteKind, clauseEditing, message, saving, errors, f
     </div>
   </main>
 </template>
-<style src="../../assets/styles/company.css"></style>
+<style src="../assets/styles/company.css"></style>

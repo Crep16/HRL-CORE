@@ -88,3 +88,9 @@ La Fase 4 aprobó el build y 29 pruebas frontend (14 IPC, 9 de pantallas/viewmod
 Para continuar con revisión o modificación de la interfaz queda pendiente elegir el modo `during` o `after` solicitado por la habilidad antislop. También se solicitaron el contrato del portal y los cinco ítems de entrega que faltan en la fuente. Las vistas, cámara y editor de cláusulas corresponden a la Fase 5.
 
 El frontend se registró en `d77be15`, incorporando también la refactorización de frontend que ya estaba pendiente. Jira confirmó Terminado para HRL-123/124/125, HRL-136/137, HRL-139 y HRL-178, junto con sus tareas principales HRL-122 y HRL-133. Esta continuación cerró 22 incidencias en total, correspondientes a 18 subtareas y 4 historias/tareas principales. Las dos licencias originales de fuentes conservan espacios finales en una línea, detectados por `git diff --check`. La comprobación del resto del commit pasó.
+
+## Continuación del 14 de noviembre de 2026
+
+El usuario eligió antislop durante los cambios y autorizó continuar. Se implementó la Fase 5 de vistas y composables, con identidad de auditoría para HRL-99 y extracción de pantallas, cámara, cláusulas y garantía sugerida para HRL-127/128/129. El detalle está en `docs/fase-5-vistas-y-validacion.md`.
+
+Pasaron el build, `cargo check`, 93 pruebas Rust, 38 pruebas frontend y la revisión de navegador con Chrome headless y datos aislados de IPC simulado. El navegador integrado y el runtime de control de Windows fallaron al inicializarse. Las comprobaciones de dispositivo físico, aplicación instalada y personal del taller siguen pendientes. La documentación de SQLite se actualizó para distinguir esquema vigente y antecedentes.

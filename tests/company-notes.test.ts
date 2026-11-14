@@ -11,7 +11,7 @@ globalThis.window = {} as Window & typeof globalThis;
 let server: ViteDevServer;
 let pinia: ReturnType<typeof createPinia>;
 before(async () => {
-  server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: 'custom' });
+  server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
 });
 after(async () => { await server.close(); });
 beforeEach(() => { pinia = createPinia(); setActivePinia(pinia); });

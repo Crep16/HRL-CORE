@@ -176,3 +176,9 @@ El ejecutable registra únicamente comandos de `commands/` y el estado normaliza
 El único `invoke` del árbol activo está en `src/services/api/transport.ts`. El frontend anterior, sus composables, órdenes de demostración y pruebas históricas se conservan en `legacy/frontend/`, fuera de las entradas de compilación. El adaptador `utils/legacyOrder.ts` sigue transformando DTO normalizados para las vistas vigentes.
 
 `test:company` ejecuta las pruebas actuales de notas en `tests/company-notes.test.ts`. La suite renderiza el componente real mediante SSR y prepara el resumen con IPC simulado, incluyendo denegación, datos públicos y garantías. `test:finances` comprueba el modelo de lectura. Las pruebas IPC incluyen la invalidación de respuestas de finanzas, Bitácora y resumen público al cambiar de sesión.
+
+## Fase 5 del 14 de noviembre de 2026
+
+Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, LogbookView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
+
+Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Bitácora incorpora `entity` y `entityId` en sus tipos y presenta la identidad del registro mediante su viewmodel. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.

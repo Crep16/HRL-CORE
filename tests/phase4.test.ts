@@ -154,11 +154,11 @@ test("recovery and temporary forms do not retain credentials after failed submis
 
 test("Vue renders the catalog fields with native limits and readonly saved orders", async () => {
   const { createServer } = await import("vite");
-  const server = await createServer({ server: { middlewareMode: true, hmr: false }, appType: "custom" });
+  const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: "custom" });
   try {
     const authModule = await server.ssrLoadModule("/src/stores/useAuthStore.ts");
     const ordersModule = await server.ssrLoadModule("/src/stores/useOrderStore.ts");
-    const accessModule = await server.ssrLoadModule("/src/components/access/AccessWorkspace.vue");
+    const accessModule = await server.ssrLoadModule("/src/views/AccessView.vue");
     const receptionModule = await server.ssrLoadModule("/src/views/ReceptionView.vue");
     const auth = authModule.useAuthStore(pinia);
     auth.setupComplete = false;
@@ -265,7 +265,7 @@ test("legacy order arrows cross pages and incident controls keep impact and liqu
 
 test("restored workspace renders every original section through the normalized container", async () => {
   const { createServer } = await import('vite');
-  const server=await createServer({server:{middlewareMode:true,hmr:false},appType:'custom'});
+  const server=await createServer({server:{middlewareMode:true,hmr:false,ws:false},appType:'custom'});
   mockIPC(command=>{if(command==='normalized_repair_summary')return {technician:'',publicNote:'',warranties:[]};return null;});
   try {
     const authModule=await server.ssrLoadModule('/src/stores/useAuthStore.ts');

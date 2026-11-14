@@ -11,6 +11,18 @@ const filters = reactive({query:'', operation:'', authorId:'',orderId:'',from:''
 const applied = ref({...filters});
 const result = ref<LogbookPage>({entries:[],total:0,page:0,pageSize:50,authors:[]});
 const selected = ref<LogbookEntry>();
+const entityNames: Record<string, string> = {
+  ordenes: 'Orden', clientes: 'Cliente', equipos: 'Equipo', abonos: 'Abono',
+  ajustes_abono: 'Ajuste de abono', devoluciones: 'Devolución', gastos_directos: 'Gasto directo',
+  empresa: 'Empresa', usuarios: 'Usuario', evidencias: 'Evidencia', seguimientos: 'Seguimiento',
+  accesos_temporales: 'Acceso temporal',
+};
+const recordIdentity = computed(() => {
+  const entry = selected.value;
+  if (!entry?.entity) return entry?.orderId || 'Sin identificar';
+  const name = entityNames[entry.entity] ?? entry.entity;
+  return entry.entityId ? `${name} #${entry.entityId}` : name;
+});
 const busy = ref(false);
 const error = ref('');
 const changes = computed(() => selected.value ? entryChanges(selected.value) : []);
@@ -42,5 +54,5 @@ function description(entry: LogbookEntry) {
   return entryChanges(entry).map(change => logbookFields[change.field] ?? 'Campo actualizado').join(' · ') || 'Operación del sistema';
 }
 onMounted(() => load(0));
-return {company,tab,filters,result,selected,busy,error,changes,pages,hasFilters,load,apply,clear,orderHistory,date,description,logbookFields,logbookOperations,logbookValue};
+return {company,tab,filters,result,selected,recordIdentity,busy,error,changes,pages,hasFilters,load,apply,clear,orderHistory,date,description,logbookFields,logbookOperations,logbookValue};
 }
