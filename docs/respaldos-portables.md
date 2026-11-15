@@ -11,6 +11,11 @@ El 14 de noviembre de 2026 el usuario definió estos requisitos:
 3. Debe existir creación manual y automática. El automático se inicia al cerrar
    la aplicación y el archivo se conserva en una carpeta del programa, siguiendo
    el comportamiento de referencia descrito por el usuario para Eleventa.
+4. La opción estará en **Herramientas → Respaldos**. Su acceso queda reservado
+   a usuarios con acceso **Completo**, con validación de la clave maestra para
+   configurar o restaurar. Limitado y Personalizado no reciben acceso a esta
+   herramienta por permisos parciales ni préstamos temporales. La restricción
+   se comprobará en Rust además de la presentación del menú.
 
 Estos requisitos sustituyen la necesidad de decidir si HRL CORE debe ofrecer
 recuperación portable y qué modos de creación se desean. No acreditan una
@@ -24,9 +29,10 @@ implementación o una restauración ya probada.
   copiarse a USB o disco externo. El conjunto incluirá la base normalizada,
   fotografías, logo y las claves necesarias para recuperar las credenciales
   cifradas de los equipos.
-- Proteger el paquete y su material criptográfico con una contraseña de respaldo
-  independiente. La contraseña se configura en la aplicación; no se pide por
-  chat ni se incorpora al repositorio. La preparación del automático debe
+- Proteger el paquete y su material criptográfico con una contraseña. Falta
+  elegir entre una contraseña exclusiva de respaldos y la clave maestra del
+  taller. Se configura en la aplicación; no se pide por chat ni se incorpora
+  al repositorio. La preparación del automático debe
   resolver cómo conservar su capacidad de cifrado con protección local.
 - Al cerrar, atender primero los borradores y las operaciones en curso. El
   respaldo solo representa información confirmada. Crear una copia consistente,
@@ -47,8 +53,9 @@ sustituye la recuperación de las claves de cifrado.
 
 ## Aspectos pendientes de concretar
 
-- Configuración y recuperación de la contraseña de respaldo, y personas
-  autorizadas para configurar, crear y restaurar copias.
+- Elección, configuración y recuperación de la contraseña que protege el
+  archivo portable. La autorización de acceso a la herramienta ya está definida
+  en el requisito 4 y no sustituye la protección criptográfica del archivo.
 - Conservación de versiones y eventual limpieza automática. No se autoriza
   eliminar copias antiguas mediante esta definición.
 - Si además de la carpeta local debe existir una copia automática directa a un
