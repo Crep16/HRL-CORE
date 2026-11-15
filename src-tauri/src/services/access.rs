@@ -1,6 +1,6 @@
 use super::audit::AuditService;
 use super::recovery::{
-    account_fingerprint, configured_public_key, RecoveryState, CHALLENGE_TTL_SECONDS,
+    CHALLENGE_TTL_SECONDS, RecoveryState, account_fingerprint, configured_public_key,
 };
 use crate::{
     domain::{
@@ -11,8 +11,8 @@ use crate::{
     repositories::{access::AccessRepository, audit::AuditRecord},
 };
 use argon2::{
-    password_hash::{PasswordHash, SaltString},
     Argon2, PasswordHasher, PasswordVerifier,
+    password_hash::{PasswordHash, SaltString},
 };
 use rand_core::OsRng;
 use sha2::{Digest, Sha256};
@@ -99,7 +99,7 @@ pub(crate) async fn hash(password: &str) -> Result<String, AppError> {
     .await
     .map_err(|_| AppError::Crypto)?
 }
-async fn verify(password: &str, encoded: &str) -> Result<bool, AppError> {
+pub(crate) async fn verify(password: &str, encoded: &str) -> Result<bool, AppError> {
     let password = Zeroizing::new(password.to_owned());
     let encoded = encoded.to_owned();
     tauri::async_runtime::spawn_blocking(move || {

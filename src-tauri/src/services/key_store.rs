@@ -81,11 +81,11 @@ impl KeyProvider for OsKeyStore {
 }
 
 #[cfg(windows)]
-fn protect(bytes: &[u8], decrypt: bool) -> Result<Vec<u8>, AppError> {
+pub(crate) fn protect(bytes: &[u8], decrypt: bool) -> Result<Vec<u8>, AppError> {
     use windows_sys::Win32::{
         Foundation::LocalFree,
         Security::Cryptography::{
-            CryptProtectData, CryptUnprotectData, CRYPTPROTECT_UI_FORBIDDEN, CRYPT_INTEGER_BLOB,
+            CRYPT_INTEGER_BLOB, CRYPTPROTECT_UI_FORBIDDEN, CryptProtectData, CryptUnprotectData,
         },
     };
     use zeroize::Zeroize;
@@ -143,6 +143,6 @@ fn protect(bytes: &[u8], decrypt: bool) -> Result<Vec<u8>, AppError> {
 }
 
 #[cfg(not(windows))]
-fn protect(_bytes: &[u8], _decrypt: bool) -> Result<Vec<u8>, AppError> {
+pub(crate) fn protect(_bytes: &[u8], _decrypt: bool) -> Result<Vec<u8>, AppError> {
     Err(AppError::Crypto)
 }

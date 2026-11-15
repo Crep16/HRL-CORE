@@ -2,32 +2,32 @@
 #[path = "../legacy/access.rs"]
 mod access;
 pub mod commands;
-pub mod repositories;
-pub mod services;
 pub mod db;
 pub mod domain;
 pub mod error;
+pub mod repositories;
+pub mod services;
 #[cfg(test)]
 mod test_support;
 
 #[cfg(test)]
+#[path = "../legacy/company.rs"]
+mod company;
+#[cfg(test)]
 #[path = "../legacy/evidence.rs"]
 mod evidence;
-#[cfg(test)]
-#[path = "../legacy/logbook.rs"]
-mod logbook;
 #[cfg(test)]
 #[path = "../legacy/finances.rs"]
 mod finances;
 #[cfg(test)]
-#[path = "../legacy/company.rs"]
-mod company;
-#[cfg(test)]
-#[path = "../legacy/payments.rs"]
-mod payments;
+#[path = "../legacy/logbook.rs"]
+mod logbook;
 #[cfg(test)]
 #[path = "../legacy/orders.rs"]
 mod orders;
+#[cfg(test)]
+#[path = "../legacy/payments.rs"]
+mod payments;
 #[cfg(test)]
 use domain::permissions;
 #[cfg(test)]
@@ -42,11 +42,16 @@ mod windowing;
 pub fn run() {
     tauri::Builder::default()
         .manage(commands::BackendState::default())
-
         .manage(windowing::WindowProfileState::default())
-
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            commands::backup_status,
+            commands::configure_backup,
+            commands::create_backup,
+            commands::automatic_backup,
+            commands::open_backup_folder,
+            commands::restore_backup,
+            commands::restart_after_restore,
             commands::check_setup_status,
             commands::list_login_users,
             commands::sync_normalized_window_profile,

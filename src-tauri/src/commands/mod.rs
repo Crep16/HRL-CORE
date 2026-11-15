@@ -1,14 +1,104 @@
 //! Contratos nuevos de la base normalizada; no comparten sesión ni datos con el IPC anterior.
 //! Las entradas usan camelCase. Las claves de equipos solo salen de `get_order` cuando
 //! se solicita `includeDevicePassword` y el servicio comprueba acceso a la orden.
-use crate::{
-    db::Database,
-    domain::contracts::*,
-    error::AppError,
-    services::BackendServices,
-};
+use crate::{db::Database, domain::contracts::*, error::AppError, services::BackendServices};
 use tauri::{Manager, State};
 use tokio::sync::OnceCell;
+
+#[tauri::command]
+pub async fn backup_status(
+    payload: crate::domain::backup::BackupAuth,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<crate::domain::backup::BackupStatus, AppError> {
+    state.services(&app).await?.backups.status(&payload).await
+}
+#[tauri::command]
+pub async fn configure_backup(
+    payload: crate::domain::backup::BackupConfiguration,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<(), AppError> {
+    state
+        .services(&app)
+        .await?
+        .backups
+        .configure(&payload)
+        .await
+}
+#[tauri::command]
+pub async fn create_backup(
+    payload: crate::domain::backup::BackupAuth,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<String, AppError> {
+    state.services(&app).await?.backups.create(&payload).await
+}
+#[tauri::command]
+pub async fn automatic_backup(
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<Option<String>, AppError> {
+    state.services(&app).await?.backups.automatic().await
+}
+#[tauri::command]
+pub async fn open_backup_folder(
+    payload: crate::domain::backup::BackupAuth,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<(), AppError> {
+    use tauri_plugin_opener::OpenerExt;
+    let status = state.services(&app).await?.backups.status(&payload).await?;
+    app.opener()
+        .open_path(status.folder, None::<&str>)
+        .map_err(|_| AppError::Validation("No se pudo abrir la carpeta Respaldos.".into()))
+}
+#[tauri::command]
+pub async fn restore_backup(
+    payload: crate::domain::backup::RestoreBackup,
+    window: tauri::WebviewWindow,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<bool, AppError> {
+    state
+        .services(&app)
+        .await?
+        .backups
+        .authorize_restore(&payload)
+        .await?;
+    #[cfg(windows)]
+    let owner = window.hwnd().map_err(|_| AppError::Window)?.0 as usize;
+    #[cfg(not(windows))]
+    let owner = {
+        let _ = window;
+        0
+    };
+    let path = tauri::async_runtime::spawn_blocking(move || {
+        crate::services::backups::choose_backup(owner)
+    })
+    .await
+    .map_err(|_| AppError::Crypto)??;
+    let Some(path) = path else {
+        return Ok(false);
+    };
+    state
+        .services(&app)
+        .await?
+        .backups
+        .restore(&path, &payload)
+        .await?;
+    Ok(true)
+}
+#[tauri::command]
+pub async fn restart_after_restore(
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<(), AppError> {
+    if !state.services(&app).await?.backups.needs_restart() {
+        return Err(AppError::Forbidden);
+    }
+    app.restart()
+}
 
 #[tauri::command]
 pub async fn refresh_normalized_session(

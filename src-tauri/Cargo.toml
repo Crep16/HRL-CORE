@@ -35,7 +35,7 @@ aes-gcm = "0.10.3"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Cryptography"] }
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security_Cryptography", "Win32_UI_Controls_Dialogs"] }
 [dev-dependencies]
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }
 tempfile = "3"

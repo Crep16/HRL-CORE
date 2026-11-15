@@ -1,5 +1,7 @@
 pub mod access;
 pub mod audit;
+pub mod backup_archive;
+pub mod backups;
 pub mod company;
 pub mod crypto;
 pub mod key_store;
@@ -15,6 +17,7 @@ use crate::{
 use std::sync::Arc;
 
 pub struct BackendServices {
+    pub backups: backups::BackupService,
     pub evidence: evidence::EvidenceService,
     pub reports: reports::ReportService,
     pub repairs: repairs::RepairService,
@@ -52,6 +55,17 @@ impl BackendServices {
                 .await?,
         );
         access.recover().await?;
+        let root = assets
+            .as_ref()
+            .and_then(|path| path.parent())
+            .map(|path| path.to_path_buf());
+        let backups = backups::BackupService::new(
+            pool.clone(),
+            Arc::new(crate::repositories::backups::BackupRepository),
+            access.clone(),
+            keys.clone(),
+            root,
+        );
         let crypto = Arc::new(crypto::CryptoService::new(keys));
         let order_repository = Arc::new(OrderRepository);
         let ledger_repository = Arc::new(crate::repositories::ledger::LedgerRepository);
@@ -97,14 +111,10 @@ impl BackendServices {
             audit.clone(),
             assets,
         );
-        let orders = orders::OrderService::new(
-            pool,
-            order_repository,
-            access.clone(),
-            audit,
-            crypto,
-        );
+        let orders =
+            orders::OrderService::new(pool, order_repository, access.clone(), audit, crypto);
         Ok(Self {
+            backups,
             access,
             orders,
             company,

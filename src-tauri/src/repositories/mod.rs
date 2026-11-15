@@ -1,5 +1,6 @@
 pub mod access;
 pub mod audit;
+pub mod backups;
 pub mod company;
 pub mod orders;
 pub mod users;

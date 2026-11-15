@@ -26,6 +26,323 @@ fn keys() -> Arc<dyn KeyProvider> {
     Arc::new(TestKeys([7; 32]))
 }
 
+#[test]
+fn portable_backups_restore_books_assets_and_device_key_without_the_original_installation() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::{backup::*, evidence_contracts::NewEvidence};
+        let workspace = tempfile::tempdir().unwrap();
+        let source = workspace.path().join("origen");
+        std::fs::create_dir(&source).unwrap();
+        let db = Database::open_file(&source.join("hrl_core_3fn.db"))
+            .await
+            .unwrap();
+        let pool = db.pool().clone();
+        let services = BackendServices::with_os_key_store(db, &source.join("keys"))
+            .await
+            .unwrap();
+        services.access.initialize(setup()).await.unwrap();
+        let mut payload = order();
+        let mut company = company_settings();
+        company.logo="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII=".into();
+        company.logo_name = "logo-de-prueba.png".into();
+        services
+            .company
+            .save(crate::domain::company_contracts::SaveCompanyPayload {
+                value: company,
+                expected_revision: 0,
+            })
+            .await
+            .unwrap();
+        payload.initial_payment = Some(InitialPaymentInput {
+            request_id: "backup-receipt-test-001".into(),
+            amount_minor: 25000,
+            method: "Efectivo".into(),
+        });
+        let created = services.orders.create(payload).await.unwrap();
+        let code = "11223344556677889900aabbccddeeff";
+        services
+            .evidence
+            .add(NewEvidence {
+                id: code.into(),
+                order_id: created.id,
+                original_name: "foto.png".into(),
+                mime: "image/png".into(),
+                source: "file".into(),
+                note: "Prueba de respaldo".into(),
+                bytes: b"\x89PNG\r\n\x1a\nprueba".to_vec(),
+            })
+            .await
+            .unwrap();
+        let auth = BackupAuth {
+            master_password: "master-test-123".into(),
+        };
+        assert!(!services.backups.status(&auth).await.unwrap().automatic);
+        assert!(
+            services
+                .backups
+                .create(&BackupAuth {
+                    master_password: "incorrecta".into()
+                })
+                .await
+                .is_err()
+        );
+        let manual = services.backups.create(&auth).await.unwrap();
+        services
+            .backups
+            .configure(&BackupConfiguration {
+                master_password: "master-test-123".into(),
+                automatic: true,
+            })
+            .await
+            .unwrap();
+        assert!(services.backups.status(&auth).await.unwrap().automatic);
+        assert!(services.backups.automatic().await.unwrap().is_some());
+        services
+            .backups
+            .configure(&BackupConfiguration {
+                master_password: "master-test-123".into(),
+                automatic: false,
+            })
+            .await
+            .unwrap();
+        assert!(!services.backups.status(&auth).await.unwrap().automatic);
+        assert!(services.backups.automatic().await.unwrap().is_none());
+        services
+            .backups
+            .configure(&BackupConfiguration {
+                master_password: "master-test-123".into(),
+                automatic: true,
+            })
+            .await
+            .unwrap();
+        assert_eq!(services.backups.status(&auth).await.unwrap().files.len(), 2);
+        std::fs::write(
+            source.join("keys/respaldo-automatico.dpapi"),
+            b"configuracion-danada",
+        )
+        .unwrap();
+        let damaged_status = services.backups.status(&auth).await.unwrap();
+        assert!(!damaged_status.automatic);
+        assert!(damaged_status.warning.is_some());
+        assert!(services.backups.automatic().await.is_err());
+        services
+            .backups
+            .configure(&BackupConfiguration {
+                master_password: "master-test-123".into(),
+                automatic: true,
+            })
+            .await
+            .unwrap();
+        let repaired_status = services.backups.status(&auth).await.unwrap();
+        assert!(repaired_status.automatic);
+        assert!(repaired_status.warning.is_none());
+        let limited = add_user(&pool, "backup-limited", "limited").await;
+        services
+            .access
+            .login(login("backup-limited"))
+            .await
+            .unwrap();
+        assert!(matches!(
+            services.backups.status(&auth).await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(matches!(
+            services.backups.create(&auth).await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(matches!(
+            services
+                .backups
+                .configure(&BackupConfiguration {
+                    master_password: "master-test-123".into(),
+                    automatic: false
+                })
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(limited > 0);
+        assert!(matches!(
+            services
+                .backups
+                .authorize_restore(&RestoreBackup {
+                    current_master_password: "master-test-123".into(),
+                    backup_master_password: "master-test-123".into()
+                })
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(matches!(
+            services
+                .backups
+                .restore(
+                    &workspace.path().join("inexistente.hrlbackup"),
+                    &RestoreBackup {
+                        current_master_password: "master-test-123".into(),
+                        backup_master_password: "master-test-123".into()
+                    }
+                )
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        add_user(&pool, "backup-custom", "custom").await;
+        services.access.login(login("backup-custom")).await.unwrap();
+        assert!(matches!(
+            services.backups.status(&auth).await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(matches!(
+            services
+                .backups
+                .authorize_restore(&RestoreBackup {
+                    current_master_password: "master-test-123".into(),
+                    backup_master_password: "master-test-123".into()
+                })
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        services.access.login(login("admin")).await.unwrap();
+        let usb = workspace.path().join("usb.hrlbackup");
+        std::fs::copy(source.join("Respaldos").join(manual), &usb).unwrap();
+        let encrypted = std::fs::read(&usb).unwrap();
+        assert!(
+            !encrypted
+                .windows(b"test-device-PIN-2048".len())
+                .any(|part| part == b"test-device-PIN-2048")
+        );
+        assert!(
+            !encrypted
+                .windows(b"master-test-123".len())
+                .any(|part| part == b"master-test-123")
+        );
+        let relative: String = sqlx::query_scalar("SELECT ruta_relativa FROM evidencias LIMIT 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let photo = source.join("assets-3fn").join(relative);
+        assert!(photo.starts_with(&source));
+        std::fs::remove_file(photo).unwrap();
+        assert!(services.backups.create(&auth).await.is_err());
+        assert_eq!(services.backups.status(&auth).await.unwrap().files.len(), 2);
+        let original_hash: String =
+            sqlx::query_scalar("SELECT hash FROM claves_maestras WHERE id=1")
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+        sqlx::query("UPDATE claves_maestras SET hash='changed-for-test' WHERE id=1")
+            .execute(&pool)
+            .await
+            .unwrap();
+        assert!(services.backups.automatic().await.is_err());
+        sqlx::query("UPDATE claves_maestras SET hash=? WHERE id=1")
+            .bind(original_hash)
+            .execute(&pool)
+            .await
+            .unwrap();
+        pool.close().await;
+        drop(services);
+        assert!(
+            source
+                .canonicalize()
+                .unwrap()
+                .starts_with(workspace.path().canonicalize().unwrap())
+        );
+        std::fs::remove_dir_all(&source).unwrap();
+
+        let target = workspace.path().join("destino");
+        std::fs::create_dir(&target).unwrap();
+        let db = Database::open_file(&target.join("hrl_core_3fn.db"))
+            .await
+            .unwrap();
+        let target_pool = db.pool().clone();
+        let destination = BackendServices::with_os_key_store(db, &target.join("keys"))
+            .await
+            .unwrap();
+        let original_key = std::fs::read(target.join("keys/device-password-v1.dpapi")).unwrap();
+        assert!(
+            destination
+                .backups
+                .restore(
+                    &usb,
+                    &RestoreBackup {
+                        current_master_password: "".into(),
+                        backup_master_password: "incorrecta".into()
+                    }
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(count(&target_pool, "usuarios").await, 0);
+        let corrupt = workspace.path().join("corrupto.hrlbackup");
+        let mut changed = encrypted.clone();
+        *changed.last_mut().unwrap() ^= 1;
+        std::fs::write(&corrupt, changed).unwrap();
+        assert!(
+            destination
+                .backups
+                .restore(
+                    &corrupt,
+                    &RestoreBackup {
+                        current_master_password: "".into(),
+                        backup_master_password: "master-test-123".into()
+                    }
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(count(&target_pool, "usuarios").await, 0);
+        assert_eq!(
+            std::fs::read(target.join("keys/device-password-v1.dpapi")).unwrap(),
+            original_key
+        );
+        destination
+            .backups
+            .restore(
+                &usb,
+                &RestoreBackup {
+                    current_master_password: "".into(),
+                    backup_master_password: "master-test-123".into(),
+                },
+            )
+            .await
+            .unwrap();
+        assert!(destination.backups.needs_restart());
+        drop(destination);
+        let db = Database::open_file(&target.join("hrl_core_3fn.db"))
+            .await
+            .unwrap();
+        let restored_pool = db.pool().clone();
+        let restored = BackendServices::with_os_key_store(db, &target.join("keys"))
+            .await
+            .unwrap();
+        restored.access.login(login("admin")).await.unwrap();
+        let company = restored.company.load().await.unwrap().unwrap();
+        assert_eq!(company.logo_name, "logo-de-prueba.png");
+        assert!(company.logo.starts_with("data:image/png;base64,"));
+        let read = restored
+            .orders
+            .get(GetOrderPayload {
+                order_id: created.id,
+                scope: AccessScope::Clients,
+                include_device_password: true,
+                include_deleted: false,
+            })
+            .await
+            .unwrap();
+        assert_eq!(read.net_minor, 25000);
+        assert_eq!(read.pending_minor, 125000);
+        assert_eq!(
+            read.device_password.unwrap().0.as_str(),
+            "test-device-PIN-2048"
+        );
+        assert_eq!(
+            restored.evidence.read(created.id, code).await.unwrap(),
+            b"\x89PNG\r\n\x1a\nprueba"
+        );
+        assert_eq!(count(&restored_pool, "abonos").await, 1);
+        assert!(count(&restored_pool, "auditoria").await >= 3);
+    });
+}
+
 fn company_settings() -> crate::domain::company_contracts::CompanySettings {
     serde_json::from_value(serde_json::json!({"name":"Taller de prueba","taxId":"","phone":"0000000000","whatsapp":"","email":"","website":"","address":"","hours":"","country":"México","locale":"es-MX","timezone":"America/Cancun","currency":"MXN","showTax":true,"taxRateThousandths":16000,"taxName":"IVA","laborDays":30,"partsDays":90,"logoName":"","logoPrint":true,"logoWeb":false,"entryFooter":"Entrada","exitFooter":"Salida","printAddress":true,"signature":true,"webReference":false,"clausePosition":"foot","numberClauses":true,"paper":"letter","orientation":"portrait","copies":2,"prefix":"PR-","logo":"","nextNumber":20,"clauses":[{"id":"new","title":"Condición de prueba","text":"Texto de prueba","entry":true,"exit":false}]})).unwrap()
 }
@@ -1625,23 +1942,43 @@ fn login_picker_lists_only_active_names_without_authenticating_or_exposing_accou
     tauri::async_runtime::block_on(async {
         let (pool, services) = empty().await;
         assert!(services.access.login_names().await.unwrap().is_empty());
-        assert!(matches!(services.access.refresh_session().await, Err(AppError::Unauthorized)));
+        assert!(matches!(
+            services.access.refresh_session().await,
+            Err(AppError::Unauthorized)
+        ));
         services.access.initialize(setup()).await.unwrap();
         let active = add_user(&pool, "ana", "limited").await;
         let inactive = add_user(&pool, "usuario-inactivo", "custom").await;
-        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?").bind(inactive).execute(&pool).await.unwrap();
+        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?")
+            .bind(inactive)
+            .execute(&pool)
+            .await
+            .unwrap();
         services.access.logout().await.unwrap();
         let audits = count(&pool, "auditoria").await;
         let names = services.access.login_names().await.unwrap();
         assert_eq!(names, vec!["admin", "ana"]);
-        assert_eq!(serde_json::to_value(&names).unwrap(), serde_json::json!(["admin", "ana"]));
+        assert_eq!(
+            serde_json::to_value(&names).unwrap(),
+            serde_json::json!(["admin", "ana"])
+        );
         assert_eq!(count(&pool, "auditoria").await, audits);
-        assert!(matches!(services.access.refresh_session().await, Err(AppError::Unauthorized)));
+        assert!(matches!(
+            services.access.refresh_session().await,
+            Err(AppError::Unauthorized)
+        ));
         assert!(matches!(services.access.login(login("ana")).await, Ok(_)));
         services.access.logout().await.unwrap();
-        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?").bind(active).execute(&pool).await.unwrap();
+        sqlx::query("UPDATE usuarios SET activo=0 WHERE id=?")
+            .bind(active)
+            .execute(&pool)
+            .await
+            .unwrap();
         assert_eq!(services.access.login_names().await.unwrap(), vec!["admin"]);
-        assert!(matches!(services.access.login(login("ana")).await, Err(AppError::InvalidCredentials)));
+        assert!(matches!(
+            services.access.login(login("ana")).await,
+            Err(AppError::InvalidCredentials)
+        ));
     });
 }
 
