@@ -179,6 +179,15 @@ El único `invoke` del árbol activo está en `src/services/api/transport.ts`. E
 
 ## Fase 5 del 14 de noviembre de 2026
 
+`BackupService` compone el repositorio de snapshots, el servicio de acceso y
+`KeyProvider`. Encapsula autorización, captura y restauración. `Records<T>` usa
+los contratos `Read`/`Write` para cifrar y verificar por bloques con memoria
+acotada; el proveedor de claves abstrae la custodia del perfil Windows. Los
+comandos delegan las operaciones y adaptan el selector nativo. `useBackupStore`
+orquesta el diálogo y mantiene las credenciales solo mientras está abierto;
+`useBackupClose` espera al resultado confirmado antes de cerrar. No hay SQL
+de respaldos fuera de su repositorio ni llamadas IPC desde componentes.
+
 La captura unificada de antecedentes utiliza `history.notes` y la migración
 003. `equipmentHistoryText` solo formatea la lectura histórica; el composable
 de recepción conserva el borrador y el servicio Rust autoriza, valida y audita

@@ -12,6 +12,7 @@
     "test:finances": "node --experimental-strip-types --test tests/finances-model.test.ts",
     "test:phase5": "node --experimental-strip-types --test tests/phase5.test.ts",
     "test:payments": "node --experimental-strip-types --test tests/payments-form.test.ts",
+    "test:backups": "node --experimental-strip-types --test tests/backups.test.ts",
     "test:browser": "node tests/phase5-browser.mjs",
     "preview": "vite preview",
     "tauri": "tauri"

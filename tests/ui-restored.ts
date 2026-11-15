@@ -1,7 +1,8 @@
-import { createApp,nextTick } from 'vue';
+import { createApp,nextTick,h,Fragment } from 'vue';
 import { createPinia } from 'pinia';
 import { mockIPC } from '@tauri-apps/api/mocks';
 import WorkshopApp from '../src/WorkshopApp.vue';
+import BackupDialog from '../src/components/backup/BackupDialog.vue';
 import { useAuthStore } from '../src/stores/useAuthStore';
 import { useWorkspaceStore } from '../src/stores/useWorkspaceStore';
 import { useCompanyStore } from '../src/stores/useCompanyStore';
@@ -19,7 +20,18 @@ const repair={stages:['Recibido','Diagnóstico','Entregado'],completed:1,...publ
 const summary={id:1,folio:order.folio,clientName:order.client.fullName,serial:order.equipment.serial,item:order.equipment.item,status:order.status,receivedAt:order.receivedAt,currency:order.currency,priceMinor:order.priceMinor,netMinor:order.netMinor,pendingMinor:order.pendingMinor,creditMinor:0,delivered:false};
 const photo={id:'11112222333344445555666677778888',orderId:'1',originalName:'foto-de-prueba.png',mime:'image/png',sizeBytes:68,source:'file',note:'Recepción',authorName:'Operador de prueba',createdAt:'2026-11-05T15:00:00Z',deleted:false,revision:1};
 const photoBytes=Array.from(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII='),c=>c.charCodeAt(0)));
+const backups={folder:'Carpeta de pruebas / Respaldos',automatic:false,files:[] as {name:string;bytes:number}[]};
 mockIPC((command,args)=>{
+  if(['backup_status','create_backup','configure_backup','open_backup_folder'].includes(command)){
+    const payload=(args as {payload:{masterPassword:string;automatic?:boolean}}).payload;
+    if(payload.masterPassword!=='maestra-de-prueba')throw {code:'INVALID_CREDENTIALS',message:'Usuario o clave incorrectos.'};
+    if(command==='backup_status')return structuredClone(backups);
+    if(command==='create_backup'){const name='HRL-20261114-200000-prueba.hrlbackup';backups.files.push({name,bytes:4096});return name;}
+    if(command==='configure_backup')backups.automatic=!!payload.automatic;
+    return null;
+  }
+  if(command==='restore_backup')return true;
+  if(command==='restart_after_restore')return null;
   if(command==='load_normalized_company'){const {taxRate,...value}=settings;return {...value,taxRateThousandths:taxRate*1000};}
   if(command==='list_reception_orders')return {items:[summary],total:1};
   if(command==='get_order'||command==='find_reception_order')return structuredClone(order);
@@ -57,9 +69,11 @@ mockIPC((command,args)=>{
 });
 const pinia=createPinia(),auth=useAuthStore(pinia),company=useCompanyStore(pinia);
 auth.user={id:1,name:'Administrador de prueba',loginName:'admin',role:'administrator',accessLevel:'complete',active:true,createdAt:'2026-11-05'};
+const testLevel=new URLSearchParams(location.search).get('level');
+if(testLevel==='limited'||testLevel==='custom')auth.user.accessLevel=testLevel;
 auth.permissions=['clients.view','orders.create','orders.edit','orders.delete','repairs.view','repairs.edit','notes.add','stages.advance','parts.add','warranties.add','publication.edit','company.view','company.edit','users.manage','logbook.view','payments.add','payments.adjust','payments.refund','evidence.view','evidence.add','evidence.edit','evidence.delete'];
 company.settings=settings;company.loaded=true;
-createApp(WorkshopApp).use(pinia).mount('#app');
+createApp({render:()=>h(Fragment,null,[h(WorkshopApp),h(BackupDialog)])}).use(pinia).mount('#app');
 await nextTick();
 await new Promise(resolve=>setTimeout(resolve,250));
 const page=new URLSearchParams(location.search).get('view')??'clients';

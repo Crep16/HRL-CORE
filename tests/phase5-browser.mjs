@@ -158,6 +158,38 @@ try {
   }
   console.log('Antecedentes y descripción, retiro y restauración de evidencia aprobados.');
   await send('Emulation.setDeviceMetricsOverride',{width:1000,height:680,deviceScaleFactor:1,mobile:false});
+  await view('clients');
+  await evaluate('document.querySelector(".header-tools summary").click()');
+  await button('Respaldos','document.querySelector(".header-tools-menu")');
+  await waitFor('!!document.querySelector(".backup-dialog[open]")');
+  assert.equal(await evaluate('document.activeElement.id'),'backup-master');
+  await evaluate(`(()=>{const input=document.getElementById('backup-master');input.value='incorrecta';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await button('Abrir Respaldos','document.querySelector(".backup-dialog")');
+  await waitFor('document.querySelector(".backup-error")?.textContent.includes("incorrectos")');
+  await evaluate(`(()=>{const input=document.getElementById('backup-master');input.value='maestra-de-prueba';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await button('Abrir Respaldos','document.querySelector(".backup-dialog")');
+  await waitFor('document.querySelector(".backup-dialog")?.textContent.includes("Aún no hay respaldos")');
+  await button('Crear respaldo ahora','document.querySelector(".backup-dialog")');
+  await waitFor('document.querySelector(".backup-dialog")?.textContent.includes("Respaldo creado")');
+  await evaluate('document.querySelector(".backup-toggle input").click()');
+  await waitFor('document.querySelector(".backup-dialog")?.textContent.includes("Respaldo al cerrar activado")');
+  await screenshot('backups-configured');
+  await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
+  await settle();assert.ok(await evaluate('document.querySelector(".backup-dialog").scrollWidth <= document.querySelector(".backup-dialog").clientWidth + 1'));
+  await screenshot('backups-mobile');
+  await send('Emulation.setDeviceMetricsOverride',{width:1000,height:680,deviceScaleFactor:1,mobile:false});
+  await button('Abrir carpeta Respaldos','document.querySelector(".backup-dialog")');
+  await button('Restaurar un respaldo','document.querySelector(".backup-dialog")');
+  await evaluate(`(()=>{const input=document.getElementById('backup-restore-password');input.value='maestra-de-prueba';input.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+  await button('Seleccionar archivo y restaurar','document.querySelector(".backup-dialog")');
+  await waitFor('document.querySelector(".backup-dialog")?.textContent.includes("Reiniciar HRL CORE")');
+  assert.ok(await evaluate('document.querySelector(".backup-dialog header button").disabled'));
+  for(const level of ['limited','custom']){
+    await view(`clients&level=${level}`);
+    assert.equal(await evaluate('[...document.querySelectorAll(".header-tools-menu button")].some(button=>button.textContent.trim()==="Respaldos")'),false);
+  }
+  console.log('Respaldos: permiso Completo, clave maestra, creación manual, configuración y estado de restauración aprobados con IPC simulado.');
+  await send('Emulation.setDeviceMetricsOverride',{width:1000,height:680,deviceScaleFactor:1,mobile:false});
   await send('Page.navigate',{url:'http://127.0.0.1:1421/tests/ui-phase4.html'});
   await waitFor('!!document.querySelector("#access-name[role=combobox]")');
   const point=await evaluate('(()=>{const r=document.getElementById("access-name").getBoundingClientRect();return {x:r.x+24,y:r.y+r.height/2};})()');

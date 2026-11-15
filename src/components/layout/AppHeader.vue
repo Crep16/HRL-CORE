@@ -29,8 +29,9 @@ withDefaults(defineProps<{
   busy?: boolean;
   clientTools?: boolean;
   canViewHistory?: boolean;
+    canBackup?: boolean;
 }>(), { printActions: true });
-const emit = defineEmits<{ change: [tab: string]; print: [kind: 'entry' | 'exit']; logout: []; requestAccess: []; lookup: []; history: []; refresh: [] }>();
+  const emit = defineEmits<{ change: [tab: string]; print: [kind: 'entry' | 'exit']; logout: []; requestAccess: []; lookup: []; history: []; refresh: []; backups: [] }>();
 const toolsMenu = ref<HTMLDetailsElement>();
 function closeTools() { if (toolsMenu.value) toolsMenu.value.open = false; }
 
@@ -49,7 +50,7 @@ const printIcon = "M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 
     <template v-if="printActions">
     <button class="ghost" type="button" :disabled="!canPrint" title="Imprimir con la configuración guardada de Empresa" @click="emit('print','entry')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path :d="printIcon" /><rect x="6" y="14" width="12" height="8" /></svg>Imprimir nota entrada</button>
     <button class="ghost" type="button" :disabled="!canPrint" title="Imprimir con la configuración guardada de Empresa" @click="emit('print','exit')"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path :d="printIcon" /><rect x="6" y="14" width="12" height="8" /></svg>Imprimir nota salida</button>
-    <details ref="toolsMenu" class="header-tools" @keydown.esc.stop="closeTools"><summary class="ghost"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg>Herramientas</summary><div class="header-tools-menu" @click="closeTools"><button v-if="temporaryAccess" type="button" :disabled="busy" @click="emit('requestAccess')"><AppIcon name="shield" />Solicitar acceso temporal</button><template v-if="clientTools"><button type="button" :disabled="busy" @click="emit('lookup')"><AppIcon name="search" />Consultar por folio o ID</button><button type="button" :disabled="busy" @click="emit('refresh')"><AppIcon name="restore" />Actualizar órdenes</button><button type="button" :disabled="busy || !canViewHistory" @click="emit('history')"><AppIcon name="logbook" />Historial de la orden</button></template></div></details>
+    <details ref="toolsMenu" class="header-tools" @keydown.esc.stop="closeTools"><summary class="ghost"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" /></svg>Herramientas</summary><div class="header-tools-menu" @click="closeTools"><button v-if="canBackup" type="button" :disabled="busy" @click="emit('backups')">Respaldos</button><button v-if="temporaryAccess" type="button" :disabled="busy" @click="emit('requestAccess')"><AppIcon name="shield" />Solicitar acceso temporal</button><template v-if="clientTools"><button type="button" :disabled="busy" @click="emit('lookup')"><AppIcon name="search" />Consultar por folio o ID</button><button type="button" :disabled="busy" @click="emit('refresh')"><AppIcon name="restore" />Actualizar órdenes</button><button type="button" :disabled="busy || !canViewHistory" @click="emit('history')"><AppIcon name="logbook" />Historial de la orden</button></template></div></details>
     </template>
     </div>
     <div class="header-session">

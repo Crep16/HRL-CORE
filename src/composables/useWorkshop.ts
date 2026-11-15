@@ -4,6 +4,7 @@ import { useOrderStore } from '../stores/useOrderStore.ts';
 import { useWorkspaceStore } from '../stores/useWorkspaceStore.ts';
 import { useCompanyStore } from '../stores/useCompanyStore.ts';
 import { useCompany } from './useCompany.ts';
+import { useBackupStore } from '../stores/useBackupStore.ts';
 import { legacyOrder } from '../utils/legacyOrder.ts';
 import { printCompanyNote } from '../utils/printCompanyNote.ts';
 import type { AccessScope } from '../types/ipc.ts';
@@ -13,6 +14,7 @@ import type RepairsView from '../views/RepairsView.vue';
 import type CompanyNote from '../components/company/CompanyNote.vue';
 const labels:Record<AccessScope,string>={clients:'Clientes',repairs:'Reparaciones',logbook:'Bitácora',company:'Empresa',users:'Usuarios'};
 export function useWorkshop(){
+  const backups=useBackupStore(),canBackup=computed(()=>backups.canManage);
   const auth=useAuthStore(), orders=useOrderStore(), workspace=useWorkspaceStore(), companyStore=useCompanyStore();
   const {company}=useCompany();
   const reception=useTemplateRef<InstanceType<typeof ReceptionView>>('reception');
@@ -30,6 +32,7 @@ export function useWorkshop(){
   async function loadCompany(){try{await companyStore.load();}catch{notice.value=companyStore.error?.message??'No se pudo consultar Empresa.';}}
   onMounted(()=>{workspace.page='clients';void loadCompany();});
   async function prepareLeave(){
+    if(useBackupStore().busy || useBackupStore().restored)return false;
     if(printing.value||orders.isLoading||auth.isLoading)return false;
     if(companyDirty.value){notice.value='Guarda o descarta los cambios de Empresa antes de salir.';return false;}
     if(workspace.page==='clients'&&reception.value&&!await reception.value.prepareLeave())return false;
@@ -55,11 +58,12 @@ export function useWorkshop(){
     catch(cause){notice.value=cause instanceof Error?cause.message:'No se pudo preparar la nota para impresión.';}finally{printing.value=false;}
   }
   function requestAccess(){const page=workspace.page;void workspace.requestAccess(page==='clients'?'orders.create':page==='repairs'?'notes.add':page==='company'?'company.edit':page==='users'?'users.manage':'logbook.view',page,page==='repairs'?orders.currentOrder?.id:null,true);}
+  async function openBackups(){if(canBackup.value&&await prepareLeave())backups.show();}
   function receptionTool(action:'lookup'|'history'|'refresh') {
     if (action === 'lookup') reception.value?.showLookup();
     else if (action === 'history') reception.value?.openHistory();
     else void reception.value?.refreshList(false);
   }
   onBeforeUnmount(()=>workspace.finishRequest());
-  return {receptionTool,auth,orders,workspace,companyStore,company,companyDirty,notice,selected,publicOrder,tabs,active,can,canRepair,canPrint,printKind,printing,navigate,logout,finishTemporary,refreshOrder,print,requestAccess,prepareLeave,loadCompany};
+  return {canBackup,openBackups,receptionTool,auth,orders,workspace,companyStore,company,companyDirty,notice,selected,publicOrder,tabs,active,can,canRepair,canPrint,printKind,printing,navigate,logout,finishTemporary,refreshOrder,print,requestAccess,prepareLeave,loadCompany};
 }

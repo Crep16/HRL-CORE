@@ -10,6 +10,15 @@ Procedimiento del 13 de noviembre de 2026. Referencias de Jira HRL-131 y HRL-180
 
 ## Conjunto que debe respaldarse
 
+La implementación actual permite crear un paquete portable desde
+**Herramientas → Respaldos**, con acceso Completo y clave maestra. El archivo
+incluye la base, los recursos y la clave de dispositivos dentro del contenido
+cifrado; no depende de copiar el archivo DPAPI original al equipo de destino.
+El primer inicio vacío ofrece restauración con la clave maestra del paquete.
+Véase [respaldos portables](respaldos-portables.md) para configuración del
+automático, preservación de la instalación anterior y límites de validación.
+El procedimiento manual siguiente conserva su utilidad para la custodia original.
+
 La ruta se obtiene con `app.path().app_config_dir()` y el identificador `com.hector.hrl-core`. En Windows corresponde a `%APPDATA%\com.hector.hrl-core`. Confirmar la ruta efectiva con el perfil Windows de la instalación.
 
 | Recurso | Ruta relativa | Uso |

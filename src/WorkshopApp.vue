@@ -9,12 +9,12 @@ import LogbookView from './views/LogbookView.vue';
 import CompanyNote from './components/company/CompanyNote.vue';
 import TemporaryAccessDialog from './components/access/TemporaryAccessDialog.vue';
 import { useWorkshop } from './composables/useWorkshop';
-const {receptionTool,auth,orders,workspace,companyStore,company,companyDirty,notice,selected,publicOrder,tabs,active,can,canRepair,canPrint,printKind,printing,navigate,logout,finishTemporary,refreshOrder,print,requestAccess,prepareLeave,loadCompany}=useWorkshop();
+const {canBackup,openBackups,receptionTool,auth,orders,workspace,companyStore,company,companyDirty,notice,selected,publicOrder,tabs,active,can,canRepair,canPrint,printKind,printing,navigate,logout,finishTemporary,refreshOrder,print,requestAccess,prepareLeave,loadCompany}=useWorkshop();
 defineExpose({prepareLeave});
 </script>
 <template>
   <div class="app normalized-workshop">
-    <AppHeader :tabs="tabs" :active="active" :user="auth.user" :can-repair="canRepair" :can-print="canPrint" temporary-access :client-tools="workspace.page==='clients'" :can-view-history="!!selected && can('logbook')" :busy="orders.isLoading || printing || auth.isLoading" @change="navigate" @print="print" @logout="logout" @request-access="requestAccess" @lookup="receptionTool('lookup')" @history="receptionTool('history')" @refresh="receptionTool('refresh')" />
+    <AppHeader :tabs="tabs" :active="active" :user="auth.user" :can-repair="canRepair" :can-print="canPrint" :can-backup="canBackup" temporary-access :client-tools="workspace.page==='clients'" :can-view-history="!!selected && can('logbook')" :busy="orders.isLoading || printing || auth.isLoading" @backups="openBackups" @change="navigate" @print="print" @logout="logout" @request-access="requestAccess" @lookup="receptionTool('lookup')" @history="receptionTool('history')" @refresh="receptionTool('refresh')" />
     <aside v-if="auth.temporaryAccess" class="temporary-banner" role="status"><span>Autorización temporal activa en {{ active }}. Tu usuario sigue siendo quien realiza las operaciones.</span><button class="btn btn-s" @click="finishTemporary">Finalizar acceso temporal</button></aside>
     <AppNotice :message="notice || auth.error?.message || ''" @dismiss="notice='';auth.error=null" />
     <AppNotice v-if="companyStore.error" :message="companyStore.error.message" tone="error"><button class="btn btn-s" :disabled="companyStore.isLoading" @click="loadCompany">Volver a consultar Empresa</button></AppNotice>

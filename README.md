@@ -16,6 +16,13 @@ El primer inicio solicita clave maestra y administrador. No hay cuentas ni
 cambios y auditoría en la misma transacción. Los importes usan centavos enteros;
 abonos, ajustes y devoluciones conservan sus movimientos originales.
 
+**Herramientas → Respaldos** está disponible para acceso Completo con clave
+maestra. Permite crear copias cifradas, abrir su carpeta y activar el respaldo
+al cerrar. El archivo `.hrlbackup` incluye base, recursos y custodia portable;
+se abre con la clave maestra vigente al crearlo. Copia los archivos a un USB o
+disco externo para cubrir la pérdida de la computadora. Una instalación vacía
+permite restaurar desde el acceso inicial. Véase [respaldos portables](docs/respaldos-portables.md).
+
 ## Arquitectura y datos
 
 El frontend usa vistas, stores y composables. Solo `src/services/api/` llama a
@@ -56,6 +63,7 @@ npm.cmd run test:company
 npm.cmd run test:finances
 npm.cmd run test:phase5
 npm.cmd run test:payments
+npm.cmd run test:backups
 cargo check --offline --manifest-path src-tauri/Cargo.toml
 cargo test --offline --manifest-path src-tauri/Cargo.toml
 ```

@@ -3,6 +3,8 @@ import { nextTick, onMounted, ref, watch } from "vue";
 import logo from "../assets/images/brand/hrl-original.svg";
 import { useAccessForm } from "../composables/useAccessForm";
 import SearchSelect from "../components/ui/SearchSelect.vue";
+import {useBackupStore} from '../stores/useBackupStore';
+const backups=useBackupStore();
 
 const { loginUsers, usersLoading, usersError, loadUsers, auth, recovery, name, password, confirmation, support, signature, newMasterPassword, newAdminPassword, successMessage, view, busy, title, errorMessage, hasSecrets, check, submit, back, toggleSupport, generateChallenge, verifySignature } = useAccessForm();
 const heading = ref<HTMLElement>();
@@ -38,6 +40,7 @@ defineExpose({ prepareLeave: () => !busy.value && !hasSecrets.value });
           <button type="button" class="access-secondary" :disabled="busy" @click="check">Volver a comprobar</button>
         </div>
         <template v-else-if="!support">
+          <button v-if="auth.setupComplete===false && view==='master'" type="button" class="access-preview" :disabled="busy" @click="backups.show(true)">Restaurar un respaldo de otra instalación</button>
           <p class="access-lead">{{ view === 'login' ? 'Escribe tu usuario y tu clave para entrar al taller.' : view === 'master' ? 'Protege la administración de usuarios de este equipo.' : 'Esta persona tendrá acceso completo a todas las secciones.' }}</p>
           <form class="access-form" @submit.prevent="submit">
             <fieldset class="access-fields" :disabled="busy">
