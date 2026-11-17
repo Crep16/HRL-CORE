@@ -154,7 +154,6 @@ impl RepairService {
             || next.parts.len() > 10000
             || next.warranties.len() > 10000
             || next.visibility.len() > 20
-            || next.events.iter().any(|e| !next.stages.contains(&e.stage))
         {
             return Err(AppError::Validation(
                 "Revisa las etapas y registros del seguimiento.".into(),
@@ -181,10 +180,29 @@ impl RepairService {
             ));
         }
         let operations = operations(&old, next).map_err(AppError::Validation)?;
+        if next.events[..next.events.len() - old.events.len()]
+            .iter()
+            .any(|e| !next.stages.contains(&e.stage))
+        {
+            return Err(AppError::Validation(
+                "Los avances nuevos deben pertenecer a una etapa activa.".into(),
+            ));
+        }
         for operation in &operations {
             self.access
                 .require(&mut tx, operation, AccessScope::Repairs, Some(id), true)
                 .await?;
+        }
+        for name in old.stages.iter().filter(|name| !next.stages.contains(name)) {
+            if self
+                .repository
+                .stage_was_completed(&mut tx, id, name)
+                .await?
+            {
+                return Err(AppError::Validation(
+                    "No puedes eliminar una etapa que ya fue completada.".into(),
+                ));
+            }
         }
         if !operations.is_empty() {
             self.repository

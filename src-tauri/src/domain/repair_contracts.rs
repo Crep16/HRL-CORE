@@ -141,25 +141,41 @@ pub fn validate(repair: &Repair) -> Result<(), String> {
 pub fn operations(old: &Repair, repair: &Repair) -> Result<Vec<&'static str>, String> {
     let mut operations = Vec::new();
     if repair.stages != old.stages {
-        let mut retained = repair.stages.iter();
-        let preserves_order = old
-            .stages
-            .iter()
-            .all(|stage| retained.by_ref().any(|s| s == stage));
-        let added = &repair.events[..repair.events.len().saturating_sub(old.events.len())];
-        let only_added_stages = preserves_order
-            && repair.stages.first() == old.stages.first()
-            && repair.stages.last() == old.stages.last()
-            && repair.stages.get(..old.completed) == old.stages.get(..old.completed)
-            && repair
+        if repair.stages.len() < old.stages.len() {
+            let mut original = old.stages.iter();
+            let only_removed_pending = repair.completed == old.completed
+                && repair.stages.first() == old.stages.first()
+                && repair.stages.last() == old.stages.last()
+                && repair.stages.get(..old.completed) == old.stages.get(..old.completed)
+                && repair
+                    .stages
+                    .iter()
+                    .all(|stage| original.by_ref().any(|s| s == stage));
+            if !only_removed_pending {
+                return Err("Solo puedes eliminar etapas intermedias pendientes, sin alterar las completadas ni su orden.".into());
+            }
+            operations.push("repairs.edit");
+        } else {
+            let mut retained = repair.stages.iter();
+            let preserves_order = old
                 .stages
                 .iter()
-                .filter(|s| !old.stages.contains(s))
-                .all(|s| added.iter().any(|e| &e.stage == s));
-        if !only_added_stages {
-            return Err("Las etapas nuevas deben corresponder a un avance y conservar las etapas anteriores.".into());
+                .all(|stage| retained.by_ref().any(|s| s == stage));
+            let added = &repair.events[..repair.events.len().saturating_sub(old.events.len())];
+            let only_added_stages = preserves_order
+                && repair.stages.first() == old.stages.first()
+                && repair.stages.last() == old.stages.last()
+                && repair.stages.get(..old.completed) == old.stages.get(..old.completed)
+                && repair
+                    .stages
+                    .iter()
+                    .filter(|s| !old.stages.contains(s))
+                    .all(|s| added.iter().any(|e| &e.stage == s));
+            if !only_added_stages {
+                return Err("Las etapas nuevas deben corresponder a un avance y conservar las etapas anteriores.".into());
+            }
+            operations.push("notes.add");
         }
-        operations.push("notes.add");
     }
     if repair.completed != old.completed {
         operations.push(if repair.completed == old.completed + 1 {

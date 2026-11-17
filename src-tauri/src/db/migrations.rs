@@ -38,6 +38,13 @@ pub fn migrator() -> Migrator {
                 include_str!("../../migrations/004_ocultar_nombres_etapas.sql").into(),
                 false,
             ),
+            Migration::new(
+                5,
+                "retirar_etapas_pendientes".into(),
+                MigrationType::Simple,
+                include_str!("../../migrations/005_retirar_etapas_pendientes.sql").into(),
+                false,
+            ),
         ]),
         ..Migrator::DEFAULT
     }

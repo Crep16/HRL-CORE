@@ -9,6 +9,7 @@ import { useCompanyStore } from '../src/stores/useCompanyStore';
 import { defaultCompany } from '../src/composables/useCompany';
 import '../src/assets/styles/tailwind.css';
 import type { AccessScope,EditOrderPayload,OrderResponse } from '../src/types/ipc';
+import type {Repair} from '../src/composables/useRepair';
 
 const order:OrderResponse={id:1,folio:'ORD-001',clientId:1,equipmentId:1,receivedBy:1,status:'En diagnóstico',currency:'MXN',receivedAt:'2026-11-05',estimatedDeliveryAt:null,reportedFailure:'El equipo no enciende.',plannedWork:'Revisar alimentación y realizar diagnóstico.',receptionNotes:'Se recibe con cargador.',priceMinor:150000,netMinor:50000,pendingMinor:100000,creditMinor:0,hasDevicePassword:false,client:{id:1,fullName:'Cliente de prueba',phone:'0000000000',email:null},equipment:{id:1,item:'Laptop',brand:'Marca',model:'Modelo',serial:'SERIE-PRUEBA'},history:{previousWorkshop:false,previousWorkshopDetail:'',sufferedImpact:false,impactDetail:'',liquidSpill:false,liquidDetail:''},revision:1,delivered:false,deliveredAt:null};
 const settings={...defaultCompany(),name:'Taller de prueba',phone:'0000000000',nextNumber:2,revision:1};
@@ -21,6 +22,9 @@ const publicSummary={technician:'Técnico de prueba',publicNote:'Diagnóstico en
 const repair={stages:['Recibido','Diagnóstico','Entregado'],completed:1,...publicSummary,internalNote:'Revisar con fuente de laboratorio.',syncMode:'manual',events:[{id:1,date:'2026-11-05T10:00',title:'Equipo recibido',detail:'Se recibe con cargador.',stage:'Recibido',public:true}],parts:[],payments:[],visibility:[{label:'Línea de tiempo',enabled:true},{label:'Garantías',enabled:true},{label:'Resumen de pago',enabled:false},{label:'Notas del técnico',enabled:true}]};
 const stageTest=new URLSearchParams(location.search).has('stagesTest');
 if(stageTest)repair.stages=['Recibido','test1','Entregado'];
+if(stageTest)repair.events[0]!.stage='test1';
+let repairRevision=1;
+const stageRemovalTest={fail:false};Object.assign(window,{stageRemovalTest});
 let stageNames=[...repair.stages];
 const summary={id:1,folio:order.folio,clientName:order.client.fullName,serial:order.equipment.serial,item:order.equipment.item,status:order.status,receivedAt:order.receivedAt,currency:order.currency,priceMinor:order.priceMinor,netMinor:order.netMinor,pendingMinor:order.pendingMinor,creditMinor:0,delivered:false};
 const photo={id:'11112222333344445555666677778888',orderId:'1',originalName:'foto-de-prueba.png',mime:'image/png',sizeBytes:68,source:'file',note:'Recepción',authorName:'Operador de prueba',createdAt:'2026-11-05T15:00:00Z',deleted:false,revision:1};
@@ -55,7 +59,14 @@ mockIPC((command,args)=>{
     return structuredClone(order);
   }
   if(command==='normalized_repair_summary')return publicSummary;
-  if(command==='load_normalized_repair')return {repair,revision:1,payment};
+  if(command==='load_normalized_repair')return {repair,revision:repairRevision,payment};
+  if(command==='save_normalized_repair'){
+    if(stageRemovalTest.fail)throw {code:'CONFLICT',message:'El seguimiento cambió. Vuelve a consultarlo.'};
+    const payload=(args as {payload:{repair:Repair;revision:number}}).payload;
+    if(payload.revision!==repairRevision)throw {code:'CONFLICT',message:'Revisión desactualizada.'};
+    Object.assign(repair,structuredClone(payload.repair));repairRevision++;
+    return {repair:structuredClone(repair),revision:repairRevision,payment};
+  }
   if(command==='list_normalized_stages')return stageNames;
   if(command==='hide_normalized_stage_name'){
     stageNames=stageNames.filter(name=>name!==(args as {name:string}).name);

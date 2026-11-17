@@ -716,3 +716,6 @@ BEGIN SELECT RAISE(ABORT,'Las facultades prestadas son inmutables'); END;
 CREATE TABLE nombres_etapas_ocultos (
     nombre TEXT PRIMARY KEY COLLATE NOCASE CHECK(length(trim(nombre)) BETWEEN 1 AND 100)
 ) STRICT;
+
+ALTER TABLE orden_etapas ADD COLUMN retirada_en TEXT;
+ALTER TABLE orden_etapas ADD COLUMN completada_previamente INTEGER NOT NULL DEFAULT 0 CHECK(completada_previamente IN (0,1));

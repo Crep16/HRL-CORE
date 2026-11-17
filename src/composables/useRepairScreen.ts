@@ -47,8 +47,23 @@ function requestHideStageName(){
   if(!ready.value||busy.value||!canManageStageNames.value||!removableStageName.value)return;
   stageActionError.value='';stageAction.value={name:stage.value,suggestion:true};
 }
+function canRemoveStage(index:number){
+  return ready.value&&!busy.value&&can('repairs.edit')&&index>0&&index<stages.value.length-1&&index>=repair.value.completed;
+}
+function requestRemoveStage(index:number){
+  if(!canRemoveStage(index))return;
+  stageActionError.value='';stageAction.value={name:stages.value[index]!,suggestion:false};
+}
 async function confirmStageAction(){
-  if(!stageAction.value||busy.value||!canManageStageNames.value)return;
+  if(!stageAction.value||busy.value)return;
+  if(!stageAction.value.suggestion){
+    const index=stages.value.indexOf(stageAction.value.name);
+    if(!canRemoveStage(index))return;
+    if(await commit(next=>{next.stages.splice(index,1);})){stageAction.value=undefined;message.value='Etapa pendiente eliminada del progreso. Sus avances se conservan en el historial.';}
+    else stageActionError.value=message.value;
+    return;
+  }
+  if(!canManageStageNames.value)return;
   stageNameBusy.value=true;stageActionError.value='';
   try{
     savedStages.value=await useWorkshopDataStore().hideStageName(props.order.databaseId!,stageAction.value.name);
@@ -106,5 +121,5 @@ async function appendNote() {
   if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
 }
 async function back() { if (await save()) emit('back'); }
-return {stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
+return {canRemoveStage,requestRemoveStage,stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
 }

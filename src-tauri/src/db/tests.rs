@@ -28,17 +28,56 @@ async fn count(pool: &SqlitePool, table: &str) -> i64 {
 }
 
 #[test]
+fn stage_retirement_migration_preserves_existing_completed_stages() {
+    tauri::async_runtime::block_on(async {
+        let pool = sqlx::sqlite::SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect("sqlite::memory:")
+            .await
+            .unwrap();
+        let previous = sqlx::migrate::Migrator {
+            migrations: std::borrow::Cow::Owned(
+                migrations::migrator()
+                    .migrations
+                    .into_owned()
+                    .into_iter()
+                    .take(4)
+                    .collect(),
+            ),
+            ..sqlx::migrate::Migrator::DEFAULT
+        };
+        previous.run(&pool).await.unwrap();
+        seed(&pool).await;
+        sqlx::query("INSERT INTO orden_etapas(id_orden,id_etapa,posicion,completada_en) SELECT 1,id,0,'2026-11-17T10:00:00Z' FROM etapas WHERE nombre='Recibido'").execute(&pool).await.unwrap();
+        migrations::apply(&pool).await.unwrap();
+        let row = sqlx::query(
+            "SELECT completada_en,completada_previamente,retirada_en FROM orden_etapas",
+        )
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+        assert_eq!(
+            row.get::<String, _>("completada_en"),
+            "2026-11-17T10:00:00Z"
+        );
+        assert!(row.get::<bool, _>("completada_previamente"));
+        assert!(row.get::<Option<String>, _>("retirada_en").is_none());
+        assert_eq!(count(&pool, "ordenes").await, 2);
+    });
+}
+
+#[test]
 fn baseline_is_explicit_reentrant_and_matches_the_sql_deliverable() {
     tauri::async_runtime::block_on(async {
         assert_eq!(
             migrations::BASELINE_SQL,
             include_str!("../../../schema.sql")
         );
-        assert_eq!(migrations::migrator().iter().count(), 4);
+        assert_eq!(migrations::migrator().iter().count(), 5);
         let db = Database::in_memory().await.unwrap();
         seed(db.pool()).await;
         migrations::apply(db.pool()).await.unwrap();
-        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 4);
+        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 5);
         assert_eq!(count(db.pool(), "ordenes").await, 2);
         assert_eq!(
             sqlx::query_scalar::<_, String>("PRAGMA integrity_check")
@@ -89,7 +128,7 @@ fn every_pool_connection_enforces_foreign_keys_and_file_reopen_preserves_data() 
         db.close().await;
         let reopened = Database::open_file(&file).await.unwrap();
         assert_eq!(count(reopened.pool(), "ordenes").await, 2);
-        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 4);
+        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 5);
         reopened.close().await;
     });
 }

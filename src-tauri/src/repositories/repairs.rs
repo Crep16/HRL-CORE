@@ -16,7 +16,7 @@ impl RepairRepository {
         repair.public_note = row.try_get("nota_publica")?;
         repair.internal_note = row.try_get("nota_interna")?;
         repair.sync_mode = row.try_get("modo_publicacion")?;
-        let stages=sqlx::query("SELECT coalesce(e.nombre,o.nombre_personalizado) nombre,o.completada_en IS NOT NULL completa FROM orden_etapas o LEFT JOIN etapas e ON e.id=o.id_etapa WHERE o.id_orden=? ORDER BY o.posicion").bind(id).fetch_all(&mut *db).await?;
+        let stages=sqlx::query("SELECT coalesce(e.nombre,o.nombre_personalizado) nombre,o.completada_en IS NOT NULL completa FROM orden_etapas o LEFT JOIN etapas e ON e.id=o.id_etapa WHERE o.id_orden=? AND o.retirada_en IS NULL ORDER BY o.posicion").bind(id).fetch_all(&mut *db).await?;
         repair.completed = stages
             .iter()
             .take_while(|s| s.get::<bool, _>("completa"))
@@ -79,6 +79,15 @@ impl RepairRepository {
             .await?;
         Ok(true)
     }
+    pub async fn stage_was_completed(
+        &self,
+        db: &mut SqliteConnection,
+        id: i64,
+        name: &str,
+    ) -> Result<bool, AppError> {
+        Ok(sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM orden_etapas o LEFT JOIN etapas e ON e.id=o.id_etapa WHERE o.id_orden=? AND coalesce(e.nombre,o.nombre_personalizado)=? AND (o.completada_previamente=1 OR o.completada_en IS NOT NULL))")
+            .bind(id).bind(name).fetch_one(db).await?)
+    }
     pub async fn save(
         &self,
         db: &mut SqliteConnection,
@@ -90,22 +99,51 @@ impl RepairRepository {
     ) -> Result<(), AppError> {
         sqlx::query("INSERT INTO seguimientos(id_orden,tecnico,nota_publica,nota_interna,modo_publicacion,revision) VALUES (?,?,?,?,?,?) ON CONFLICT(id_orden) DO UPDATE SET tecnico=excluded.tecnico,nota_publica=excluded.nota_publica,nota_interna=excluded.nota_interna,modo_publicacion=excluded.modo_publicacion,revision=excluded.revision").bind(id).bind(&next.technician).bind(&next.public_note).bind(&next.internal_note).bind(&next.sync_mode).bind(revision+1).execute(&mut *db).await?;
         // Desplaza posiciones sin borrar las etapas a las que apunta el historial.
-        sqlx::query("UPDATE orden_etapas SET posicion=posicion+1000 WHERE id_orden=?")
+        let offset: i64 = sqlx::query_scalar(
+            "SELECT coalesce(max(posicion),0)+1000 FROM orden_etapas WHERE id_orden=?",
+        )
+        .bind(id)
+        .fetch_one(&mut *db)
+        .await?;
+        sqlx::query("UPDATE orden_etapas SET posicion=posicion+? WHERE id_orden=?")
+            .bind(offset)
             .bind(id)
             .execute(&mut *db)
             .await?;
+        for name in old.stages.iter().filter(|name| !next.stages.contains(name)) {
+            let result = sqlx::query("UPDATE orden_etapas SET retirada_en=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id_orden=? AND coalesce((SELECT nombre FROM etapas WHERE id=id_etapa),nombre_personalizado)=? AND completada_en IS NULL AND completada_previamente=0 AND retirada_en IS NULL")
+                .bind(id).bind(name).execute(&mut *db).await?;
+            if result.rows_affected() != 1 {
+                return Err(AppError::Conflict(
+                    "La etapa cambió. Vuelve a consultar el seguimiento.".into(),
+                ));
+            }
+        }
         for (position, name) in next.stages.iter().enumerate() {
             let existing:Option<i64>=sqlx::query_scalar("SELECT o.id FROM orden_etapas o LEFT JOIN etapas e ON e.id=o.id_etapa WHERE o.id_orden=? AND coalesce(e.nombre,o.nombre_personalizado)=?").bind(id).bind(name).fetch_optional(&mut *db).await?;
             if let Some(stage) = existing {
-                sqlx::query("UPDATE orden_etapas SET posicion=?,completada_en=CASE WHEN ? THEN coalesce(completada_en,strftime('%Y-%m-%dT%H:%M:%fZ','now')) ELSE NULL END WHERE id=?").bind(position as i64).bind(position<next.completed).bind(stage).execute(&mut *db).await?;
+                sqlx::query("UPDATE orden_etapas SET posicion=?,retirada_en=NULL,completada_previamente=CASE WHEN ? THEN 1 ELSE completada_previamente END,completada_en=CASE WHEN ? THEN coalesce(completada_en,strftime('%Y-%m-%dT%H:%M:%fZ','now')) ELSE NULL END WHERE id=?").bind(position as i64).bind(position<next.completed).bind(position<next.completed).bind(stage).execute(&mut *db).await?;
             } else {
                 let catalog: Option<i64> =
                     sqlx::query_scalar("SELECT id FROM etapas WHERE nombre=? COLLATE NOCASE")
                         .bind(name)
                         .fetch_optional(&mut *db)
                         .await?;
-                sqlx::query("INSERT INTO orden_etapas(id_orden,id_etapa,nombre_personalizado,posicion,completada_en) VALUES (?,?,?,?,CASE WHEN ? THEN strftime('%Y-%m-%dT%H:%M:%fZ','now') ELSE NULL END)").bind(id).bind(catalog).bind(if catalog.is_none(){Some(name)}else{None}).bind(position as i64).bind(position<next.completed).execute(&mut *db).await?;
+                sqlx::query("INSERT INTO orden_etapas(id_orden,id_etapa,nombre_personalizado,posicion,completada_previamente,completada_en) VALUES (?,?,?,?,?,CASE WHEN ? THEN strftime('%Y-%m-%dT%H:%M:%fZ','now') ELSE NULL END)").bind(id).bind(catalog).bind(if catalog.is_none(){Some(name)}else{None}).bind(position as i64).bind(position<next.completed).bind(position<next.completed).execute(&mut *db).await?;
             }
+        }
+        let retired: Vec<i64> = sqlx::query_scalar(
+            "SELECT id FROM orden_etapas WHERE id_orden=? AND retirada_en IS NOT NULL ORDER BY id",
+        )
+        .bind(id)
+        .fetch_all(&mut *db)
+        .await?;
+        for (position, stage_id) in retired.iter().enumerate() {
+            sqlx::query("UPDATE orden_etapas SET posicion=? WHERE id=?")
+                .bind(1000 + position as i64)
+                .bind(stage_id)
+                .execute(&mut *db)
+                .await?;
         }
         for event in next.events[..next.events.len() - old.events.len()]
             .iter()

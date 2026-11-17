@@ -1108,6 +1108,234 @@ fn restored_evidence_and_company_reopen_without_business_json() {
 }
 
 #[test]
+fn pending_stages_retire_without_losing_history_and_completed_stages_cannot_retire() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::repair_contracts::*;
+        let (pool, services) = fixture().await;
+        let created = services.orders.create(order()).await.unwrap();
+        let mut repair = services.repairs.load(created.id).await.unwrap().repair;
+        repair.completed = 1;
+        let baseline = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair,
+                revision: 0,
+            })
+            .await
+            .unwrap();
+        let mut repair = baseline.repair;
+        repair.stages.insert(1, "Diagnóstico".into());
+        repair.completed = 1;
+        repair.events.push(Event {
+            id: 1,
+            date: "2026-11-17T10:00".into(),
+            title: "Revisión iniciada".into(),
+            detail: "Conservar este avance".into(),
+            stage: "Diagnóstico".into(),
+            public: true,
+        });
+        let saved = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair,
+                revision: baseline.revision,
+            })
+            .await
+            .unwrap();
+        let stage_id:i64=sqlx::query_scalar("SELECT o.id FROM orden_etapas o JOIN etapas e ON e.id=o.id_etapa WHERE o.id_orden=? AND e.nombre='Diagnóstico'").bind(created.id).fetch_one(&pool).await.unwrap();
+        let mut removed = saved.repair.clone();
+        removed.stages.remove(1);
+        add_user(&pool, "retire-limited", "limited").await;
+        services
+            .access
+            .login(login("retire-limited"))
+            .await
+            .unwrap();
+        assert!(matches!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: removed.clone(),
+                    revision: saved.revision
+                })
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        services.access.login(login("admin")).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER fail_stage_audit BEFORE INSERT ON auditoria BEGIN SELECT RAISE(ABORT,'prueba'); END;").execute(&pool).await.unwrap();
+        assert!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: removed.clone(),
+                    revision: saved.revision
+                })
+                .await
+                .is_err()
+        );
+        assert_eq!(
+            services
+                .repairs
+                .load(created.id)
+                .await
+                .unwrap()
+                .repair
+                .stages,
+            saved.repair.stages
+        );
+        sqlx::raw_sql("DROP TRIGGER fail_stage_audit")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let retired = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair: removed.clone(),
+                revision: saved.revision,
+            })
+            .await
+            .unwrap();
+        assert_eq!(retired.repair.stages, vec!["Recibido", "Entregado"]);
+        assert_eq!(retired.repair.completed, 1);
+        assert_eq!(retired.repair.events, saved.repair.events);
+        assert_eq!(count(&pool, "orden_etapas").await, 3);
+        assert_eq!(count(&pool, "avances").await, 1);
+        assert!(
+            sqlx::query_scalar::<_, bool>(
+                "SELECT retirada_en IS NOT NULL FROM orden_etapas WHERE id=?"
+            )
+            .bind(stage_id)
+            .fetch_one(&pool)
+            .await
+            .unwrap()
+        );
+        assert!(matches!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: removed,
+                    revision: saved.revision
+                })
+                .await,
+            Err(AppError::Conflict(_))
+        ));
+        let mut after = retired.repair.clone();
+        after.public_note = "Nota posterior".into();
+        let after = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair: after,
+                revision: retired.revision,
+            })
+            .await
+            .unwrap();
+        let mut invalid = after.repair.clone();
+        invalid.events.insert(
+            0,
+            Event {
+                id: 2,
+                ..saved.repair.events[0].clone()
+            },
+        );
+        assert!(matches!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: invalid,
+                    revision: after.revision
+                })
+                .await,
+            Err(AppError::Validation(_))
+        ));
+        let mut restored = after.repair;
+        restored.stages.insert(1, "Diagnóstico".into());
+        restored.events.insert(
+            0,
+            Event {
+                id: 2,
+                ..saved.repair.events[0].clone()
+            },
+        );
+        let restored = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair: restored,
+                revision: after.revision,
+            })
+            .await
+            .unwrap();
+        assert_eq!(count(&pool, "orden_etapas").await, 3);
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>(
+                "SELECT id_etapa_orden FROM avances ORDER BY id DESC LIMIT 1"
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap(),
+            stage_id
+        );
+        let mut completed = restored.repair;
+        completed.completed = 2;
+        let completed = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair: completed,
+                revision: restored.revision,
+            })
+            .await
+            .unwrap();
+        let mut forbidden = completed.repair.clone();
+        forbidden.stages.remove(1);
+        forbidden.completed = 1;
+        assert!(matches!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: forbidden,
+                    revision: completed.revision
+                })
+                .await,
+            Err(AppError::Validation(_))
+        ));
+        let mut rewind = completed.repair;
+        rewind.completed = 1;
+        let rewind = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair: rewind,
+                revision: completed.revision,
+            })
+            .await
+            .unwrap();
+        let mut forbidden = rewind.repair;
+        forbidden.stages.remove(1);
+        assert!(matches!(
+            services
+                .repairs
+                .save(SaveRepairPayload {
+                    order_id: created.id,
+                    repair: forbidden,
+                    revision: rewind.revision
+                })
+                .await,
+            Err(AppError::Validation(_))
+        ));
+    });
+}
+
+#[test]
 fn hidden_custom_stage_names_preserve_orders_and_roll_back_with_the_audit() {
     tauri::async_runtime::block_on(async {
         use crate::domain::repair_contracts::*;
