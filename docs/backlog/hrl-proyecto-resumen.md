@@ -1,13 +1,13 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 38/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 45/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Sprint 1 | 26–30 oct | 13 | 70 | 36 | 51.4% |
-| Sprint 2 | 2–6 nov | 12 | 70 | 57 | 81.4% |
+| Sprint 1 | 26–30 oct | 13 | 70 | 42 | 60.0% |
+| Sprint 2 | 2–6 nov | 12 | 70 | 62 | 88.6% |
 | Sprint 3 | 9–13 nov | 17 | 76 | 52 | 68.4% |
-| Sprint 4 | 16–20 nov | 13 | 69 | 29 | 42.0% |
+| Sprint 4 | 16–20 nov | 13 | 69 | 42 | 60.9% |
 | Backlog | sin fecha | 4 | 29 | 0 | 0.0% |
 
 ## Discrepancias entre documentación y código
@@ -33,6 +33,9 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-42: La persistencia de reintento en localStorage corresponde a movimientos del panel. El abono inicial conserva el payload solo en memoria de createReceptionForm; al cerrar se pierde y la UI pide mantener abierta la ventana. El backlog HRL-13/42 no distingue esta limitación. Evidencia: src-tauri/src/services/ledger.rs::LedgerService::record.
 - HRL-43: AuditService no filtra por sí mismo campos secretos: cada servicio construye su lista de cambios. Las escrituras revisadas omiten claves y hashes; no se presume un filtro global que no existe. Evidencia: src-tauri/src/services/audit.rs::AuditService::record.
 - HRL-44: bitacora.md describe tablas históricas separadas; el código consulta auditoria/auditoria_detalle. El nombre mostrado procede de usuarios.nombre mediante JOIN: renombrar una cuenta cambia el nombre mostrado en eventos antiguos, no existe snapshot histórico. Evidencia: src-tauri/src/services/reports.rs::ReportService::logbook.
+- HRL-48: La guarda declarada en el backlog implica una pregunta al salir; useWorkshop::prepareLeave solo informa y bloquea. El borrador y el descarte explícito sí existen. Evidencia: src/composables/useCompanyWorkspace.ts::save/discard/hasPending.
+- HRL-52: La posición pie/reverso es global (settings.clausePosition), no individual por cláusula como podría entenderse en las reglas del backlog. Los dos criterios explícitos sí se cumplen. Evidencia: src/composables/useCompanyClauses.ts::move/apply.
+- HRL-53: Las reglas dicen ticket 80 o 60, pero C1 añade 58. printLayout solo contempla 60/80; la impresión física no queda acreditada por el CSS. Evidencia: src/utils/printLayout.ts::printLayout.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
@@ -40,12 +43,11 @@ Las rutas originales reales están en docs/, no en docs/backlog/. El contexto so
 
 - HRL-14: Ejecutar instalación Windows con dos perfiles; guardar una credencial y comprobar recuperación en el original y rechazo en el segundo, incluida ausencia/corrupción del archivo DPAPI.
 - HRL-18: Abrir configuración, acceso y taller en Windows; maximizar taller, cerrar sesión y medir dimensiones, límites y capacidad de redimensionar.
+- HRL-53: Imprimir notas largas con varias copias en impresoras/controladores 60 y 80 mm; aclarar si se requiere 58 mm y probar esa anchura antes de cerrar C1.
 
 ## Sprint 4 (16–20 noviembre): trabajo que no está Hecho
 
-- HRL-52 Cláusulas y textos de las notas (5 pts): Aún sin revisar en este commit intermedio.
-- HRL-53 Hoja de impresión (3 pts): Aún sin revisar en este commit intermedio.
-- HRL-54 Notas de entrada y de salida (8 pts): Aún sin revisar en este commit intermedio.
+- HRL-53 Hoja de impresión (3 pts): No verificado. C1: no se ha comprobado que el documento de 60 mm no se corte con impresora/controlador reales; no hay configuración explícita 58 mm.
 - HRL-58 Integrar la publicación con el servicio web (8 pts): Aún sin revisar en este commit intermedio.
 - HRL-62 Pruebas de bitácora, finanzas y empresa (5 pts): Aún sin revisar en este commit intermedio.
 - HRL-63 Validación nativa: cámara, impresora y DPAPI (3 pts): Aún sin revisar en este commit intermedio.

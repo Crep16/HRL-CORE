@@ -476,4 +476,92 @@ Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
 
 Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
 
+## HRL-6 · Empresa y documentos impresos
+
+### HRL-48 Configuración de empresa: borrador, revisión y auditoría
+
+Estado: **En progreso**. Sprint 1 · 5 puntos.
+
+Evidencia: `src/composables/useCompanyWorkspace.ts::save/discard/hasPending`; `src/composables/useWorkshop.ts::prepareLeave`; `src-tauri/src/services/company.rs::CompanyService::save`; `src-tauri/src/repositories/company.rs::CompanyRepository::save`.
+
+Respaldo de criterios: C2: expected_revision se compara con empresa.revision. C3: save calcula diferencias y llama AuditService dentro de transacción; excluye bytes de logo. C1 parcialmente: detecta borrador y bloquea salida.
+
+Criterios no cumplidos o sin verificar: C1: salir de Empresa no abre elección guardar/descartar; muestra «Guarda o descarta…» y bloquea navegación. Guardar y Descartar son acciones dentro de Empresa.
+
+Discrepancias: La guarda declarada en el backlog implica una pregunta al salir; useWorkshop::prepareLeave solo informa y bloquea. El borrador y el descarte explícito sí existen.
+
+### HRL-49 Región, impuestos y moneda
+
+Estado: **Hecho**. Sprint 1 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/orders.rs::OrderService::edit`; `src-tauri/src/repositories/company.rs::CompanyRepository::save`; `src/composables/useLogbookWorkspace.ts::date/load`; `src/composables/useCompanyNote.ts::money`.
+
+Respaldo de criterios: C1: guardar Empresa cambia predeterminado, no las órdenes; editar orden rechaza cambio de currency. C2: fechas y límites de Bitácora utilizan company.timezone y locale.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-50 Folios y garantías sugeridas
+
+Estado: **Hecho**. Sprint 1 · 3 puntos.
+
+Evidencia: `src-tauri/src/repositories/company.rs::CompanyRepository::save`; `src-tauri/src/repositories/orders.rs::OrderRepository::reserve_folio`; `src-tauri/src/services/orders.rs::OrderService::create`; `src/composables/useReceptionForm.ts::begin`.
+
+Respaldo de criterios: C1: begin toma prefix de Empresa para nuevas órdenes; no renombra folios anteriores. C2: reserva incrementa secuencia atómicamente bajo BEGIN IMMEDIATE y evita folios existentes.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-51 Datos generales y logo
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src/composables/useCompanyWorkspace.ts::readLogo/save`; `src-tauri/src/services/company.rs::CompanyService::save_logo/save/read_logo`; `src/components/company/CompanyNote.vue::<template>`.
+
+Respaldo de criterios: C1: readLogo actualiza draft.logo y logoPrint; CompanyNote usa settings.logo. C2: nombre requerido en backend y companyErrors bloquea formulario incompleto. Logo se almacena como archivo PNG/JPG de hasta 1 MiB.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática de la vista previa.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-52 Cláusulas y textos de las notas
+
+Estado: **Hecho**. Sprint 4 · 5 puntos.
+
+Evidencia: `src/composables/useCompanyClauses.ts::move/apply`; `src/composables/useCompanyNote.ts::clauses`; `src/components/company/CompanyNote.vue::<template>`; `src-tauri/src/repositories/company.rs::CompanyRepository::load/save`.
+
+Respaldo de criterios: C1: cláusulas se filtran por entry/exit. C2: move altera el array y la vista previa conserva ese orden; repositorio guarda posicion y carga ORDER BY posicion,id.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: La posición pie/reverso es global (settings.clausePosition), no individual por cláusula como podría entenderse en las reglas del backlog. Los dos criterios explícitos sí se cumplen.
+
+### HRL-53 Hoja de impresión
+
+Estado: **No verificado**. Sprint 4 · 3 puntos.
+
+Evidencia: `src/utils/printLayout.ts::printLayout`; `src/utils/printCompanyNote.ts::printCompanyNote`; `src/utils/paginatePrintCopies.ts::paginatePrintCopies`; `src/assets/styles/company-note.css`.
+
+Respaldo de criterios: C2: copias se clonan; carta distribuye grupos y pagina contenido. C1 parcialmente: hay anchos 60 y 80 mm con margen, sin opción específica 58 mm.
+
+Criterios no cumplidos o sin verificar: C1: no se ha comprobado que el documento de 60 mm no se corte con impresora/controlador reales; no hay configuración explícita 58 mm.
+
+Discrepancias: Las reglas dicen ticket 80 o 60, pero C1 añade 58. printLayout solo contempla 60/80; la impresión física no queda acreditada por el CSS.
+
+Para verificar: Imprimir notas largas con varias copias en impresoras/controladores 60 y 80 mm; aclarar si se requiere 58 mm y probar esa anchura antes de cerrar C1.
+
+### HRL-54 Notas de entrada y de salida
+
+Estado: **Hecho**. Sprint 4 · 8 puntos.
+
+Evidencia: `src/components/company/CompanyNote.vue::<template>`; `src/composables/useCompanyNote.ts::prepare/money`; `src-tauri/src/services/repairs.rs::RepairService::summary`; `src/utils/printCompanyNote.ts::printCompanyNote`; `src/composables/useWorkshop.ts::print`.
+
+Respaldo de criterios: C1: template consume solo resumen público y no incluye contraseña ni nota interna. C2: money prioriza order.currency. C3: impresión prepara resumen y DOM y abre print; no invoca escritura de pago ni entrega.
+
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática; la impresión física se reserva a HRL-53/63.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
 

@@ -483,7 +483,7 @@ Criterios de aceptación:
 - Dado una configuración modificada por otra persona, cuando se guarda, entonces se rechaza.
 - Dado un guardado, entonces la bitácora registra las diferencias.
 
-Depende de: HRL-10, HRL-11, HRL-13, HRL-43","6","Sprint 1","High","5","empresa","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-11, HRL-13, HRL-43","6","Sprint 1","High","5","empresa","","En curso","Verificado"
 "49","Story","Región, impuestos y moneda","Objetivo: Definir el contexto regional del taller.
 
 Reglas:
@@ -494,7 +494,7 @@ Criterios de aceptación:
 - Dado un cambio de moneda predeterminada, entonces las órdenes existentes conservan la suya.
 - Dado una zona horaria, entonces la bitácora muestra las fechas con ella.
 
-Depende de: HRL-48","6","Sprint 1","Medium","3","empresa","","Por hacer","No verificado"
+Depende de: HRL-48","6","Sprint 1","Medium","3","empresa","","Finalizada","Verificado"
 "50","Story","Folios y garantías sugeridas","Objetivo: Controlar la numeración de las órdenes.
 
 Reglas:
@@ -505,7 +505,7 @@ Criterios de aceptación:
 - Dado un nuevo prefijo, entonces las órdenes siguientes lo usan y las anteriores no cambian.
 - Dado dos solicitudes simultáneas, entonces no reciben el mismo número.
 
-Depende de: HRL-48","6","Sprint 1","High","3","empresa","","Por hacer","No verificado"
+Depende de: HRL-48","6","Sprint 1","High","3","empresa","","Finalizada","Verificado"
 "51","Story","Datos generales y logo","Objetivo: Identidad comercial que aparece en los documentos.
 
 Reglas:
@@ -516,7 +516,7 @@ Criterios de aceptación:
 - Dado un logo cargado, entonces aparece en la vista previa de las notas.
 - Dado un campo obligatorio vacío, entonces no se guarda.
 
-Depende de: HRL-48","6","Sprint 2","Medium","5","empresa","","Por hacer","No verificado"
+Depende de: HRL-48","6","Sprint 2","Medium","5","empresa","","Finalizada","Verificado"
 "52","Story","Cláusulas y textos de las notas","Objetivo: Configurar el texto legal y los mensajes de las notas.
 
 Reglas:
@@ -527,7 +527,7 @@ Criterios de aceptación:
 - Dado una cláusula solo de salida, entonces no aparece en la nota de entrada.
 - Dado un cambio de orden de cláusulas, entonces la vista previa lo refleja.
 
-Depende de: HRL-48","6","Sprint 4","Medium","5","empresa","","Por hacer","No verificado"
+Depende de: HRL-48","6","Sprint 4","Medium","5","empresa","","Finalizada","Verificado"
 "53","Story","Hoja de impresión","Objetivo: Elegir el formato de papel.
 
 Reglas:
@@ -549,7 +549,7 @@ Criterios de aceptación:
 - Dado una orden en otra moneda, entonces la nota usa la moneda de la orden.
 - Dado imprimir una nota, entonces no cambia el pago ni la entrega.
 
-Depende de: HRL-52, HRL-53, HRL-34, HRL-35, HRL-27","6","Sprint 4","High","8","empresa","","Por hacer","No verificado"
+Depende de: HRL-52, HRL-53, HRL-34, HRL-35, HRL-27","6","Sprint 4","High","8","empresa","","Finalizada","Verificado"
 "55","Task","Acordar el contrato de sincronización con el portal","Objetivo: Decidir con el responsable del portal qué se publica y cómo, antes de construirlo.
 
 Reglas:
