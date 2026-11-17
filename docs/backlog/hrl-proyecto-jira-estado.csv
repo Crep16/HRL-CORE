@@ -304,7 +304,7 @@ Criterios de aceptación:
 - Dado una orden seleccionada, cuando se abre Reparaciones, entonces muestra su contexto de cliente y equipo.
 - Dado una orden en papelera, entonces no se puede abrir para trabajar.
 
-Depende de: HRL-25, HRL-31","4","Sprint 3","Medium","3","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-25, HRL-31","4","Sprint 3","Medium","3","reparaciones","","Finalizada","Verificado"
 "33","Story","Técnico, notas y visibilidad de publicación","Objetivo: Registrar quién atiende la orden y qué se comunica.
 
 Reglas:
@@ -315,7 +315,7 @@ Criterios de aceptación:
 - Dado una nota interna, entonces no aparece en el resumen imprimible público.
 - Dado un cambio de preferencias de publicación, entonces no se envía información fuera del equipo.
 
-Depende de: HRL-32, HRL-13","4","Sprint 3","Medium","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-32, HRL-13","4","Sprint 3","Medium","5","reparaciones","","Finalizada","Verificado"
 "34","Story","Etapas y avances","Objetivo: Llevar el seguimiento técnico por etapas.
 
 Reglas:
@@ -326,7 +326,7 @@ Criterios de aceptación:
 - Dado una etapa completada, entonces el equipo no queda como entregado ni pagado.
 - Dado un avance, entonces conserva fecha, autor y visibilidad.
 
-Depende de: HRL-32, HRL-13","4","Sprint 3","Medium","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-32, HRL-13","4","Sprint 3","Medium","5","reparaciones","","Finalizada","Verificado"
 "35","Story","Refacciones y garantías","Objetivo: Registrar piezas utilizadas y garantías ofrecidas.
 
 Reglas:
@@ -337,7 +337,7 @@ Criterios de aceptación:
 - Dado una refacción con costo, entonces suma a los costos directos de la orden.
 - Dado una garantía nueva, entonces propone los días sugeridos de Empresa.
 
-Depende de: HRL-32, HRL-50","4","Sprint 3","Medium","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-32, HRL-50","4","Sprint 3","Medium","5","reparaciones","","Finalizada","Verificado"
 "36","Story","Permisos por operación y revisión en el guardado","Objetivo: Autorizar cada cambio técnico por separado.
 
 Reglas:
@@ -349,7 +349,7 @@ Criterios de aceptación:
 - Dado un usuario Limitado, cuando intenta cambiar el técnico, entonces se rechaza.
 - Dado que alguien modificó el seguimiento, cuando se guarda con revisión vieja, entonces se rechaza.
 
-Depende de: HRL-33, HRL-34, HRL-35, HRL-19","4","Sprint 3","High","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-33, HRL-34, HRL-35, HRL-19","4","Sprint 3","High","5","reparaciones","","Finalizada","Verificado"
 "37","Story","Registro de entrega","Objetivo: Dejar constancia de que el equipo se devolvió al cliente.
 
 Reglas:
@@ -359,7 +359,7 @@ Criterios de aceptación:
 - Dado una orden con deuda, cuando se registra la entrega, entonces la deuda se conserva.
 - Dado una orden pagada, entonces no se marca entregada automáticamente.
 
-Depende de: HRL-32, HRL-43","4","Sprint 3","Medium","3","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-32, HRL-43","4","Sprint 3","Medium","3","reparaciones","","Finalizada","Verificado"
 "38","Story","Panel de pagos y cálculo de saldos","Objetivo: Mostrar cuánto se cobró y cuánto falta.
 
 Reglas:
@@ -370,7 +370,7 @@ Criterios de aceptación:
 - Dado $750 cobrados y precio $600, entonces muestra $150 a favor y $0 pendiente.
 - Dado la orden, entonces los movimientos recientes y el libro completo son consultables.
 
-Depende de: HRL-10, HRL-32","4","Sprint 3","High","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-32","4","Sprint 3","High","5","reparaciones","","Finalizada","Verificado"
 "39","Story","Registrar abonos (incluye el abono inicial)","Objetivo: Cobrar dinero con trazabilidad.
 
 Reglas:
@@ -382,7 +382,7 @@ Criterios de aceptación:
 - Dado un usuario sin payments.add, cuando crea una orden con abono inicial, entonces se rechaza el abono.
 - Dado un abono, entonces el saldo se recalcula.
 
-Depende de: HRL-38, HRL-19, HRL-43, HRL-42","4","Sprint 3","High","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-38, HRL-19, HRL-43, HRL-42","4","Sprint 3","High","5","reparaciones","","Finalizada","Verificado"
 "40","Story","Correcciones de abonos","Objetivo: Corregir un abono mal registrado sin reescribirlo.
 
 Reglas:
@@ -393,7 +393,7 @@ Criterios de aceptación:
 - Dado un abono de $500 que debió ser $300, entonces se registra un ajuste de −$200 y el original queda intacto.
 - Dado un usuario sin acceso Completo, entonces no puede corregir.
 
-Depende de: HRL-39, HRL-21","4","Sprint 3","High","3","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-39, HRL-21","4","Sprint 3","High","3","reparaciones","","Finalizada","Verificado"
 "41","Story","Devolución del saldo a favor","Objetivo: Devolver dinero cuando el cliente pagó de más.
 
 Reglas:
@@ -403,7 +403,7 @@ Criterios de aceptación:
 - Dado $150 a favor, cuando se devuelve, entonces el cobro neto baja $150 y el saldo a favor queda en cero.
 - Dado una devolución parcial, entonces se rechaza.
 
-Depende de: HRL-38, HRL-19, HRL-42","4","Sprint 3","High","3","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-38, HRL-19, HRL-42","4","Sprint 3","High","3","reparaciones","","Finalizada","Verificado"
 "42","Story","Reintento seguro de operaciones financieras","Objetivo: Evitar duplicar dinero cuando el resultado de una operación es incierto.
 
 Reglas:
@@ -414,7 +414,7 @@ Criterios de aceptación:
 - Dado un resultado incierto, cuando se reintenta, entonces no se crea un segundo movimiento.
 - Dado el mismo ID con otro importe, entonces se rechaza.
 
-Depende de: HRL-10, HRL-13","4","Sprint 3","High","5","reparaciones","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-13","4","Sprint 3","High","5","reparaciones","","Finalizada","Verificado"
 "43","Story","Servicio de auditoría transaccional","Objetivo: Registrar quién hizo qué en cada operación.
 
 Reglas:

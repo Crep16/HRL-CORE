@@ -280,4 +280,138 @@ Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícito
 
 Discrepancias: La UI oculta Papelera sin orders.delete, pero OrderService::list con trashed=true solo exige clients.view; la restricción de consultar papelera no está comprobada con el mismo permiso en backend.
 
+## HRL-4 · Reparaciones, pagos y entrega
+
+### HRL-32 Abrir reparación sobre la orden seleccionada
+
+Estado: **Hecho**. Sprint 3 · 3 puntos.
+
+Evidencia: `src/views/RepairsView.vue::<template>`; `src/composables/useWorkshop.ts::navigate`; `src-tauri/src/services/repairs.rs::RepairService::load`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::active`.
+
+Respaldo de criterios: C1: recibe order seleccionado y presenta cliente, artículo, serie, marca y modelo. C2: load exige active; una orden en papelera se rechaza antes de trabajar.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-33 Técnico, notas y visibilidad de publicación
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/repairs.rs::RepairService::summary/save`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save`; `src-tauri/src/domain/repair_contracts.rs::PublicSummary/Repair`; `src/views/RepairsView.vue::<template>`.
+
+Respaldo de criterios: C1: PublicSummary contiene technician, public_note y warranties, sin internal_note. C2: save persiste modo y visibilidad en SQLite y no realiza ninguna llamada de red.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: reparaciones-permisos.md describe migración 006 y importación localStorage anteriores; el servicio activo usa tablas normalizadas y no importa aquel seguimiento.
+
+### HRL-34 Etapas y avances
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src/composables/useRepairScreen.ts::complete/addEvent`; `src-tauri/src/services/repairs.rs::RepairService::save`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save/load`.
+
+Respaldo de criterios: C1: complete incrementa completed y agrega avance; persistencia solo modifica seguimiento/etapas, sin entrega ni libro financiero. C2: INSERT avances guarda fecha_evento, id_autor y visible_cliente; admite etapas personalizadas sin cambiar catálogo.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: Repair::default inicia solo Recibido y Entregado, no la secuencia sugerida completa. El catálogo de opciones sí está disponible y se incorporan etapas al agregar avances. El DTO Event no devuelve id_autor, aunque SQLite lo conserva.
+
+### HRL-35 Refacciones y garantías
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src/composables/useRepairScreen.ts::addPart/selectWarrantyType/addWarranty`; `src/services/api/workshop.ts::saveRepair`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save`; `src-tauri/src/repositories/reports.rs::ReportRepository::finances`.
+
+Respaldo de criterios: C1: costo de refacciones se suma en finances; transporte convierte unidades a centavos enteros. C2: días iniciales y selectWarrantyType leen partsDays/laborDays de Empresa.
+
+Criterios no cumplidos o sin verificar: Ninguno de los dos criterios explícitos en la lectura estática.
+
+Discrepancias: La regla del backlog pide pieza, cantidad y costo; Part y la captura solo ofrecen nombre y precio. El INSERT no recibe cantidad (se usa el valor predeterminado del esquema). No se evalúan existencias.
+
+### HRL-36 Permisos por operación y revisión en el guardado
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/domain/repair_contracts.rs::operations`; `src-tauri/src/services/repairs.rs::RepairService::save`; `src-tauri/src/services/access.rs::AccessService::require/permanent`.
+
+Respaldo de criterios: C1: cambio de técnico requiere repairs.edit, ausente en limited_allows. C2: revisión se compara antes de guardar. operations distingue añadidos de reemplazos y prohíbe borrar registros previos; pagos usan su libro separado.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-37 Registro de entrega
+
+Estado: **Hecho**. Sprint 3 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/orders.rs::OrderService::edit`; `src-tauri/src/repositories/orders.rs::OrderRepository::update_order`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::state`; `src/components/orders/OrderSidePanel.vue`.
+
+Respaldo de criterios: C1: update_order persiste delivered sin modificar abonos ni precio; la deuda sigue calculada por vista. C2: paid se deriva de pendiente y no escribe delivered.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: La regla admite entrega histórica sin fecha; update_order completa fecha_entrega con fecha UTC actual cuando delivered=true y fecha era NULL, incluso al editar otro dato. No permite conservar esa fecha desconocida durante dicho guardado.
+
+### HRL-38 Panel de pagos y cálculo de saldos
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/migrations/001_esquema_objetivo.sql::vista_cobros_orden/vista_saldos_orden`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::state/movements`; `src/components/repairs/PaymentsPanel.vue::<template>`.
+
+Respaldo de criterios: C1: max(precio-neto,0) y max(neto-precio,0) producen 0 pendiente y 15000 centavos a favor para 75000 cobrados/60000 precio. C2: panel muestra tres abonos recientes y libro completo desplegable.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-39 Registrar abonos (incluye el abono inicial)
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/ledger.rs::LedgerService::record`; `src-tauri/src/services/orders.rs::OrderService::create`; `src-tauri/src/repositories/orders.rs::initial_payment`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::state`.
+
+Respaldo de criterios: C1: receipt positivo y <=pendiente recalculado en transacción. C2: create comprueba payments.add si hay initial_payment y rechaza la creación completa si falta permiso. C3: tras insertar vuelve a consultar la vista de saldos.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-40 Correcciones de abonos
+
+Estado: **Hecho**. Sprint 3 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/ledger.rs::LedgerService::record`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::insert`; `src-tauri/src/services/access.rs::AccessService::permanent/require`; `src/composables/usePaymentsPanel.ts::submit`.
+
+Respaldo de criterios: C1: frontend calcula diferencia y backend inserta ajustes_abono ligado al abono; no actualiza el original. C2: payments.adjust solo para complete o préstamo de quien tiene la facultad; motivo obligatorio.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-41 Devolución del saldo a favor
+
+Estado: **Hecho**. Sprint 3 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/ledger.rs::LedgerService::record`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::insert/state`; `src-tauri/migrations/001_esquema_objetivo.sql::vista_saldos_orden`.
+
+Respaldo de criterios: C1: inserta devolución por crédito vigente y resta del neto; tras 15000 devueltos crédito queda cero. C2: amount_minor distinto de credit_minor se rechaza. Exige método, motivo y payments.refund.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-42 Reintento seguro de operaciones financieras
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/ledger.rs::LedgerService::record`; `src-tauri/src/repositories/ledger.rs::LedgerRepository::request/insert`; `src/composables/usePaymentsPanel.ts::submit/retryPending`; `src-tauri/src/services/orders.rs::OrderService::create`.
+
+Respaldo de criterios: C1: solicitud existente con mismo autor y huella devuelve saldo sin insertar. C2: misma clave con huella distinta devuelve Conflict. UI guarda solicitud exacta en hrl.3fn.money.pending.<orden> antes de enviarla.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: La persistencia de reintento en localStorage corresponde a movimientos del panel. El abono inicial conserva el payload solo en memoria de createReceptionForm; al cerrar se pierde y la UI pide mantener abierta la ventana. El backlog HRL-13/42 no distingue esta limitación.
+
 

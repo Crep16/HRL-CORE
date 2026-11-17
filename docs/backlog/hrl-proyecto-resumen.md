@@ -1,12 +1,12 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 22/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 33/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
 | Sprint 1 | 26–30 oct | 13 | 70 | 28 | 40.0% |
 | Sprint 2 | 2–6 nov | 12 | 70 | 57 | 81.4% |
-| Sprint 3 | 9–13 nov | 17 | 76 | 5 | 6.6% |
+| Sprint 3 | 9–13 nov | 17 | 76 | 52 | 68.4% |
 | Sprint 4 | 16–20 nov | 13 | 69 | 5 | 7.2% |
 | Backlog | sin fecha | 4 | 29 | 0 | 0.0% |
 
@@ -26,6 +26,11 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-29: evidencias.md describe Evidencias_orden y migración histórica 012/013; el flujo actual usa evidencias y archivos bajo assets-3fn/evidencias. Evidencia: src-tauri/src/domain/evidence_contracts.rs::validate.
 - HRL-30: El criterio C2 contradice la regla de la misma historia que permite consultar con Visualizar Clientes. Código y evidencias.md distinguen activas de retiradas. Se marca En progreso con la redacción literal, sin resolver la ambigüedad ni cambiar la regla. Evidencia: src-tauri/src/services/evidence.rs::EvidenceService::list/read/update.
 - HRL-31: La UI oculta Papelera sin orders.delete, pero OrderService::list con trashed=true solo exige clients.view; la restricción de consultar papelera no está comprobada con el mismo permiso en backend. Evidencia: src-tauri/src/services/orders.rs::OrderService::trash/list.
+- HRL-33: reparaciones-permisos.md describe migración 006 y importación localStorage anteriores; el servicio activo usa tablas normalizadas y no importa aquel seguimiento. Evidencia: src-tauri/src/services/repairs.rs::RepairService::summary/save.
+- HRL-34: Repair::default inicia solo Recibido y Entregado, no la secuencia sugerida completa. El catálogo de opciones sí está disponible y se incorporan etapas al agregar avances. El DTO Event no devuelve id_autor, aunque SQLite lo conserva. Evidencia: src/composables/useRepairScreen.ts::complete/addEvent.
+- HRL-35: La regla del backlog pide pieza, cantidad y costo; Part y la captura solo ofrecen nombre y precio. El INSERT no recibe cantidad (se usa el valor predeterminado del esquema). No se evalúan existencias. Evidencia: src/composables/useRepairScreen.ts::addPart/selectWarrantyType/addWarranty.
+- HRL-37: La regla admite entrega histórica sin fecha; update_order completa fecha_entrega con fecha UTC actual cuando delivered=true y fecha era NULL, incluso al editar otro dato. No permite conservar esa fecha desconocida durante dicho guardado. Evidencia: src-tauri/src/services/orders.rs::OrderService::edit.
+- HRL-42: La persistencia de reintento en localStorage corresponde a movimientos del panel. El abono inicial conserva el payload solo en memoria de createReceptionForm; al cerrar se pierde y la UI pide mantener abierta la ventana. El backlog HRL-13/42 no distingue esta limitación. Evidencia: src-tauri/src/services/ledger.rs::LedgerService::record.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
