@@ -68,6 +68,48 @@ impl RepairService {
         tx.commit().await?;
         Ok(result)
     }
+    pub async fn hide_stage_name(&self, id: i64, name: String) -> Result<Vec<String>, AppError> {
+        let name = name.trim();
+        if name.is_empty() || name.len() > 100 {
+            return Err(AppError::Validation("Nombre de etapa inválido.".into()));
+        }
+        let _gate = self.access.lock().await;
+        let mut tx = self.pool.begin().await?;
+        self.access
+            .require(
+                &mut tx,
+                "repairs.view",
+                AccessScope::Repairs,
+                Some(id),
+                false,
+            )
+            .await?;
+        let user = self
+            .access
+            .require(&mut tx, "repairs.edit", AccessScope::Repairs, None, true)
+            .await?;
+        self.ledger.active(&mut tx, id).await?;
+        if !self.repository.hide_stage_name(&mut tx, name).await? {
+            return Err(AppError::Validation("Solo puedes quitar nombres personalizados guardados; las opciones predeterminadas se conservan.".into()));
+        }
+        self.audit
+            .record(
+                &mut tx,
+                AuditRecord {
+                    author_id: user.id,
+                    operation: "repairs.edit",
+                    entity: "nombres_etapas_ocultos",
+                    entity_id: None,
+                    order_id: Some(id),
+                    reason: None,
+                },
+                &[("stageSuggestion", Some(name.into()), None)],
+            )
+            .await?;
+        let names = self.repository.stages(&mut tx).await?;
+        tx.commit().await?;
+        Ok(names)
+    }
     pub async fn summary(&self, id: i64) -> Result<PublicSummary, AppError> {
         let _gate = self.access.lock().await;
         let mut tx = self.pool.begin().await?;

@@ -2,16 +2,18 @@
 import SearchSelect from '../components/ui/SearchSelect.vue';
 import AppNotice from '../components/ui/AppNotice.vue';
 import PaymentsPanel from '../components/repairs/PaymentsPanel.vue';
+import StageRemovalDialog from '../components/repairs/StageRemovalDialog.vue';
 import type { Order } from '../types/order';
 import { useRepairScreen } from '../composables/useRepairScreen';
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ back: []; saved: [] }>();
-const {repair,payment,save,message,ready,dirty,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged}=useRepairScreen(props,emit);
+const {stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged}=useRepairScreen(props,emit);
 defineExpose({ save });
 </script>
 
 <template>
   <div class="repair-page">
+    <StageRemovalDialog :name="stageAction?.name" :suggestion="stageAction?.suggestion ?? false" :busy="busy" :error="stageActionError" @confirm="confirmStageAction" @cancel="stageAction=undefined" />
     <AppNotice v-if="busy" message="Consultando o guardando el seguimiento…" :closable="false" />
     <AppNotice v-else :message="message" @dismiss="message=''" />
     <div class="work">
@@ -55,6 +57,7 @@ defineExpose({ save });
                       <p class="help">Se guardará al agregar el avance y podrás reutilizarla en otras órdenes.</p>
                     </template>
                     <SearchSelect v-else id="repair-stage" v-model="stage" label="Etapa" :options="stageOptions" required />
+                    <button v-if="!customStage && removableStageName && canManageStageNames" type="button" class="btn btn-s" :disabled="busy || !ready" @click="requestHideStageName">Quitar nombre del selector</button>
                   </div>
                   <div class="fld"><label for="event-date">Fecha y hora</label><input id="event-date" v-model="date" type="datetime-local" required /><button class="lnk" type="button" @click="date = now()">Ahora</button></div>
                 </div>

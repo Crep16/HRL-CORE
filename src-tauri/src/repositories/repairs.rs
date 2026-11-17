@@ -61,7 +61,23 @@ impl RepairRepository {
         Ok((repair, row.try_get("revision")?))
     }
     pub async fn stages(&self, db: &mut SqliteConnection) -> Result<Vec<String>, AppError> {
-        Ok(sqlx::query_scalar("SELECT nombre FROM etapas UNION SELECT nombre_personalizado FROM orden_etapas WHERE nombre_personalizado IS NOT NULL ORDER BY 1 COLLATE NOCASE").fetch_all(db).await?)
+        Ok(sqlx::query_scalar("SELECT nombre FROM etapas UNION SELECT nombre_personalizado FROM orden_etapas WHERE nombre_personalizado IS NOT NULL AND NOT EXISTS(SELECT 1 FROM nombres_etapas_ocultos h WHERE h.nombre=nombre_personalizado COLLATE NOCASE) ORDER BY 1 COLLATE NOCASE").fetch_all(db).await?)
+    }
+    pub async fn hide_stage_name(
+        &self,
+        db: &mut SqliteConnection,
+        name: &str,
+    ) -> Result<bool, AppError> {
+        let custom: bool = sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM orden_etapas WHERE nombre_personalizado=? COLLATE NOCASE) AND NOT EXISTS(SELECT 1 FROM etapas WHERE nombre=? COLLATE NOCASE)")
+            .bind(name).bind(name).fetch_one(&mut *db).await?;
+        if !custom {
+            return Ok(false);
+        }
+        sqlx::query("INSERT INTO nombres_etapas_ocultos(nombre) VALUES (?) ON CONFLICT DO NOTHING")
+            .bind(name)
+            .execute(db)
+            .await?;
+        Ok(true)
     }
     pub async fn save(
         &self,

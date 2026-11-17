@@ -31,6 +31,13 @@ pub fn migrator() -> Migrator {
                 include_str!("../../migrations/003_antecedentes_equipo.sql").into(),
                 false,
             ),
+            Migration::new(
+                4,
+                "ocultar_nombres_etapas".into(),
+                MigrationType::Simple,
+                include_str!("../../migrations/004_ocultar_nombres_etapas.sql").into(),
+                false,
+            ),
         ]),
         ..Migrator::DEFAULT
     }

@@ -19,6 +19,9 @@ Object.assign(window, { draftGuardTest });
 Object.assign(window, { paymentRequests });
 const publicSummary={technician:'Técnico de prueba',publicNote:'Diagnóstico en proceso.',warranties:[]};
 const repair={stages:['Recibido','Diagnóstico','Entregado'],completed:1,...publicSummary,internalNote:'Revisar con fuente de laboratorio.',syncMode:'manual',events:[{id:1,date:'2026-11-05T10:00',title:'Equipo recibido',detail:'Se recibe con cargador.',stage:'Recibido',public:true}],parts:[],payments:[],visibility:[{label:'Línea de tiempo',enabled:true},{label:'Garantías',enabled:true},{label:'Resumen de pago',enabled:false},{label:'Notas del técnico',enabled:true}]};
+const stageTest=new URLSearchParams(location.search).has('stagesTest');
+if(stageTest)repair.stages=['Recibido','test1','Entregado'];
+let stageNames=[...repair.stages];
 const summary={id:1,folio:order.folio,clientName:order.client.fullName,serial:order.equipment.serial,item:order.equipment.item,status:order.status,receivedAt:order.receivedAt,currency:order.currency,priceMinor:order.priceMinor,netMinor:order.netMinor,pendingMinor:order.pendingMinor,creditMinor:0,delivered:false};
 const photo={id:'11112222333344445555666677778888',orderId:'1',originalName:'foto-de-prueba.png',mime:'image/png',sizeBytes:68,source:'file',note:'Recepción',authorName:'Operador de prueba',createdAt:'2026-11-05T15:00:00Z',deleted:false,revision:1};
 const photoBytes=Array.from(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII='),c=>c.charCodeAt(0)));
@@ -53,7 +56,11 @@ mockIPC((command,args)=>{
   }
   if(command==='normalized_repair_summary')return publicSummary;
   if(command==='load_normalized_repair')return {repair,revision:1,payment};
-  if(command==='list_normalized_stages')return repair.stages;
+  if(command==='list_normalized_stages')return stageNames;
+  if(command==='hide_normalized_stage_name'){
+    stageNames=stageNames.filter(name=>name!==(args as {name:string}).name);
+    return stageNames;
+  }
   if(command==='list_normalized_payments')return {movements:[{id:'1',kind:'receipt',paymentId:null,amountMinor:50000,effectiveMinor:50000,method:'Efectivo',reason:null,occurredAt:'2026-11-05T15:00:00Z'}],payment};
   if(command==='record_normalized_payment'){
     const request=(args as {payload:{amountMinor:number;kind:string;expectedMinor:number}}).payload;

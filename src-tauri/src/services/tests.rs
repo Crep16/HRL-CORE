@@ -1108,6 +1108,83 @@ fn restored_evidence_and_company_reopen_without_business_json() {
 }
 
 #[test]
+fn hidden_custom_stage_names_preserve_orders_and_roll_back_with_the_audit() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::repair_contracts::*;
+        let (pool, services) = fixture().await;
+        let created = services.orders.create(order()).await.unwrap();
+        let mut repair = services.repairs.load(created.id).await.unwrap().repair;
+        repair.stages.insert(1, "test1".into());
+        repair.events.push(Event {
+            id: 1,
+            date: "2026-11-17T10:00".into(),
+            title: "Avance original".into(),
+            detail: "".into(),
+            stage: "test1".into(),
+            public: true,
+        });
+        let saved = services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                repair,
+                revision: 0,
+            })
+            .await
+            .unwrap();
+        assert!(
+            services
+                .repairs
+                .stages(created.id)
+                .await
+                .unwrap()
+                .contains(&"test1".into())
+        );
+        assert!(
+            services
+                .repairs
+                .hide_stage_name(created.id, "Diagnóstico".into())
+                .await
+                .is_err()
+        );
+        let limited = add_user(&pool, "stage-limited", "limited").await;
+        assert!(limited > 0);
+        services.access.login(login("stage-limited")).await.unwrap();
+        assert!(matches!(
+            services
+                .repairs
+                .hide_stage_name(created.id, "test1".into())
+                .await,
+            Err(AppError::Forbidden)
+        ));
+        services.access.login(login("admin")).await.unwrap();
+        sqlx::raw_sql("CREATE TRIGGER fail_suggestion_audit BEFORE INSERT ON auditoria BEGIN SELECT RAISE(ABORT,'prueba'); END;").execute(&pool).await.unwrap();
+        assert!(
+            services
+                .repairs
+                .hide_stage_name(created.id, "test1".into())
+                .await
+                .is_err()
+        );
+        assert_eq!(count(&pool, "nombres_etapas_ocultos").await, 0);
+        sqlx::raw_sql("DROP TRIGGER fail_suggestion_audit")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let names = services
+            .repairs
+            .hide_stage_name(created.id, "TEST1".into())
+            .await
+            .unwrap();
+        assert!(!names.iter().any(|name| name.eq_ignore_ascii_case("test1")));
+        let reloaded = services.repairs.load(created.id).await.unwrap();
+        assert_eq!(reloaded.repair.stages, saved.repair.stages);
+        assert_eq!(reloaded.repair.events, saved.repair.events);
+        assert_eq!(reloaded.revision, saved.revision);
+    });
+}
+
+#[test]
 fn restored_repair_uses_relational_records_and_rejects_stale_changes() {
     tauri::async_runtime::block_on(async {
         use crate::domain::repair_contracts::*;

@@ -711,3 +711,8 @@ BEGIN SELECT RAISE(ABORT,'Las facultades prestadas son inmutables'); END;
 
 CREATE TRIGGER acceso_temporal_permiso_no_delete BEFORE DELETE ON acceso_temporal_permiso
 BEGIN SELECT RAISE(ABORT,'Las facultades prestadas son inmutables'); END;
+
+-- Preferencia de sugerencias: no modifica el catálogo ni las etapas históricas.
+CREATE TABLE nombres_etapas_ocultos (
+    nombre TEXT PRIMARY KEY COLLATE NOCASE CHECK(length(trim(nombre)) BETWEEN 1 AND 100)
+) STRICT;

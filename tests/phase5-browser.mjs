@@ -62,6 +62,28 @@ try {
   await send('Runtime.enable');
   await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
+  await view('repairs&stagesTest');
+  await button('Historial (1)');
+  await evaluate("document.querySelector('.event-composer').open=true;document.getElementById('repair-stage').focus()");
+  await waitFor('!!document.querySelector("#repair-stage-options")');
+  await evaluate("[...document.querySelectorAll('#repair-stage-options [role=option]')].find(option=>option.textContent==='test1').click()");
+  await button('Quitar nombre del selector');
+  await waitFor('!!document.querySelector(".stage-removal-dialog[open]")');
+  assert.equal(await evaluate('document.activeElement.textContent.trim()'),'Cancelar');
+  await button('Cancelar','document.querySelector(".stage-removal-dialog")');
+  assert.equal(await evaluate('document.getElementById("repair-stage").value'),'test1');
+  await button('Quitar nombre del selector');
+  await send('Emulation.setDeviceMetricsOverride',{width:375,height:812,deviceScaleFactor:1,mobile:false});
+  assert.ok(await evaluate('document.querySelector(".stage-removal-dialog").getBoundingClientRect().right<=innerWidth'));
+  await screenshot('remove-stage-name-mobile');
+  await button('Quitar nombre','document.querySelector(".stage-removal-dialog")');
+  await waitFor('!document.querySelector(".stage-removal-dialog[open]")');
+  await evaluate("document.getElementById('repair-stage').focus()");
+  await waitFor('!!document.querySelector("#repair-stage-options")');
+  assert.ok(await evaluate("![...document.querySelectorAll('#repair-stage-options [role=option]')].some(option=>option.textContent==='test1')"));
+  assert.ok(await evaluate("document.querySelector('.steps').textContent.includes('test1')"));
+  console.log('Nombre personalizado quitado del selector sin modificar el progreso ni el historial.');
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false });
   for (const name of ['clients', 'repairs', 'company', 'users', 'logbook']) {
     await view(name);
     const layout = await evaluate('({heading: document.querySelector("h1")?.innerText, width: innerWidth, content: document.documentElement.scrollWidth})');

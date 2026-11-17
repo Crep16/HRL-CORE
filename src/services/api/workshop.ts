@@ -22,6 +22,7 @@ export const workshopApi = {
     return snapshot(await request<RepairSnapshot>('save_normalized_repair',{payload:{orderId,repair:value,revision}}));
   },
   stages: (orderId:number) => request<string[]>('list_normalized_stages',{orderId}),
+  hideStageName: (orderId:number,name:string) => request<string[]>('hide_normalized_stage_name',{orderId,name}),
   summary: (orderId:number) => request<{technician:string;publicNote:string;warranties:{name:string;days:number}[]}>('normalized_repair_summary',{orderId}),
   payments: (orderId:number) => request<{movements:MoneyMovement[];payment:PaymentState}>('list_normalized_payments',{orderId}),
   recordPayment: (value:MoneyRequest) => request<PaymentState>('record_normalized_payment',{payload:{...value,orderId:Number(value.orderId),paymentId:value.paymentId?Number(value.paymentId):null}}),

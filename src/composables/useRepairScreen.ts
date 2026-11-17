@@ -8,11 +8,13 @@ import { useWorkshopAccess } from './useWorkshopAccess.ts';
 import { useCompany } from './useCompany.ts';
 import { companyDateTime } from '../utils/companyDate.ts';
 import { orderDisplayStatus } from '../utils/orderStatus.ts';
+import {useAuthStore} from '../stores/useAuthStore.ts';
 export function useRepairScreen(props:{ order: Order },emit:{(event:"back",...args:[]):void;(event:"saved",...args:[]):void;}){
 const { repair, payment, save:persist, commit, message, busy:repairBusy, ready, dirty, reload } = useRepairWorkspace(props.order.databaseId!, () => emit('saved'));
 const moneyBusy=ref(false);
-async function save(){return moneyBusy.value?false:persist();}
-const busy=computed(()=>repairBusy.value||moneyBusy.value);
+async function save(){return moneyBusy.value||stageNameBusy.value?false:persist();}
+const stageNameBusy=ref(false);
+const busy=computed(()=>repairBusy.value||moneyBusy.value||stageNameBusy.value);
 async function paymentsChanged(value: PaymentState) {
   payment.value = value;
   await reload();
@@ -23,10 +25,14 @@ const newNote = ref('');
 const { company } = useCompany();
 const stages = computed(() => repair.value.stages);
 const savedStages = ref<string[]>([]);
+const canManageStageNames=computed(()=>useAuthStore().can('repairs.edit','repairs',null));
+const removableStageName=computed(()=>savedStages.value.includes(stage.value)&&![...defaultStageOptions,'Entrega'].includes(stage.value));
+const stageAction=ref<{name:string;suggestion:boolean}>();
+const stageActionError=ref('');
 const customStage = ref(false);
 const customStageName = ref('');
 const stageOptions = computed(() => {
-  const names = [...defaultStageOptions, ...savedStages.value, ...stages.value];
+  const names = [...defaultStageOptions, ...savedStages.value];
   return names.filter((name, index) => names.findIndex(item => item.toLocaleLowerCase('es') === name.toLocaleLowerCase('es')) === index);
 });
 onMounted(async () => {
@@ -37,6 +43,20 @@ const noteType = ref<'publicNote' | 'internalNote'>('publicNote');
 const title = ref('');
 const detail = ref('');
 const stage = ref('Reparación');
+function requestHideStageName(){
+  if(!ready.value||busy.value||!canManageStageNames.value||!removableStageName.value)return;
+  stageActionError.value='';stageAction.value={name:stage.value,suggestion:true};
+}
+async function confirmStageAction(){
+  if(!stageAction.value||busy.value||!canManageStageNames.value)return;
+  stageNameBusy.value=true;stageActionError.value='';
+  try{
+    savedStages.value=await useWorkshopDataStore().hideStageName(props.order.databaseId!,stageAction.value.name);
+    stage.value='Reparación';stageAction.value=undefined;
+    message.value='Nombre quitado del selector. Las etapas y el historial se conservan.';
+  }catch(cause){stageActionError.value=cause&&typeof cause==='object'&&'message'in cause?String(cause.message):'No se pudo quitar el nombre. Vuelve a intentarlo.';}
+  finally{stageNameBusy.value=false;}
+}
 const publicEvent = ref(true);
 const workspaceTab = ref<'work' | 'history'>('work');
 const now = () => companyDateTime(company.value.timezone);
@@ -86,5 +106,5 @@ async function appendNote() {
   if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
 }
 async function back() { if (await save()) emit('back'); }
-return {repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
+return {stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
 }

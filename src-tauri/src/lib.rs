@@ -71,6 +71,7 @@ pub fn run() {
             commands::load_normalized_repair,
             commands::save_normalized_repair,
             commands::list_normalized_stages,
+            commands::hide_normalized_stage_name,
             commands::normalized_repair_summary,
             commands::list_normalized_payments,
             commands::record_normalized_payment,

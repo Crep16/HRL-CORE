@@ -336,6 +336,16 @@ pub async fn list_normalized_stages(
 }
 
 #[tauri::command]
+pub async fn hide_normalized_stage_name(
+    order_id: i64,
+    name: String,
+    app: tauri::AppHandle,
+    state: State<'_, BackendState>,
+) -> Result<Vec<String>, AppError> {
+    state.services(&app).await?.repairs.hide_stage_name(order_id, name).await
+}
+
+#[tauri::command]
 pub async fn normalized_repair_summary(
     order_id: i64,
     app: tauri::AppHandle,
