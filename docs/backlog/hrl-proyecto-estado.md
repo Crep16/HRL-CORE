@@ -82,4 +82,92 @@ Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
 
 Discrepancias: El backlog presenta el retiro como pendiente; el árbol conserva el código histórico archivado, fuera del flujo productivo. El adaptador utils/legacyOrder.ts transforma DTO, no usa la base anterior.
 
+## HRL-2 · Usuarios, acceso y permisos
+
+### HRL-16 Configuración inicial: clave maestra y primer administrador
+
+Estado: **Hecho**. Sprint 1 · 5 puntos.
+
+Evidencia: `src/composables/useAccessForm.ts::view/check/submit`; `src-tauri/src/services/access.rs::AccessService::initialize`; `src-tauri/src/repositories/access.rs::bootstrap/setup_status`.
+
+Respaldo de criterios: C1: setupComplete falso selecciona configuración, no login. C2: bootstrap y auditoría usan la misma transacción BEGIN IMMEDIATE. C3: bootstrap asigna rol administrator y nivel complete activos.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-17 Inicio y cierre de sesión
+
+Estado: **Hecho**. Sprint 1 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/access.rs::AccessService::login/logout/Attempts::fail`; `src-tauri/src/repositories/access.rs::by_login/by_id`; `src/stores/useAuthStore.ts::clearSession/logoutUser`; `src/composables/useAccessForm.ts::clearSecrets`; `src/stores/useOrderStore.ts::acceptOrder`.
+
+Respaldo de criterios: C1: by_login solo devuelve usuarios activos. C2: logout retira sesión backend y clearSession invalida stores; los formularios se desmontan y limpian secretos. C3: sessionVersion impide aceptar respuestas de la sesión anterior. Se mantiene espera de 5 segundos tras 5 fallos.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-18 Perfil de ventana según estado
+
+Estado: **No verificado**. Sprint 1 · 2 puntos.
+
+Evidencia: `src-tauri/src/windowing.rs::Profile::size/minimum/for_session/WindowProfileState::apply_to`; `src/composables/useWindowProfile.ts::useWindowProfile`; `src-tauri/src/services/access.rs::AccessService::synchronize_window`.
+
+Respaldo de criterios: C1: perfiles declarados 1000×680, 1000×760 y 1280×760; taller mínimo 1120×680. C2: perfil depende de la sesión backend. Las pruebas de windowing usan Window simulado.
+
+Criterios no cumplidos o sin verificar: C1 y C2 sin verificación sobre una ventana Tauri real.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+Para verificar: Abrir configuración, acceso y taller en Windows; maximizar taller, cerrar sesión y medir dimensiones, límites y capacidad de redimensionar.
+
+### HRL-19 Niveles de acceso y permisos por apartado y acción
+
+Estado: **Hecho**. Sprint 1 · 8 puntos.
+
+Evidencia: `src-tauri/src/domain/permissions.rs::OPERATIONS/limited_allows`; `src-tauri/src/services/access.rs::AccessService::permanent/require`; `src-tauri/src/services/users.rs::UserService::save`.
+
+Respaldo de criterios: C1: limited_allows restringe acciones y require rechaza fuera de las facultades. C2: payments.add se obtiene de permiso separado; repairs.edit no lo concede a custom. C3: save audita permisos anteriores/nuevos en la transacción.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-20 Gestión de usuarios
+
+Estado: **Hecho**. Sprint 2 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/users.rs::UserService::save`; `src-tauri/migrations/001_esquema_objetivo.sql::usuarios_conservar_admin_al_editar/usuarios_conservar_admin_al_borrar`; `src-tauri/src/repositories/users.rs::UserRepository::save`.
+
+Respaldo de criterios: C1: servicio y triggers impiden desactivar o degradar al último administrador. C2: verify_master precede a save. C3: no hay comando de eliminación de cuentas; las FK referenciadas usan RESTRICT. Contraseña vacía conserva hash y auditoría usa credentialsUpdated.
+
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
+
+Discrepancias: La regla transversal del backlog exige revisión en toda edición; SaveUserPayload y UserService::save no incluyen expected_revision. Los criterios específicos de HRL-20 sí tienen respaldo; queda una brecha transversal que debe planificarse.
+
+### HRL-21 Acceso temporal
+
+Estado: **Hecho**. Sprint 2 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/access.rs::AccessService::temporary/require/finish_temporary/logout`; `src/composables/useWorkshop.ts::navigate/finishTemporary`; `src-tauri/src/services/users.rs::UserService::save`.
+
+Respaldo de criterios: C1: temporary rechaza autoautorización y facultades que no posee el autorizador. C2: require compara scope y order_id y reconsulta al autorizador. C3: el préstamo no modifica usuario_permiso; cierre retira grant. Usuarios mantiene verify_master.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: El documento acceso-temporal.md describe tablas históricas y triggers 011; el flujo vigente usa accesos_temporales/acceso_temporal_permiso y AuditService.
+
+### HRL-22 Recuperación de la clave maestra con soporte
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/recovery.rs::RecoveryState::issue_at/consume_at`; `src-tauri/src/services/access.rs::AccessService::verify_recovery_signature`; `src-tauri/src/services/tests.rs::recovery_resets_both_hashes_revokes_access_and_keeps_device_encryption_key`.
+
+Respaldo de criterios: C1: TTL de 15 minutos y pending.take impiden vencidos/reuso. C2: firma Ed25519 válida habilita reset de hashes y auditoría en una transacción. C3: RecoveryState vive en memoria y se inicia vacío. Se firma token exacto; no hay envío automático de correo.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática del protocolo; el acto de firma de soporte real no se certifica aquí.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
 

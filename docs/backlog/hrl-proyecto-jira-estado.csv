@@ -107,7 +107,7 @@ Criterios de aceptación:
 - Dado que falla una parte del envío, entonces no queda clave maestra ni administrador a medias.
 - Dado el envío correcto, entonces existe un administrador activo con acceso Completo.
 
-Depende de: HRL-10, HRL-11","2","Sprint 1","High","5","usuarios","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-11","2","Sprint 1","High","5","usuarios","","Finalizada","Verificado"
 "17","Story","Inicio y cierre de sesión","Objetivo: Autenticar con usuario y contraseña y cerrar la sesión sin dejar datos.
 
 Reglas:
@@ -120,7 +120,7 @@ Criterios de aceptación:
 - Dado el cierre de sesión, entonces se limpian stores y claves en pantalla.
 - Dado un cambio de sesión, entonces las consultas anteriores no repueblan la nueva.
 
-Depende de: HRL-16, HRL-12","2","Sprint 1","High","5","usuarios","","Por hacer","No verificado"
+Depende de: HRL-16, HRL-12","2","Sprint 1","High","5","usuarios","","Finalizada","Verificado"
 "18","Task","Perfil de ventana según estado","Objetivo: Ajustar tamaño y comportamiento de la ventana según el estado autorizado por el backend.
 
 Reglas:
@@ -143,7 +143,7 @@ Criterios de aceptación:
 - Dado un usuario Personalizado nuevo con Editar Reparaciones, entonces no recibe cobro automáticamente.
 - Dado un cambio de permisos, entonces queda auditado.
 
-Depende de: HRL-10, HRL-11","2","Sprint 1","High","8","usuarios","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-11","2","Sprint 1","High","8","usuarios","","Finalizada","Verificado"
 "20","Story","Gestión de usuarios","Objetivo: Administrar cuentas: listar, crear, editar, activar/desactivar y cambiar contraseña.
 
 Reglas:
@@ -156,7 +156,7 @@ Criterios de aceptación:
 - Dado un guardado sin clave maestra válida, entonces no se aplica el cambio.
 - Dado una cuenta con historial, entonces no se puede eliminar.
 
-Depende de: HRL-19, HRL-43","2","Sprint 2","High","8","usuarios","","Por hacer","No verificado"
+Depende de: HRL-19, HRL-43","2","Sprint 2","High","8","usuarios","","Finalizada","Verificado"
 "21","Story","Acceso temporal","Objetivo: Permitir una operación restringida con la autorización de otra persona que sí tiene la facultad.
 
 Reglas:
@@ -170,7 +170,7 @@ Criterios de aceptación:
 - Dado un préstamo limitado a una orden, cuando se usa en otra, entonces el backend lo rechaza.
 - Dado el cierre del contexto, entonces los permisos permanentes del operador no cambian.
 
-Depende de: HRL-19, HRL-17, HRL-43","2","Sprint 2","High","8","usuarios","","Por hacer","No verificado"
+Depende de: HRL-19, HRL-17, HRL-43","2","Sprint 2","High","8","usuarios","","Finalizada","Verificado"
 "22","Story","Recuperación de la clave maestra con soporte","Objetivo: Restablecer la clave maestra cuando se pierde, con un desafío firmado por soporte.
 
 Reglas:
@@ -183,7 +183,7 @@ Criterios de aceptación:
 - Dado una firma válida, entonces se actualizan los hashes y se audita la recuperación.
 - Dado que se reinicia la aplicación, entonces hay que generar otro desafío.
 
-Depende de: HRL-16, HRL-43","2","Sprint 2","Medium","5","usuarios","","Por hacer","No verificado"
+Depende de: HRL-16, HRL-43","2","Sprint 2","Medium","5","usuarios","","Finalizada","Verificado"
 "23","Story","Crear orden y asignar folio","Objetivo: Registrar una orden nueva con su cliente y equipo.
 
 Reglas:

@@ -1,11 +1,11 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 6/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 13/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Sprint 1 | 26–30 oct | 13 | 70 | 10 | 14.3% |
-| Sprint 2 | 2–6 nov | 12 | 70 | 0 | 0.0% |
+| Sprint 1 | 26–30 oct | 13 | 70 | 28 | 40.0% |
+| Sprint 2 | 2–6 nov | 12 | 70 | 21 | 30.0% |
 | Sprint 3 | 9–13 nov | 17 | 76 | 0 | 0.0% |
 | Sprint 4 | 16–20 nov | 13 | 69 | 5 | 7.2% |
 | Backlog | sin fecha | 4 | 29 | 0 | 0.0% |
@@ -18,12 +18,15 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-13: El contrato contiene más códigos que las cinco categorías resumidas en el backlog; no implica pérdida de esas categorías. Evidencia: src-tauri/src/error.rs::AppError::code/serialize.
 - HRL-14: El respaldo portable ahora tiene código propio; copiar solamente SQLite sigue sin incluir archivos y custodia. Evidencia: src-tauri/src/services/key_store.rs::OsKeyStore::open_key/protect.
 - HRL-15: El backlog presenta el retiro como pendiente; el árbol conserva el código histórico archivado, fuera del flujo productivo. El adaptador utils/legacyOrder.ts transforma DTO, no usa la base anterior. Evidencia: src-tauri/src/lib.rs::run.
+- HRL-20: La regla transversal del backlog exige revisión en toda edición; SaveUserPayload y UserService::save no incluyen expected_revision. Los criterios específicos de HRL-20 sí tienen respaldo; queda una brecha transversal que debe planificarse. Evidencia: src-tauri/src/services/users.rs::UserService::save.
+- HRL-21: El documento acceso-temporal.md describe tablas históricas y triggers 011; el flujo vigente usa accesos_temporales/acceso_temporal_permiso y AuditService. Evidencia: src-tauri/src/services/access.rs::AccessService::temporary/require/finish_temporary/logout.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
 ## No verificado
 
 - HRL-14: Ejecutar instalación Windows con dos perfiles; guardar una credencial y comprobar recuperación en el original y rechazo en el segundo, incluida ausencia/corrupción del archivo DPAPI.
+- HRL-18: Abrir configuración, acceso y taller en Windows; maximizar taller, cerrar sesión y medir dimensiones, límites y capacidad de redimensionar.
 
 ## Sprint 4 (16–20 noviembre): trabajo que no está Hecho
 
