@@ -47,3 +47,11 @@ Referencia original: HRL-30, epic HRL-3. El usuario confirmó el 17 de noviembre
 Se amplió `src-tauri/src/services/tests.rs::integrated_evidence_revision_restore_and_revoked_authorization_preserve_original`: un usuario con solo Visualizar no puede listar retiradas ni leer directamente sus bytes; tampoco aparecen en su lista activa. Tras restaurar con el administrador se conservan bytes y metadatos, y la consulta de una activa con Visualizar sigue permitida. También se rechaza una descripción de 501 caracteres Unicode. No cambió código de producción.
 
 Resultado: Hecho bajo la aclaración autorizada. `cargo check --offline --quiet` pasó y la suite completa `cargo test --offline --quiet` pasó 100/100 con el perfil real de Windows (incluidas DPAPI). La regresión de navegador del paso anterior ya cubre descripción, retiro y restauración con IPC simulado. Build vigente sin nuevos cambios de frontend. Persisten advertencias históricas de código no utilizado.
+
+## HRLP-55 · Propuesta del contrato del portal
+
+El usuario confirmó que no existe contrato y solicitó una propuesta para que los datos enviados sean visibles en la web. Se creó `docs/backlog/contrato-portal-propuesta-v1.md`, con flujo app/cola/API/Firebase/web, campos permitidos y prohibidos, enlace privado, autenticación separada de la local, revisiones, idempotencia, despublicación, trabajo sin conexión y plan por HRLP-55–59. Incluye fuentes oficiales de Firebase y distingue capacidades propuestas de código existente.
+
+Resultado: En progreso; aprobación del responsable No verificada. No se implementó ni desplegó sincronización y no se crearon recursos remotos. HRLP-56–59 continúan pendientes de contrato aprobado e integración. La decisión de un único emisor, política de acceso, vencimiento y alcance público se ofrece para revisión; no se impone como regla vigente. Los dos archivos originales del backlog y los tres informes originales de auditoría permanecen sin modificaciones.
+
+Commits de implementación previos: HRLP-62 `760266c`, HRLP-48 `24d7416`, HRLP-28 `60feef2` y HRLP-30 `2156f61`.
