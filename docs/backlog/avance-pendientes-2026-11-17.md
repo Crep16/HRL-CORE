@@ -37,3 +37,13 @@ Evidencia: `src/composables/useReceptionForm.ts::prepareLeave`, `src/views/Recep
 Validación: UI 14/14, respaldos 6/6, pagos 4/4, finanzas 4/4, fase 5 10/10, IPC 14/14, notas 3/3 y build. Las pruebas verifican una única solicitud pendiente, acciones bloqueadas mientras guarda, rechazo sin salida, cancelación al desmontar, los tres caminos de Recepción y la prohibición de descartar un cobro incierto. La prueba de cierre confirma que no hay respaldo ni cierre hasta una elección aceptada; un guardado rechazado mantiene la ventana abierta. `node tests/draft-guards-browser.mjs` verifica también guardado y descarte de Recepción, Empresa, navegación, cierre de sesión y teclado en los cuatro anchos. La regresión `npm run test:browser` pasó con la nueva elección en Empresa.
 
 La simulación de IPC y el foco de un modal bajo un contenedor inerte no sustituyen la ejecución nativa del instalador, cámara, impresora o cambio de perfil de Windows.
+
+## HRLP-30 · Aclaración de evidencias retiradas
+
+Referencia original: HRL-30, epic HRL-3. El usuario confirmó el 17 de noviembre de 2026 que el criterio de visibilidad sin Borrar se refiere a **evidencias retiradas**. No se modifica la regla de consultar fotos activas con Visualizar ni los archivos originales del backlog. La ambigüedad de la auditoría queda resuelta por esta confirmación.
+
+`src-tauri/src/services/evidence.rs::EvidenceService::list/read` exige `evidence.delete` para listar o leer retiradas; `update` exige esa facultad para retirar/restaurar, verifica revisión y rechaza descripciones mayores de 500 caracteres. No borra el archivo al retirar. La interfaz `useOrderEvidence.ts` conserva el control por permisos.
+
+Se amplió `src-tauri/src/services/tests.rs::integrated_evidence_revision_restore_and_revoked_authorization_preserve_original`: un usuario con solo Visualizar no puede listar retiradas ni leer directamente sus bytes; tampoco aparecen en su lista activa. Tras restaurar con el administrador se conservan bytes y metadatos, y la consulta de una activa con Visualizar sigue permitida. También se rechaza una descripción de 501 caracteres Unicode. No cambió código de producción.
+
+Resultado: Hecho bajo la aclaración autorizada. `cargo check --offline --quiet` pasó y la suite completa `cargo test --offline --quiet` pasó 100/100 con el perfil real de Windows (incluidas DPAPI). La regresión de navegador del paso anterior ya cubre descripción, retiro y restauración con IPC simulado. Build vigente sin nuevos cambios de frontend. Persisten advertencias históricas de código no utilizado.

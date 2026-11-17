@@ -1540,6 +1540,22 @@ fn integrated_evidence_revision_restore_and_revoked_authorization_preserve_origi
             .update(update(edited.revision, true, &edited.note))
             .await
             .unwrap();
+        let viewer = add_user(&pool, "retired-evidence-viewer", "custom").await;
+        sqlx::query("INSERT INTO usuario_permiso(id_usuario,id_permiso) SELECT ?,p.id FROM permisos p JOIN apartados a ON a.id=p.id_apartado JOIN acciones c ON c.id=p.id_accion WHERE a.codigo='clients' AND c.codigo='view'")
+            .bind(viewer).execute(&pool).await.unwrap();
+        services
+            .access
+            .login(login("retired-evidence-viewer"))
+            .await
+            .unwrap();
+        assert!(matches!(
+            services.evidence.list(created.id, true).await,
+            Err(AppError::Forbidden)
+        ));
+        assert!(matches!(
+            services.evidence.read(created.id, code).await,
+            Err(AppError::Forbidden)
+        ));
         assert!(
             services
                 .evidence
@@ -1548,6 +1564,14 @@ fn integrated_evidence_revision_restore_and_revoked_authorization_preserve_origi
                 .unwrap()
                 .is_empty()
         );
+        services.access.login(login("admin")).await.unwrap();
+        assert!(matches!(
+            services
+                .evidence
+                .update(update(removed.revision, false, &"ñ".repeat(501)))
+                .await,
+            Err(AppError::Validation(_))
+        ));
         let restored = services
             .evidence
             .update(update(removed.revision, false, &removed.note))
