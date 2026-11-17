@@ -110,8 +110,11 @@ try {
   assert.ok(await evaluate('document.querySelector(".company-clause-list").innerText.includes("Condición de prueba")'));
   await button('Usuarios', 'document.querySelector("nav[aria-label=Secciones]")');
   assert.ok(await evaluate('!!document.querySelector("#company-title")'));
-  assert.ok(await evaluate('document.body.innerText.includes("Guarda o descarta")'));
+  await waitFor('!!document.querySelector(".draft-leave-dialog[open]")');
+  assert.deepEqual(await evaluate('[...document.querySelector(".draft-leave-dialog[open]").querySelectorAll("button")].map(button=>button.textContent.trim())'),['Seguir editando','Descartar y salir','Guardar y salir']);
   await screenshot('company-draft-guard');
+  await button('Descartar y salir','document.querySelector(".draft-leave-dialog[open]")');
+  await waitFor('!!document.querySelector(".users-heading")');
   console.log('Borrador de cláusula, foco y guarda de navegación aprobados.');
 
   await view('clients');

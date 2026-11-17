@@ -12,6 +12,7 @@ import type { NoteKind } from '../types/company.ts';
 import type ReceptionView from '../views/ReceptionView.vue';
 import type RepairsView from '../views/RepairsView.vue';
 import type CompanyNote from '../components/company/CompanyNote.vue';
+import type CompanyView from '../views/CompanyView.vue';
 const labels:Record<AccessScope,string>={clients:'Clientes',repairs:'Reparaciones',logbook:'Bitácora',company:'Empresa',users:'Usuarios'};
 export function useWorkshop(){
   const backups=useBackupStore(),canBackup=computed(()=>backups.canManage);
@@ -19,6 +20,7 @@ export function useWorkshop(){
   const {company}=useCompany();
   const reception=useTemplateRef<InstanceType<typeof ReceptionView>>('reception');
   const repair=useTemplateRef<InstanceType<typeof RepairsView>>('repair');
+  const companyView=useTemplateRef<InstanceType<typeof CompanyView>>('companyView');
   const printNote=useTemplateRef<InstanceType<typeof CompanyNote>>('printNote');
   const printSource=useTemplateRef<HTMLElement>('printSource');
   const notice=ref(''),companyDirty=ref(false),printing=ref(false),printKind=ref<NoteKind>('entry');
@@ -34,7 +36,8 @@ export function useWorkshop(){
   async function prepareLeave(){
     if(useBackupStore().busy || useBackupStore().restored)return false;
     if(printing.value||orders.isLoading||auth.isLoading)return false;
-    if(companyDirty.value){notice.value='Guarda o descarta los cambios de Empresa antes de salir.';return false;}
+    if(workspace.page==='company'&&companyView.value){if(!await companyView.value.prepareLeave())return false;}
+    else if(companyDirty.value){notice.value='Guarda o descarta los cambios de Empresa antes de salir.';return false;}
     if(workspace.page==='clients'&&reception.value&&!await reception.value.prepareLeave())return false;
     if(workspace.page==='repairs'&&repair.value&&!await repair.value.save())return false;
     return true;

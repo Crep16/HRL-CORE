@@ -14,6 +14,8 @@ const order:OrderResponse={id:1,folio:'ORD-001',clientId:1,equipmentId:1,receive
 const settings={...defaultCompany(),name:'Taller de prueba',phone:'0000000000',nextNumber:2,revision:1};
 const payment={totalMinor:150000,collectedMinor:50000,receivedMinor:50000,adjustedMinor:0,refundedMinor:0,creditMinor:0,paid:false};
 const paymentRequests: unknown[] = [];
+const draftGuardTest = { failSave: false, saveCalls: 0, logoutCalls: 0 };
+Object.assign(window, { draftGuardTest });
 Object.assign(window, { paymentRequests });
 const publicSummary={technician:'Técnico de prueba',publicNote:'Diagnóstico en proceso.',warranties:[]};
 const repair={stages:['Recibido','Diagnóstico','Entregado'],completed:1,...publicSummary,internalNote:'Revisar con fuente de laboratorio.',syncMode:'manual',events:[{id:1,date:'2026-11-05T10:00',title:'Equipo recibido',detail:'Se recibe con cargador.',stage:'Recibido',public:true}],parts:[],payments:[],visibility:[{label:'Línea de tiempo',enabled:true},{label:'Garantías',enabled:true},{label:'Resumen de pago',enabled:false},{label:'Notas del técnico',enabled:true}]};
@@ -22,6 +24,14 @@ const photo={id:'11112222333344445555666677778888',orderId:'1',originalName:'fot
 const photoBytes=Array.from(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII='),c=>c.charCodeAt(0)));
 const backups={folder:'Carpeta de pruebas / Respaldos',automatic:false,files:[] as {name:string;bytes:number}[]};
 mockIPC((command,args)=>{
+  if(command==='logout_user'){draftGuardTest.logoutCalls++;return null;}
+  if(command==='save_normalized_company'){
+    draftGuardTest.saveCalls++;
+    if(draftGuardTest.failSave)throw {code:'CONFLICT',message:'La configuración cambió. Revisa el borrador.'};
+    const {taxRateThousandths,...value}=(args as {payload:{value:typeof settings & {taxRateThousandths:number}}}).payload.value;
+    Object.assign(settings,value,{taxRate:taxRateThousandths/1000,revision:settings.revision+1});
+    return {...value,taxRateThousandths,revision:settings.revision};
+  }
   if(['backup_status','create_backup','configure_backup','open_backup_folder'].includes(command)){
     const payload=(args as {payload:{masterPassword:string;automatic?:boolean}}).payload;
     if(payload.masterPassword!=='maestra-de-prueba')throw {code:'INVALID_CREDENTIALS',message:'Usuario o clave incorrectos.'};

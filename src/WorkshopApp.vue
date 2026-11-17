@@ -19,7 +19,7 @@ defineExpose({prepareLeave});
     <AppNotice :message="notice || auth.error?.message || ''" @dismiss="notice='';auth.error=null" />
     <AppNotice v-if="companyStore.error" :message="companyStore.error.message" tone="error"><button class="btn btn-s" :disabled="companyStore.isLoading" @click="loadCompany">Volver a consultar Empresa</button></AppNotice>
     <ReceptionView v-if="workspace.page==='clients'" ref="reception" embedded @repairs="navigate('Reparaciones')" />
-    <CompanyView v-else-if="workspace.page==='company' && can('company') && companyStore.loaded" :orders="selected?[selected]:[]" :order="publicOrder" @dirty-change="companyDirty=$event" />
+    <CompanyView v-else-if="workspace.page==='company' && can('company') && companyStore.loaded" ref="companyView" :orders="selected?[selected]:[]" :order="publicOrder" @dirty-change="companyDirty=$event" />
     <UsersView v-else-if="workspace.page==='users' && can('users')" />
     <LogbookView v-else-if="workspace.page==='logbook' && can('logbook')" />
     <RepairsView v-else-if="workspace.page==='repairs' && selected && can('repairs')" :key="selected.databaseId" ref="repair" :order="selected" @saved="refreshOrder" @back="navigate('Clientes')" />

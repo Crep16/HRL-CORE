@@ -13,3 +13,15 @@ Referencia original: HRL-62. Resultado: Hecho.
 Validación ejecutada: `npm run test:finances` (4/4), `npm run test:company` (3/3), `npm run build`, `cargo check --offline` y `cargo test --offline --quiet` (100/100). La suite Rust completa pasó con el perfil real de Windows fuera del aislamiento. Dentro del aislamiento pasaron 97 pruebas y fallaron tres de DPAPI con `Crypto`; se repitió la suite completa fuera del aislamiento sin deshabilitar ni modificar esas pruebas. Persisten advertencias de código histórico no utilizado.
 
 No cambian reglas de negocio ni código de producción en este paso.
+
+## HRLP-48 · Configuración de empresa y guarda de borrador
+
+Referencia original: HRL-48, epic HRL-6. Resultado: Hecho.
+
+Empresa ofrece «Guardar y salir», «Descartar y salir» y «Seguir editando» al abandonar un borrador mediante navegación o cierre de sesión. El guardado debe confirmarse antes de salir: una validación fallida o un rechazo conserva el borrador. Bloquea la salida durante guardado, lectura del logo, impresión o edición de una cláusula sin aplicar/cancelar.
+
+Evidencia: `src/composables/useDraftLeaveGuard.ts`, `useCompanyWorkspace.ts::prepareLeave/save`, `useWorkshop.ts::prepareLeave`, `CompanyView.vue` y `src/components/ui/DraftLeaveDialog.vue`. La revisión optimista y la auditoría transaccional permanecen en los servicios/repositorios normalizados existentes.
+
+La guarda encapsula la elección pendiente y compone callbacks; no introduce herencia ni reglas de negocio en la vista. El diálogo contiene presentación, eventos y manejo del foco. Conserva fuentes y colores del taller, sin animación adicional (energía, ritmo y movimiento: 1). En ventanas estrechas apila acciones; usa botones de al menos 44 px, Escape para seguir editando, recorrido Tab dentro del diálogo y restauración del foco. Se aplicaron antislop-ui, antislop-human, antislop-layoutmobile y la guía estática de UI/UX Pro Max; Python/py no estuvo disponible por denegación de acceso de Windows.
+
+Validación: fase 5 10/10, IPC 14/14, notas de empresa 3/3, build de TypeScript/Vite y `npm run test:browser`. Se verificaron también los tres caminos de salida, guardado rechazado y confirmado, cierre de sesión, Escape, Tab y foco en Chrome aislado con IPC simulado, a 360/540/768/1280 px. Capturas en `artifacts/draft-guards/`. Las comprobaciones Rust de la sección anterior siguen vigentes; este paso no modifica backend. La prueba del diálogo no sustituye las validaciones físicas de los tickets No verificado.

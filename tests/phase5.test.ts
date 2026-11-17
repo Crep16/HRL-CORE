@@ -266,3 +266,48 @@ test('the moved container retains company drafts and blocks leaving during an op
     await renderToString(createSSRApp(prepared).use(pinia));
   } finally { disposePinia(pinia); await server.close(); }
 });
+
+test('company leave guard preserves invalid and rejected drafts and confirms save or discard', async () => {
+  const { createServer } = await import('vite');
+  const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
+  const pinia = createPinia(); setActivePinia(pinia);
+  const previousWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  Object.defineProperty(globalThis, 'window', {configurable: true, value: {addEventListener() {}, removeEventListener() {}}});
+  try {
+    const {useCompanyWorkspace} = await server.ssrLoadModule('/src/composables/useCompanyWorkspace.ts');
+    const {useAuthStore} = await server.ssrLoadModule('/src/stores/useAuthStore.ts');
+    const {useCompanyStore} = await server.ssrLoadModule('/src/stores/useCompanyStore.ts');
+    const auth = useAuthStore(pinia), store = useCompanyStore(pinia);
+    auth.user = {id: 1, name: 'Admin', accessLevel: 'complete'};
+    auth.permissions = ['company.edit', 'company.view'];
+    store.settings = defaultCompany(); store.loaded = true;
+    let fail = true, saves = 0;
+    store.save = async (value: ReturnType<typeof defaultCompany>) => {
+      saves++;
+      if (fail) throw new Error('Fallo de prueba');
+      store.settings = {...value, revision: 2};
+    };
+    let model!: ReturnType<typeof useCompanyWorkspace>;
+    await renderToString(createSSRApp({setup() {model = useCompanyWorkspace({orders: []}, () => {}); return () => null;}}).use(pinia));
+    model.draft.value.name = 'Empresa pendiente';
+    const kept = model.prepareLeave(); model.leaveGuard.keep();
+    assert.equal(await kept, false); assert.equal(model.draft.value.name, 'Empresa pendiente');
+    model.clauseEditing.value = true;
+    assert.equal(await model.prepareLeave(), false); assert.match(model.message.value, /cláusula/);
+    model.clauseEditing.value = false;
+    model.readingLogo.value = true; assert.equal(await model.prepareLeave(), false); model.readingLogo.value = false;
+    const saved = model.prepareLeave();
+    model.draft.value.name = ''; await model.leaveGuard.save();
+    assert.equal(saves, 0); assert.equal(model.leaveGuard.open.value, true);
+    model.draft.value.name = 'Empresa pendiente'; await model.leaveGuard.save();
+    assert.equal(saves, 1); assert.equal(model.dirty.value, true); assert.match(model.leaveGuard.error.value, /No se guardaron/);
+    fail = false; await model.leaveGuard.save();
+    assert.equal(await saved, true); assert.equal(model.dirty.value, false); assert.equal(store.settings.name, 'Empresa pendiente');
+    model.draft.value.name = 'Cambio descartado';
+    const discarded = model.prepareLeave(); model.leaveGuard.discard();
+    assert.equal(await discarded, true); assert.equal(model.draft.value.name, 'Empresa pendiente');
+  } finally {
+    if (previousWindow) Object.defineProperty(globalThis, 'window', previousWindow); else Reflect.deleteProperty(globalThis, 'window');
+    disposePinia(pinia); await server.close();
+  }
+});

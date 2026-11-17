@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DraftLeaveDialog from '../components/ui/DraftLeaveDialog.vue';
 import CompanyClauses from '../components/company/CompanyClauses.vue';
 import SearchSelect from '../components/ui/SearchSelect.vue';
 import AppNotice from '../components/ui/AppNotice.vue';
@@ -10,7 +11,8 @@ import type { Order } from '../types/order';
 import { useCompanyWorkspace } from '../composables/useCompanyWorkspace';
 const props = defineProps<{orders: Order[]; order?: Order}>();
 const emit = defineEmits<{dirtyChange:[value:boolean]}>();
-const { can, draft, section, noteKind, clauseEditing, message, saving, errors, fieldError, focusError, uploadError, readingLogo, printing, confirmDiscard, fileInput, dirty, hasPending, nextFolio, sections, current, descriptions, totalsExample, goTo, save, discard, upload, pasteLogo, printTest } = useCompanyWorkspace(props, emit);
+const { leaveGuard, prepareLeave, can, draft, section, noteKind, clauseEditing, message, saving, errors, fieldError, focusError, uploadError, readingLogo, printing, confirmDiscard, fileInput, dirty, hasPending, nextFolio, sections, current, descriptions, totalsExample, goTo, save, discard, upload, pasteLogo, printTest } = useCompanyWorkspace(props, emit);
+defineExpose({prepareLeave});
 </script>
 
 <template>
@@ -111,6 +113,7 @@ const { can, draft, section, noteKind, clauseEditing, message, saving, errors, f
         <p class="company-help">Se actualiza mientras editas. La paginación final depende del contenido y del papel; confirma los márgenes en la vista de impresión.</p>
       </aside>
     </div>
+    <DraftLeaveDialog id="company-leave" area="Empresa" :open="leaveGuard.open.value" :busy="leaveGuard.busy.value" :error="leaveGuard.error.value" @save="leaveGuard.save" @discard="leaveGuard.discard" @keep="leaveGuard.keep" />
   </main>
 </template>
 <style src="../assets/styles/company.css"></style>

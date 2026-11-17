@@ -5,6 +5,7 @@ import { cloneCompany, companyErrors, formatFolio, nextAvailableNumber, useCompa
 import { printCompanyNote } from '../utils/printCompanyNote.ts';
 import type { CompanySection, NoteKind } from '../types/company.ts';
 import { paperLabels } from '../types/company.ts';
+import { useDraftLeaveGuard } from './useDraftLeaveGuard.ts';
 import type { Order } from '../types/order.ts';
 export function useCompanyWorkspace(props: { orders: Order[]; order?: Order }, emit: (event: 'dirtyChange', value: boolean) => void) {
 const { can } = useWorkshopAccess();
@@ -72,17 +73,25 @@ function goTo(id:CompanySection) {
   nextTick(()=>document.getElementById('company-section-title')?.focus());
 }
 async function save() {
-  if(saving.value)return;
-  if (!can('company.edit')) { message.value = 'Tu acceso permite consultar Empresa, pero no modificarla.'; return; }
+  if(saving.value || clauseEditing.value || readingLogo.value)return false;
+  if (!can('company.edit')) { message.value = 'Tu acceso permite consultar Empresa, pero no modificarla.'; return false; }
   errors.value=companyErrors(draft.value);
-  if (errors.value.length) {nextTick(()=>errorSummary.value?.focus()); return;}
+  if (errors.value.length) {nextTick(()=>errorSummary.value?.focus()); return false;}
   saving.value=true;
-  try{if (await persistCompany(draft.value)) {draft.value=cloneCompany(company.value); message.value='Configuración e historial guardados en este equipo.';} else { message.value=companyStorageError.value; }}
+  try{if (await persistCompany(draft.value)) {draft.value=cloneCompany(company.value); message.value='Configuración e historial guardados en este equipo.';return true;} else { message.value=companyStorageError.value;return false; }}
   finally{saving.value=false;}
 }
 function discard() {
   draft.value=cloneCompany(company.value); errors.value=[]; uploadError.value=''; confirmDiscard.value=false;
   message.value='Se restauró la última configuración guardada.';
+}
+const leaveGuard = useDraftLeaveGuard({save, discard});
+async function prepareLeave() {
+  if (clauseEditing.value || readingLogo.value || saving.value || printing.value) {
+    message.value = clauseEditing.value ? 'Aplica o cancela la cláusula antes de salir de Empresa.' : 'Espera a que termine la operación antes de salir de Empresa.';
+    return false;
+  }
+  return !dirty.value || await leaveGuard.request();
 }
 async function readLogo(file:Blob, name:string) {
   uploadError.value='';
@@ -120,5 +129,5 @@ async function printTest() {
 function preventLeave(event:BeforeUnloadEvent) {if(hasPending.value) {event.preventDefault();event.returnValue='';}}
 window.addEventListener('beforeunload',preventLeave);
 onBeforeUnmount(()=>{window.removeEventListener('beforeunload',preventLeave);emit('dirtyChange',false);});
-return { can, company, draft, section, noteKind, clauseEditing, message, saving, errors, fieldError, focusError, uploadError, readingLogo, printing, confirmDiscard, preview, notePreview, errorSummary, fileInput, dirty, hasPending, nextNumber, nextFolio, sections, current, descriptions, totalsExample, goTo, save, discard, upload, pasteLogo, printTest };
+return { leaveGuard, prepareLeave, can, company, draft, section, noteKind, clauseEditing, message, saving, errors, fieldError, focusError, uploadError, readingLogo, printing, confirmDiscard, preview, notePreview, errorSummary, fileInput, dirty, hasPending, nextNumber, nextFolio, sections, current, descriptions, totalsExample, goTo, save, discard, upload, pasteLogo, printTest };
 }
