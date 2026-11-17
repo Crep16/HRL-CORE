@@ -567,7 +567,7 @@ Criterios de aceptación:
 - Dado un avance marcado como no público, entonces no entra en la cola.
 - Dado que no hay conexión, entonces los cambios quedan en cola sin bloquear el trabajo.
 
-Depende de: HRL-55, HRL-34, HRL-33","7","Sprint 3","Medium","8","portal","","Por hacer","No verificado"
+Depende de: HRL-55, HRL-34, HRL-33","7","Sprint 3","Medium","8","portal","","Por hacer","Verificado"
 "57","Task","Pruebas del contrato de intercambio","Objetivo: Verificar que lo que se envía cumple el contrato.
 
 Reglas:
@@ -576,7 +576,7 @@ Reglas:
 Criterios de aceptación:
 - Dado un mensaje con contraseña o nota interna, entonces la prueba falla.
 
-Depende de: HRL-56","7","Sprint 3","Medium","3","portal","","Por hacer","No verificado"
+Depende de: HRL-56","7","Sprint 3","Medium","3","portal","","Por hacer","Verificado"
 "58","Story","Integrar la publicación con el servicio web","Objetivo: Enviar al servicio real y permitir que el cliente consulte el estado en tiempo real.
 
 Reglas:
@@ -586,7 +586,7 @@ Criterios de aceptación:
 - Dado un cambio autorizado, cuando hay conexión, entonces el cliente ve el estado actualizado.
 - Dado una caída del servicio, entonces el taller sigue operando y reintenta después.
 
-Depende de: HRL-56, HRL-57","7","Sprint 4","Medium","8","portal","","Por hacer","No verificado"
+Depende de: HRL-56, HRL-57","7","Sprint 4","Medium","8","portal","","Por hacer","Verificado"
 "59","Story","Controles de publicación ampliados","Objetivo: Dar más control sobre lo que ve el cliente.
 
 Reglas:
@@ -595,7 +595,7 @@ Reglas:
 Criterios de aceptación:
 - Dado una orden despublicada, entonces el cliente deja de verla.
 
-Depende de: HRL-58","7","","Low","5","portal","","Por hacer","No verificado"
+Depende de: HRL-58","7","","Low","5","portal","","Por hacer","Verificado"
 "60","Task","Pruebas de recepción, evidencias y permisos","Objetivo: Validar la recepción y los permisos tras el sprint 2.
 
 Reglas:

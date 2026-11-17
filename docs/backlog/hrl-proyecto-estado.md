@@ -564,4 +564,68 @@ Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícito
 
 Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
 
+## HRL-7 · Sincronización con el portal web
+
+### HRL-55 Acordar el contrato de sincronización con el portal
+
+Estado: **No verificado**. Sprint 3 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/repairs.rs::RepairService::summary/save`; `src-tauri/src/domain/repair_contracts.rs::Repair`; `búsqueda de archivos y de firebase/outbox en src/, src-tauri/src/, migraciones y tests/`.
+
+Respaldo de criterios: No se encontró un contrato de intercambio implementado ni un artefacto de aprobación en el código. PublicSummary limita datos para impresión local, no define un contrato web.
+
+Criterios no cumplidos o sin verificar: C1: aprobación del responsable del portal no comprobable leyendo código. C2: no se identificó un contrato web que enumere campos prohibidos, autenticación, conflictos y estrategia offline.
+
+Discrepancias: La presencia de sync_mode y preferencias de visibilidad solo acredita almacenamiento local, coherente con el portal «no conectado».
+
+Para verificar: Localizar o acordar el contrato de integración y obtener aprobación explícita del responsable del portal; adjuntar documento/versionado y evidencia de esa aprobación.
+
+### HRL-56 Publicar cambios autorizados
+
+Estado: **Pendiente**. Sprint 3 · 8 puntos.
+
+Evidencia: `src-tauri/src/repositories/repairs.rs::RepairRepository::save (solo seguimiento_publicacion)`; `src-tauri/migrations/001_esquema_objetivo.sql::seguimiento_publicacion`; `src-tauri/src/lib.rs::run`.
+
+Respaldo de criterios: No hay cola local de cambios publicables ni productor/consumidor de mensajes en las rutas activas revisadas.
+
+Criterios no cumplidos o sin verificar: C1: no existe encolado que excluya avances privados. C2: no existe cola durable offline ni proceso de envío diferido.
+
+Discrepancias: Las preferencias y visible_cliente son configuración local, no una publicación autorizada en cola.
+
+### HRL-57 Pruebas del contrato de intercambio
+
+Estado: **Pendiente**. Sprint 3 · 3 puntos.
+
+Evidencia: `tests/ (inventario de archivos)`; `src-tauri/src/services/tests.rs (suite local)`; `src-tauri/src/services/repairs.rs::PublicSummary`.
+
+Respaldo de criterios: Las pruebas de CompanyNote comprueban impresión pública; no se encontró una suite de mensajes de intercambio con portal.
+
+Criterios no cumplidos o sin verificar: C1: falta prueba de contrato web que falle ante contraseña o nota interna.
+
+Discrepancias: Las pruebas de resumen público local no sustituyen pruebas del intercambio web.
+
+### HRL-58 Integrar la publicación con el servicio web
+
+Estado: **Pendiente**. Sprint 4 · 8 puntos.
+
+Evidencia: `src-tauri/src/lib.rs::run`; `src/services/api/workshop.ts::workshopApi`; `src-tauri/src/services/repairs.rs::RepairService::save`; `búsqueda firebase/reqwest/axios/fetch/outbox en el árbol activo`.
+
+Respaldo de criterios: Solo hay IPC local y persistencia SQLite. La única coincidencia fetch de tests/phase5-browser.mjs controla un navegador local de pruebas.
+
+Criterios no cumplidos o sin verificar: C1: falta envío al servicio real y consulta del cliente. C2: falta estrategia de reintento y recuperación de publicación ante caída.
+
+Discrepancias: El estado «no conectado» documentado sí coincide con la ausencia de integración en código.
+
+### HRL-59 Controles de publicación ampliados
+
+Estado: **Pendiente**. Backlog · 5 puntos.
+
+Evidencia: `src-tauri/src/domain/repair_contracts.rs::Visibility`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save`; `src/views/RepairsView.vue::<template>`.
+
+Respaldo de criterios: Hay controles locales de visibilidad, sin estado remoto publicado ni operación de despublicación.
+
+Criterios no cumplidos o sin verificar: C1: despublicar no puede ocultar una orden al cliente porque no existe integración remota.
+
+Discrepancias: Las preferencias locales existentes no equivalen a despublicar ni consultar lo ya publicado.
+
 

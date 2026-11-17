@@ -1,6 +1,6 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 45/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 50/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -36,6 +36,11 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-48: La guarda declarada en el backlog implica una pregunta al salir; useWorkshop::prepareLeave solo informa y bloquea. El borrador y el descarte explícito sí existen. Evidencia: src/composables/useCompanyWorkspace.ts::save/discard/hasPending.
 - HRL-52: La posición pie/reverso es global (settings.clausePosition), no individual por cláusula como podría entenderse en las reglas del backlog. Los dos criterios explícitos sí se cumplen. Evidencia: src/composables/useCompanyClauses.ts::move/apply.
 - HRL-53: Las reglas dicen ticket 80 o 60, pero C1 añade 58. printLayout solo contempla 60/80; la impresión física no queda acreditada por el CSS. Evidencia: src/utils/printLayout.ts::printLayout.
+- HRL-55: La presencia de sync_mode y preferencias de visibilidad solo acredita almacenamiento local, coherente con el portal «no conectado». Evidencia: src-tauri/src/services/repairs.rs::RepairService::summary/save.
+- HRL-56: Las preferencias y visible_cliente son configuración local, no una publicación autorizada en cola. Evidencia: src-tauri/src/repositories/repairs.rs::RepairRepository::save (solo seguimiento_publicacion).
+- HRL-57: Las pruebas de resumen público local no sustituyen pruebas del intercambio web. Evidencia: tests/ (inventario de archivos).
+- HRL-58: El estado «no conectado» documentado sí coincide con la ausencia de integración en código. Evidencia: src-tauri/src/lib.rs::run.
+- HRL-59: Las preferencias locales existentes no equivalen a despublicar ni consultar lo ya publicado. Evidencia: src-tauri/src/domain/repair_contracts.rs::Visibility.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
@@ -44,11 +49,12 @@ Las rutas originales reales están en docs/, no en docs/backlog/. El contexto so
 - HRL-14: Ejecutar instalación Windows con dos perfiles; guardar una credencial y comprobar recuperación en el original y rechazo en el segundo, incluida ausencia/corrupción del archivo DPAPI.
 - HRL-18: Abrir configuración, acceso y taller en Windows; maximizar taller, cerrar sesión y medir dimensiones, límites y capacidad de redimensionar.
 - HRL-53: Imprimir notas largas con varias copias en impresoras/controladores 60 y 80 mm; aclarar si se requiere 58 mm y probar esa anchura antes de cerrar C1.
+- HRL-55: Localizar o acordar el contrato de integración y obtener aprobación explícita del responsable del portal; adjuntar documento/versionado y evidencia de esa aprobación.
 
 ## Sprint 4 (16–20 noviembre): trabajo que no está Hecho
 
 - HRL-53 Hoja de impresión (3 pts): No verificado. C1: no se ha comprobado que el documento de 60 mm no se corte con impresora/controlador reales; no hay configuración explícita 58 mm.
-- HRL-58 Integrar la publicación con el servicio web (8 pts): Aún sin revisar en este commit intermedio.
+- HRL-58 Integrar la publicación con el servicio web (8 pts): Pendiente. C1: falta envío al servicio real y consulta del cliente. C2: falta estrategia de reintento y recuperación de publicación ante caída.
 - HRL-62 Pruebas de bitácora, finanzas y empresa (5 pts): Aún sin revisar en este commit intermedio.
 - HRL-63 Validación nativa: cámara, impresora y DPAPI (3 pts): Aún sin revisar en este commit intermedio.
 - HRL-64 Instalación y recuperación local (5 pts): Aún sin revisar en este commit intermedio.
