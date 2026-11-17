@@ -426,7 +426,7 @@ Criterios de aceptación:
 - Dado un cambio de contraseña, entonces el detalle no contiene la contraseña ni su hash.
 - Dado un evento ya registrado, entonces no se puede modificar ni borrar.
 
-Depende de: HRL-10, HRL-11","5","Sprint 1","High","8","bitacora","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-11","5","Sprint 1","High","8","bitacora","","Finalizada","Verificado"
 "44","Story","Bitácora global e historial de una orden","Objetivo: Consultar la trazabilidad completa y la de una orden.
 
 Reglas:
@@ -438,7 +438,7 @@ Criterios de aceptación:
 - Dado un usuario sin logbook.view, entonces no accede a la bitácora.
 - Dado una orden, entonces su historial reúne los eventos asociados.
 
-Depende de: HRL-43, HRL-49","5","Sprint 4","Medium","8","bitacora","","Por hacer","No verificado"
+Depende de: HRL-43, HRL-49","5","Sprint 4","Medium","8","bitacora","","Finalizada","Verificado"
 "45","Story","Finanzas: filtros y clasificación de órdenes","Objetivo: Revisar el estado financiero de las órdenes.
 
 Reglas:
@@ -450,7 +450,7 @@ Criterios de aceptación:
 - Dado el filtro por movimientos, entonces muestra lo cobrado en el periodo y no el acumulado de la orden.
 - Dado una orden retirada, entonces no suma a los totales activos.
 
-Depende de: HRL-38, HRL-37","5","Sprint 4","Medium","8","bitacora","","Por hacer","No verificado"
+Depende de: HRL-38, HRL-37","5","Sprint 4","Medium","8","bitacora","","Finalizada","Verificado"
 "46","Story","Indicadores financieros por moneda","Objetivo: Resumir las cifras del conjunto filtrado.
 
 Reglas:
@@ -461,7 +461,7 @@ Criterios de aceptación:
 - Dado órdenes en dos monedas, entonces se resumen por separado.
 - Dado un filtro, entonces los totales corresponden al conjunto filtrado.
 
-Depende de: HRL-45, HRL-35","5","Sprint 4","Medium","5","bitacora","","Por hacer","No verificado"
+Depende de: HRL-45, HRL-35","5","Sprint 4","Medium","5","bitacora","","Finalizada","Verificado"
 "47","Story","Gastos directos","Objetivo: Registrar costos de una orden distintos de las refacciones.
 
 Reglas:
@@ -471,7 +471,7 @@ Criterios de aceptación:
 - Dado un importe cero o negativo, entonces se rechaza.
 - Dado una orden cancelada, entonces no admite gastos.
 
-Depende de: HRL-46, HRL-19","5","Sprint 4","Medium","3","bitacora","","Por hacer","No verificado"
+Depende de: HRL-46, HRL-19","5","Sprint 4","Medium","3","bitacora","","Finalizada","Verificado"
 "48","Story","Configuración de empresa: borrador, revisión y auditoría","Objetivo: Base de edición de toda la configuración de Empresa.
 
 Reglas:

@@ -414,4 +414,66 @@ Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
 
 Discrepancias: La persistencia de reintento en localStorage corresponde a movimientos del panel. El abono inicial conserva el payload solo en memoria de createReceptionForm; al cerrar se pierde y la UI pide mantener abierta la ventana. El backlog HRL-13/42 no distingue esta limitación.
 
+## HRL-5 · Bitácora, auditoría y finanzas
+
+### HRL-43 Servicio de auditoría transaccional
+
+Estado: **Hecho**. Sprint 1 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/audit.rs::AuditService::record`; `src-tauri/src/repositories/audit.rs::AuditRepository::insert/detail`; `src-tauri/src/services/users.rs::UserService::save`; `src-tauri/migrations/001_esquema_objetivo.sql::auditoria_no_update/auditoria_no_delete`; `src-tauri/src/services/tests.rs::injected_audit_failure_rolls_back_repairs_expenses_and_evidence_including_its_file`.
+
+Respaldo de criterios: C1: record recibe la conexión de la misma transacción; error se propaga antes de commit y provoca rollback. C2: usuarios registra credentialsUpdated, sin contraseña/hash. C3: triggers bloquean UPDATE y DELETE de evento y detalle.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: AuditService no filtra por sí mismo campos secretos: cada servicio construye su lista de cambios. Las escrituras revisadas omiten claves y hashes; no se presume un filtro global que no existe.
+
+### HRL-44 Bitácora global e historial de una orden
+
+Estado: **Hecho**. Sprint 4 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/reports.rs::ReportService::logbook`; `src-tauri/src/repositories/reports.rs::ReportRepository::logbook`; `src-tauri/src/services/orders.rs::OrderService::history`; `src-tauri/src/repositories/orders.rs::history`; `src/composables/useLogbookWorkspace.ts::load/date`.
+
+Respaldo de criterios: C1: author_id y límites UTC se enlazan al SQL; frontend convierte límites con zona de Empresa. C2: servicio exige logbook.view. C3: historial consulta auditoria por id_orden con detalle anterior/nuevo y paginación.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: bitacora.md describe tablas históricas separadas; el código consulta auditoria/auditoria_detalle. El nombre mostrado procede de usuarios.nombre mediante JOIN: renombrar una cuenta cambia el nombre mostrado en eventos antiguos, no existe snapshot histórico.
+
+### HRL-45 Finanzas: filtros y clasificación de órdenes
+
+Estado: **Hecho**. Sprint 4 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/reports.rs::ReportService::finances`; `src/models/finances.ts::filterFinancialOrders/financialTotals`; `src/composables/useFinancialWorkspace.ts::useFinancialWorkspace`.
+
+Respaldo de criterios: C1: paid=true y delivered=true clasifica completed. C2: dateBasis payment suma únicamente movimientos dentro de fechas. C3: excluded aparta retiradas/canceladas de totales activos y conserva excludedCollected.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-46 Indicadores financieros por moneda
+
+Estado: **Hecho**. Sprint 4 · 5 puntos.
+
+Evidencia: `src/models/finances.ts::financialTotals`; `src/composables/useFinancialWorkspace.ts::filtered/totals/visible`; `src-tauri/src/services/reports.rs::ReportService::finances`; `src/views/FinancesView.vue`.
+
+Respaldo de criterios: C1: Map agrupa por currency sin conversión. C2: totals recibe filtered completo, mientras visible aplica paginación después. Incluye precio, neto, pendiente, costos, ganancia provisional y ganancia de completadas.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-47 Gastos directos
+
+Estado: **Hecho**. Sprint 4 · 3 puntos.
+
+Evidencia: `src-tauri/src/services/reports.rs::ReportService::expense`; `src-tauri/src/repositories/reports.rs::ReportRepository::expense/finances`; `src-tauri/migrations/001_esquema_objetivo.sql::gastos_directos_no_update/gastos_directos_no_delete`.
+
+Respaldo de criterios: C1: rango de amount_minor empieza en 1. C2: load_any(...false) exige activa y se rechaza estado que empieza con cancelad. Exige logbook.view y repairs.edit; movimiento y auditoría en la misma transacción.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
 

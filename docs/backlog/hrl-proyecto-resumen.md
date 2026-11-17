@@ -1,13 +1,13 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 33/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 38/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Sprint 1 | 26–30 oct | 13 | 70 | 28 | 40.0% |
+| Sprint 1 | 26–30 oct | 13 | 70 | 36 | 51.4% |
 | Sprint 2 | 2–6 nov | 12 | 70 | 57 | 81.4% |
 | Sprint 3 | 9–13 nov | 17 | 76 | 52 | 68.4% |
-| Sprint 4 | 16–20 nov | 13 | 69 | 5 | 7.2% |
+| Sprint 4 | 16–20 nov | 13 | 69 | 29 | 42.0% |
 | Backlog | sin fecha | 4 | 29 | 0 | 0.0% |
 
 ## Discrepancias entre documentación y código
@@ -31,6 +31,8 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-35: La regla del backlog pide pieza, cantidad y costo; Part y la captura solo ofrecen nombre y precio. El INSERT no recibe cantidad (se usa el valor predeterminado del esquema). No se evalúan existencias. Evidencia: src/composables/useRepairScreen.ts::addPart/selectWarrantyType/addWarranty.
 - HRL-37: La regla admite entrega histórica sin fecha; update_order completa fecha_entrega con fecha UTC actual cuando delivered=true y fecha era NULL, incluso al editar otro dato. No permite conservar esa fecha desconocida durante dicho guardado. Evidencia: src-tauri/src/services/orders.rs::OrderService::edit.
 - HRL-42: La persistencia de reintento en localStorage corresponde a movimientos del panel. El abono inicial conserva el payload solo en memoria de createReceptionForm; al cerrar se pierde y la UI pide mantener abierta la ventana. El backlog HRL-13/42 no distingue esta limitación. Evidencia: src-tauri/src/services/ledger.rs::LedgerService::record.
+- HRL-43: AuditService no filtra por sí mismo campos secretos: cada servicio construye su lista de cambios. Las escrituras revisadas omiten claves y hashes; no se presume un filtro global que no existe. Evidencia: src-tauri/src/services/audit.rs::AuditService::record.
+- HRL-44: bitacora.md describe tablas históricas separadas; el código consulta auditoria/auditoria_detalle. El nombre mostrado procede de usuarios.nombre mediante JOIN: renombrar una cuenta cambia el nombre mostrado en eventos antiguos, no existe snapshot histórico. Evidencia: src-tauri/src/services/reports.rs::ReportService::logbook.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
@@ -41,10 +43,6 @@ Las rutas originales reales están en docs/, no en docs/backlog/. El contexto so
 
 ## Sprint 4 (16–20 noviembre): trabajo que no está Hecho
 
-- HRL-44 Bitácora global e historial de una orden (8 pts): Aún sin revisar en este commit intermedio.
-- HRL-45 Finanzas: filtros y clasificación de órdenes (8 pts): Aún sin revisar en este commit intermedio.
-- HRL-46 Indicadores financieros por moneda (5 pts): Aún sin revisar en este commit intermedio.
-- HRL-47 Gastos directos (3 pts): Aún sin revisar en este commit intermedio.
 - HRL-52 Cláusulas y textos de las notas (5 pts): Aún sin revisar en este commit intermedio.
 - HRL-53 Hoja de impresión (3 pts): Aún sin revisar en este commit intermedio.
 - HRL-54 Notas de entrada y de salida (8 pts): Aún sin revisar en este commit intermedio.
