@@ -55,3 +55,28 @@ test('classification, search, scope and missing dates preserve documented filter
   assert.deepEqual(filterFinancialOrders(orders, { ...filters, dateBasis: 'payment', from: '2027-01-01' }, 'UTC'), []);
   assert.equal(filterFinancialOrders(orders, { ...filters, dateBasis: 'payment' }, 'UTC').length, 2);
 });
+
+test('each financial class filters independently and only completed orders contribute completed profit', () => {
+  const combinations = [
+    { classification: 'completed', paid: true, delivered: true, collectedMinor: 60000, balanceMinor: 0 },
+    { classification: 'paid_uncollected', paid: true, delivered: false, collectedMinor: 60000, balanceMinor: 0 },
+    { classification: 'delivered_unpaid', paid: false, delivered: true, collectedMinor: 25000, balanceMinor: 35000 },
+    { classification: 'pending', paid: false, delivered: false, collectedMinor: 0, balanceMinor: 60000 },
+  ];
+  const orders = combinations.map((combination, index) => ({
+    ...order, ...combination, id: `ORD-${index + 1}`, receivedMinor: combination.collectedMinor,
+    adjustedMinor: 0, refundedMinor: 0, payments: [],
+  }));
+  for (const expected of orders) {
+    const selected = filterFinancialOrders(orders, { ...filters, classification: expected.classification }, 'UTC');
+    assert.deepEqual(selected.map(item => item.id), [expected.id]);
+  }
+  const incomplete = filterFinancialOrders(orders, { ...filters, classification: 'incomplete' }, 'UTC');
+  assert.deepEqual(incomplete.map(item => item.id), ['ORD-2', 'ORD-3', 'ORD-4']);
+  const [totals] = financialTotals(orders, filters, 'UTC');
+  assert.equal(totals.total, 240000);
+  assert.equal(totals.collected, 145000);
+  assert.equal(totals.balance, 95000);
+  assert.equal(totals.profit, 200000);
+  assert.equal(totals.completedProfit, 50000);
+});

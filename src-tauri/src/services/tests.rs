@@ -947,6 +947,80 @@ fn restored_edit_trash_finances_and_refund_preserve_original_books() {
 }
 
 #[test]
+fn normalized_finances_classify_payment_and_delivery_independently_in_each_currency() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::ledger_contracts::MoneyRequest;
+        let (_, services) = fixture().await;
+        let cases = [
+            (150000, true, "completed"),
+            (150000, false, "paid_uncollected"),
+            (25000, true, "delivered_unpaid"),
+            (0, false, "pending"),
+        ];
+        let mut expected = Vec::new();
+        for currency in ["MXN", "USD"] {
+            for (index, (collected, delivered, classification)) in cases.iter().enumerate() {
+                let mut payload = order();
+                payload.currency = currency.into();
+                let created = services.orders.create(payload).await.unwrap();
+                if *collected > 0 {
+                    services
+                        .ledger
+                        .record(MoneyRequest {
+                            request_id: format!("classification-{currency}-{index}"),
+                            order_id: created.id,
+                            kind: "receipt".into(),
+                            payment_id: None,
+                            amount_minor: *collected,
+                            expected_minor: 0,
+                            method: "Efectivo".into(),
+                            reason: "Prueba de clasificación financiera".into(),
+                        })
+                        .await
+                        .unwrap();
+                }
+                if *delivered {
+                    let mut edited = order();
+                    edited.currency = currency.into();
+                    services
+                        .orders
+                        .edit(EditOrderPayload {
+                            order_id: created.id,
+                            revision: created.revision,
+                            value: edited,
+                            delivered: true,
+                            change_password: false,
+                        })
+                        .await
+                        .unwrap();
+                }
+                expected.push((
+                    created.id,
+                    currency,
+                    *collected,
+                    *delivered,
+                    *classification,
+                ));
+            }
+        }
+        let report = services.reports.finances().await.unwrap();
+        assert_eq!(report.len(), expected.len());
+        for (id, currency, collected, delivered, classification) in expected {
+            let row = report.iter().find(|row| row.database_id == id).unwrap();
+            assert_eq!(row.classification, classification, "Orden {id}");
+            assert_eq!(row.currency, currency);
+            assert_eq!(row.total_minor, 150000);
+            assert_eq!(row.collected_minor, collected);
+            assert_eq!(row.balance_minor, 150000 - collected);
+            assert_eq!(row.paid, collected == 150000);
+            assert_eq!(row.delivered, delivered);
+            assert_eq!(row.status, "En diagnóstico");
+            assert!(!row.excluded);
+        }
+    });
+}
+
+#[test]
 fn restored_evidence_and_company_reopen_without_business_json() {
     tauri::async_runtime::block_on(async {
         use crate::domain::{company_contracts::SaveCompanyPayload, evidence_contracts::*};
