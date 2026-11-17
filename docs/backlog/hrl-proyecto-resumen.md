@@ -1,6 +1,6 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 59/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 59/59 historias y tareas; 40 Hecho, 6 En progreso, 6 Pendiente y 7 No verificado. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -25,7 +25,7 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-28: El backlog exige solicitar guardar o descartar al navegar; useWorkshop::prepareLeave y createReceptionForm::prepareLeave solo devuelven false con aviso. Evidencia: src/composables/useReceptionForm.ts::prepareLeave/cancel.
 - HRL-29: evidencias.md describe Evidencias_orden y migración histórica 012/013; el flujo actual usa evidencias y archivos bajo assets-3fn/evidencias. Evidencia: src-tauri/src/domain/evidence_contracts.rs::validate.
 - HRL-30: El criterio C2 contradice la regla de la misma historia que permite consultar con Visualizar Clientes. Código y evidencias.md distinguen activas de retiradas. Se marca En progreso con la redacción literal, sin resolver la ambigüedad ni cambiar la regla. Evidencia: src-tauri/src/services/evidence.rs::EvidenceService::list/read/update.
-- HRL-31: La UI oculta Papelera sin orders.delete, pero OrderService::list con trashed=true solo exige clients.view; la restricción de consultar papelera no está comprobada con el mismo permiso en backend. Evidencia: src-tauri/src/services/orders.rs::OrderService::trash/list.
+- HRL-31: papelera-ordenes.md permite consultar con Visualizar Clientes y exige Borrar para enviar/restaurar. El backend cumple esa separación, pero ReceptionView oculta el acceso a Papelera sin orders.delete, restringiendo la entrada visible más de lo documentado. Las referencias del documento a Historial_papelera son históricas. Evidencia: src-tauri/src/services/orders.rs::OrderService::trash/list.
 - HRL-33: reparaciones-permisos.md describe migración 006 y importación localStorage anteriores; el servicio activo usa tablas normalizadas y no importa aquel seguimiento. Evidencia: src-tauri/src/services/repairs.rs::RepairService::summary/save.
 - HRL-34: Repair::default inicia solo Recibido y Entregado, no la secuencia sugerida completa. El catálogo de opciones sí está disponible y se incorporan etapas al agregar avances. El DTO Event no devuelve id_autor, aunque SQLite lo conserva. Evidencia: src/composables/useRepairScreen.ts::complete/addEvent.
 - HRL-35: La regla del backlog pide pieza, cantidad y costo; Part y la captura solo ofrecen nombre y precio. El INSERT no recibe cantidad (se usa el valor predeterminado del esquema). No se evalúan existencias. Evidencia: src/composables/useRepairScreen.ts::addPart/selectWarrantyType/addWarranty.
@@ -71,11 +71,20 @@ Las rutas originales reales están en docs/, no en docs/backlog/. El contexto so
 - HRL-64 Instalación y recuperación local (5 pts): No verificado. C1: recuperación en una instalación real con el mismo usuario sigue sin comprobarse. C2 es requisito documental, no demostrable desde el código; el procedimiento existente exige el conjunto completo.
 - HRL-65 Pruebas piloto con personal del taller (3 pts): No verificado. C1: falta lista priorizada de hallazgos derivada de un piloto real.
 
+## Arrastre de sprints anteriores
+
+No se cambian asignaciones del CSV. También requieren atención HRL-10 (migración 003 frente al criterio 001–002), HRL-14 (DPAPI real), HRL-18 (ventana nativa), HRL-28 y HRL-48 (elección de guardar/descartar al salir), HRL-30 (criterio ambiguo sobre fotos activas), HRL-55 (contrato y aprobación) y HRL-56/57 (cola y pruebas web). Las brechas de revisión en usuarios, cantidad de refacciones y fecha histórica de entrega están detalladas como discrepancias aunque sus criterios explícitos permitan Hecho.
+
+## Validación de los entregables
+
+Comprobación documental: 59 secciones de historias/tareas en nueve epics; 68 filas de CSV; cero diferencias en las 680 celdas originales; exactamente dos columnas añadidas. Total con sprint: 285 puntos, de los cuales 216 son Hecho (75.8%). No se ejecutaron pruebas del producto ni compilaciones.
+
+SHA-256 de los originales leídos: backlog Markdown 354BAC83A93646EE326EF6B0D42FB81C7A398684CFE802ADD02E68374CF4C22D; CSV 273B64ED13D1F226C8E89B332053A652FE0E19D795B570DADEE0398975F02FDF.
+
 ## Alcance y trazabilidad
 
 Solo se generan estos tres archivos dentro de docs/backlog/. Se conservan las 68 filas originales, las claves de referencia HRL, los títulos, los padres, sprints, prioridades, puntos y todas las columnas originales. La verificación del CSV compara valores de celdas; las comillas y los saltos físicos pueden cambiar. No se elimina ni ejecuta código histórico. No se incluyen existencias de refacciones.
 
-El usuario autorizó un proyecto nuevo HRLP, porque HRL ya pertenece a HRL CORE; las referencias HRL se conservarán en las descripciones de Jira. Estado de creación/sincronización: pendiente de completar mediante las herramientas disponibles.
+El usuario autorizó un proyecto nuevo HRLP, porque HRL ya pertenece a HRL CORE; las referencias HRL se conservarán en las descripciones de Jira. Estado de creación/sincronización: HRLP no existe en la última consulta de Jira. El conector disponible permite crear ítems, pero no proyectos Jira. En este turno se verificó la URL correcta de Opera, pero el clic falló con «coordinate input geometry is unavailable», la captura con «FrameArrived timed out» y la recuperación con «failed to activate captured window». No se creó ni importó ningún ítem ni se modificaron HRL CORE o HRL WEB. Se solicitó al usuario crear únicamente el proyecto vacío HRLP para continuar la carga por API.
 
 Control de entrega documental: PASS, los dictámenes incluyen referencias a código y distinguen comprobaciones externas. PASS, los puntos se calculan desde el CSV original. PASS, no se atribuyen resultados a builds o pruebas no ejecutados. Las reglas visuales de antislop no aplican a esta auditoría sin cambios de UI.
-

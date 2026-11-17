@@ -50,7 +50,7 @@ Estado: **Hecho**. Sprint 1 · 5 puntos.
 
 Evidencia: `src-tauri/src/error.rs::AppError::code/serialize`; `src/services/api/errors.ts::normalizeIpcError`; `src-tauri/src/services/orders.rs::OrderService::edit`; `src/composables/usePaymentsPanel.ts::submit/retryPending`; `src/stores/useOrderStore.ts::acceptOrder`.
 
-Respaldo de criterios: C1: códigos VALIDATION_ERROR, FORBIDDEN, SESSION_CHANGED, CONFLICT y RESULT_UNCERTAIN reconocidos por la UI. C2: expected_revision se compara antes del cambio. C3: se conserva el sobre financiero exacto en localStorage y se reutiliza.
+Respaldo de criterios: C1: códigos VALIDATION_ERROR, FORBIDDEN, SESSION_CHANGED, CONFLICT y RESULT_UNCERTAIN reconocidos por la UI. C2: revision se compara antes del cambio. C3: se conserva el sobre financiero exacto en localStorage y se reutiliza.
 
 Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
 
@@ -278,7 +278,7 @@ Respaldo de criterios: C1: trash solo marca eliminada_en e incrementa revisión;
 
 Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
 
-Discrepancias: La UI oculta Papelera sin orders.delete, pero OrderService::list con trashed=true solo exige clients.view; la restricción de consultar papelera no está comprobada con el mismo permiso en backend.
+Discrepancias: papelera-ordenes.md permite consultar con Visualizar Clientes y exige Borrar para enviar/restaurar. El backend cumple esa separación, pero ReceptionView oculta el acceso a Papelera sin orders.delete, restringiendo la entrada visible más de lo documentado. Las referencias del documento a Historial_papelera son históricas.
 
 ## HRL-4 · Reparaciones, pagos y entrega
 
@@ -298,7 +298,7 @@ Discrepancias: No se identificaron discrepancias adicionales en el alcance revis
 
 Estado: **Hecho**. Sprint 3 · 5 puntos.
 
-Evidencia: `src-tauri/src/services/repairs.rs::RepairService::summary/save`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save`; `src-tauri/src/domain/repair_contracts.rs::PublicSummary/Repair`; `src/views/RepairsView.vue::<template>`.
+Evidencia: `src-tauri/src/services/repairs.rs::RepairService::summary/save`; `src-tauri/src/repositories/repairs.rs::RepairRepository::save`; `src-tauri/src/services/repairs.rs::PublicSummary`; `src-tauri/src/domain/repair_contracts.rs::Repair`; `src/views/RepairsView.vue::<template>`.
 
 Respaldo de criterios: C1: PublicSummary contiene technician, public_note y warranties, sin internal_note. C2: save persiste modo y visibilidad en SQLite y no realiza ninguna llamada de red.
 
@@ -747,5 +747,3 @@ Criterios no cumplidos o sin verificar: C1: no se restaura «sin pasos manuales�
 Discrepancias: El backlog y el contexto funcional presentan respaldo automático como futuro; ya hay implementación en BackupService y UI. La portabilidad de custodia está implementada al importar, pero no probada aquí entre identidades reales.
 
 Para verificar: Para cerrar la parte nativa, restaurar en otro perfil/equipo autorizado; para cumplir C1 literal debe definirse y respaldarse la restauración sin selección/clave/reinicio manuales.
-
-
