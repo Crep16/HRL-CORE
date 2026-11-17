@@ -604,7 +604,7 @@ Reglas:
 Criterios de aceptación:
 - Dado un permiso denegado, entonces la prueba confirma que el backend rechaza la acción.
 
-Depende de: HRL-26, HRL-29, HRL-20","8","Sprint 2","Medium","5","pruebas","","Por hacer","No verificado"
+Depende de: HRL-26, HRL-29, HRL-20","8","Sprint 2","Medium","5","pruebas","","Finalizada","Verificado"
 "61","Task","Pruebas de reparaciones, pagos y totales","Objetivo: Validar el seguimiento técnico y el dinero.
 
 Reglas:
@@ -614,7 +614,7 @@ Criterios de aceptación:
 - Dado un reintento del mismo ID, entonces no se duplica el movimiento.
 - Dado un precio menor al cobrado, entonces el saldo a favor es correcto.
 
-Depende de: HRL-42, HRL-41, HRL-40, HRL-36","8","Sprint 3","Medium","5","pruebas","","Por hacer","No verificado"
+Depende de: HRL-42, HRL-41, HRL-40, HRL-36","8","Sprint 3","Medium","5","pruebas","","Finalizada","Verificado"
 "62","Task","Pruebas de bitácora, finanzas y empresa","Objetivo: Validar auditoría, clasificación financiera y configuración.
 
 Reglas:
@@ -624,7 +624,7 @@ Criterios de aceptación:
 - Dado cada clasificación, entonces la prueba cubre su condición.
 - Dado una nota de salida, entonces la prueba confirma que no contiene contraseña.
 
-Depende de: HRL-44, HRL-46, HRL-54","8","Sprint 4","Medium","5","pruebas","","Por hacer","No verificado"
+Depende de: HRL-44, HRL-46, HRL-54","8","Sprint 4","Medium","5","pruebas","","En curso","Verificado"
 "63","Task","Validación nativa: cámara, impresora y DPAPI","Objetivo: Probar en una instalación real lo que la revisión visual (IPC simulado) no cubre.
 
 Reglas:

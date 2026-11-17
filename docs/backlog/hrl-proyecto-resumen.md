@@ -1,12 +1,12 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 50/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 56/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
 | Sprint 1 | 26–30 oct | 13 | 70 | 42 | 60.0% |
-| Sprint 2 | 2–6 nov | 12 | 70 | 62 | 88.6% |
-| Sprint 3 | 9–13 nov | 17 | 76 | 52 | 68.4% |
+| Sprint 2 | 2–6 nov | 12 | 70 | 67 | 95.7% |
+| Sprint 3 | 9–13 nov | 17 | 76 | 57 | 75.0% |
 | Sprint 4 | 16–20 nov | 13 | 69 | 42 | 60.9% |
 | Backlog | sin fecha | 4 | 29 | 0 | 0.0% |
 
@@ -41,6 +41,11 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-57: Las pruebas de resumen público local no sustituyen pruebas del intercambio web. Evidencia: tests/ (inventario de archivos).
 - HRL-58: El estado «no conectado» documentado sí coincide con la ausencia de integración en código. Evidencia: src-tauri/src/lib.rs::run.
 - HRL-59: Las preferencias locales existentes no equivalen a despublicar ni consultar lo ya publicado. Evidencia: src-tauri/src/domain/repair_contracts.rs::Visibility.
+- HRL-60: Las pruebas de cámara usan MediaStream y diálogo simulados. Su existencia no cierra HRL-63. Evidencia: src-tauri/src/services/tests.rs::integrated_evidence_revision_restore_and_revoked_authorization_preserve_original/reception_history_requires_logbook_permission_and_list_rechecks_active_users/limited_accounts_require_independent_payment_permission_and_temporary_use_is_audited.
+- HRL-62: La cobertura histórica de las cuatro combinaciones no comprueba la implementación normalizada activa. No se considera una prueba vigente equivalente por conservarla bajo cfg(test). Evidencia: tests/finances-model.test.ts::classification, search, scope and missing dates preserve documented filtering.
+- HRL-63: Los PASS de documentos anteriores son antecedentes fechados; no prueban por sí solos la validación nativa completa solicitada. Evidencia: src/composables/useEvidenceCamera.ts::enable/take/stop.
+- HRL-64: El backlog presenta solo respaldo manual; BackupService ya implementa paquete portable y automático al cerrar. La copia directa del archivo DPAPI sigue ligada al perfil, mientras el paquete porta la clave cifrada con contraseña. Evidencia: src-tauri/tauri.conf.json::bundle/identifier.
+- HRL-65: Una prueba automatizada o escenario de demostración no equivale a un piloto con el personal. Evidencia: tests/ui-restored.ts (escenario con datos e IPC simulados).
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
@@ -50,15 +55,18 @@ Las rutas originales reales están en docs/, no en docs/backlog/. El contexto so
 - HRL-18: Abrir configuración, acceso y taller en Windows; maximizar taller, cerrar sesión y medir dimensiones, límites y capacidad de redimensionar.
 - HRL-53: Imprimir notas largas con varias copias en impresoras/controladores 60 y 80 mm; aclarar si se requiere 58 mm y probar esa anchura antes de cerrar C1.
 - HRL-55: Localizar o acordar el contrato de integración y obtener aprobación explícita del responsable del portal; adjuntar documento/versionado y evidencia de esa aprobación.
+- HRL-63: Recorrido Tauri instalado en Windows: permisos de cámara concedidos/denegados, captura y liberación; impresión física carta y tickets; custodia DPAPI con perfil original y otro perfil. Registrar versión, entorno, resultados y fallos.
+- HRL-64: Instalar el paquete de entrega y restaurar una copia autorizada bajo el mismo perfil; verificar órdenes, fotos y revelado de contraseña. Revisar el aviso explícito de pérdida de recursos al copiar solo .db y registrar el resultado.
+- HRL-65: Realizar recepción, reparación, cobro, entrega y emisión de notas con personal autorizado; registrar participantes, versión, incidencias, prioridad y decisión de aceptación.
 
 ## Sprint 4 (16–20 noviembre): trabajo que no está Hecho
 
 - HRL-53 Hoja de impresión (3 pts): No verificado. C1: no se ha comprobado que el documento de 60 mm no se corte con impresora/controlador reales; no hay configuración explícita 58 mm.
 - HRL-58 Integrar la publicación con el servicio web (8 pts): Pendiente. C1: falta envío al servicio real y consulta del cliente. C2: falta estrategia de reintento y recuperación de publicación ante caída.
-- HRL-62 Pruebas de bitácora, finanzas y empresa (5 pts): Aún sin revisar en este commit intermedio.
-- HRL-63 Validación nativa: cámara, impresora y DPAPI (3 pts): Aún sin revisar en este commit intermedio.
-- HRL-64 Instalación y recuperación local (5 pts): Aún sin revisar en este commit intermedio.
-- HRL-65 Pruebas piloto con personal del taller (3 pts): Aún sin revisar en este commit intermedio.
+- HRL-62 Pruebas de bitácora, finanzas y empresa (5 pts): En progreso. C1: no se encontró prueba de las cuatro condiciones en ReportService normalizado: paid_uncollected y delivered_unpaid solo aparecen cubiertas conjuntamente en pruebas del backend histórico.
+- HRL-63 Validación nativa: cámara, impresora y DPAPI (3 pts): No verificado. C1: falta resultado observado en instalación real para cámara, impresora y DPAPI. No se ejecutó nada durante esta auditoría.
+- HRL-64 Instalación y recuperación local (5 pts): No verificado. C1: recuperación en una instalación real con el mismo usuario sigue sin comprobarse. C2 es requisito documental, no demostrable desde el código; el procedimiento existente exige el conjunto completo.
+- HRL-65 Pruebas piloto con personal del taller (3 pts): No verificado. C1: falta lista priorizada de hallazgos derivada de un piloto real.
 
 ## Alcance y trazabilidad
 

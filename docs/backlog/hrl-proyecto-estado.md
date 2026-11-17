@@ -628,4 +628,84 @@ Criterios no cumplidos o sin verificar: C1: despublicar no puede ocultar una ord
 
 Discrepancias: Las preferencias locales existentes no equivalen a despublicar ni consultar lo ya publicado.
 
+## HRL-8 · Pruebas, instalación y entrega
+
+### HRL-60 Pruebas de recepción, evidencias y permisos
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/tests.rs::integrated_evidence_revision_restore_and_revoked_authorization_preserve_original/reception_history_requires_logbook_permission_and_list_rechecks_active_users/limited_accounts_require_independent_payment_permission_and_temporary_use_is_audited`; `tests/ipc-stores.test.ts`; `tests/phase4.test.ts`; `tests/phase5.test.ts`.
+
+Respaldo de criterios: C1: pruebas Rust llaman al servicio con cuentas restringidas y verifican Forbidden/Unauthorized y ausencia de cambios. Hay suites de creación/listado/revisión y cámara simulada.
+
+Criterios no cumplidos o sin verificar: Ninguno en cuanto a existencia y contenido de pruebas; no se ejecutaron.
+
+Discrepancias: Las pruebas de cámara usan MediaStream y diálogo simulados. Su existencia no cierra HRL-63.
+
+### HRL-61 Pruebas de reparaciones, pagos y totales
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/tests.rs::restored_ledger_retries_exact_request_and_rolls_back_audit_failure/integrated_notes_warranties_parts_receipts_adjustments_refunds_and_currencies/restored_repair_uses_relational_records_and_rejects_stale_changes`; `src-tauri/src/domain/money.rs::tests::credit_adjustment_refund_and_overflow_use_integer_arithmetic`; `tests/payments-form.test.ts`.
+
+Respaldo de criterios: C1: repite el ID, comprueba un solo abono y rechaza distinto contenido. C2: prueba reduce precio por debajo de cobros y afirma crédito correcto. Incluye notas, garantías, refacciones y devoluciones.
+
+Criterios no cumplidos o sin verificar: Ninguno en cuanto a existencia y contenido de pruebas; no se ejecutaron.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-62 Pruebas de bitácora, finanzas y empresa
+
+Estado: **En progreso**. Sprint 4 · 5 puntos.
+
+Evidencia: `tests/finances-model.test.ts::classification, search, scope and missing dates preserve documented filtering`; `tests/company-notes.test.ts::exit note renders the public summary and warranty from delivery without printing secrets`; `src-tauri/src/services/tests.rs::restored_edit_trash_finances_and_refund_preserve_original_books`; `src-tauri/legacy/finances_tests.rs`.
+
+Respaldo de criterios: C2: renderiza CompanyNote real con contraseña y nota interna de prueba y afirma que no aparecen. C1 parcialmente: pruebas activas afirman completed y filtran pending; hay separación de monedas y periodos.
+
+Criterios no cumplidos o sin verificar: C1: no se encontró prueba de las cuatro condiciones en ReportService normalizado: paid_uncollected y delivered_unpaid solo aparecen cubiertas conjuntamente en pruebas del backend histórico.
+
+Discrepancias: La cobertura histórica de las cuatro combinaciones no comprueba la implementación normalizada activa. No se considera una prueba vigente equivalente por conservarla bajo cfg(test).
+
+### HRL-63 Validación nativa: cámara, impresora y DPAPI
+
+Estado: **No verificado**. Sprint 4 · 3 puntos.
+
+Evidencia: `src/composables/useEvidenceCamera.ts::enable/take/stop`; `src/utils/printCompanyNote.ts::printCompanyNote`; `src-tauri/src/services/key_store.rs::protect`; `tests/phase5.test.ts::camera`; `src-tauri/src/services/tests.rs::windows_key_custody_reopens_dpapi_key_without_storing_it_in_sqlite`.
+
+Respaldo de criterios: Hay implementaciones y pruebas de cámara simulada, impresión DOM y DPAPI condicionada a Windows. No acreditan los dispositivos ni el entorno instalado del taller.
+
+Criterios no cumplidos o sin verificar: C1: falta resultado observado en instalación real para cámara, impresora y DPAPI. No se ejecutó nada durante esta auditoría.
+
+Discrepancias: Los PASS de documentos anteriores son antecedentes fechados; no prueban por sí solos la validación nativa completa solicitada.
+
+Para verificar: Recorrido Tauri instalado en Windows: permisos de cámara concedidos/denegados, captura y liberación; impresión física carta y tickets; custodia DPAPI con perfil original y otro perfil. Registrar versión, entorno, resultados y fallos.
+
+### HRL-64 Instalación y recuperación local
+
+Estado: **No verificado**. Sprint 4 · 5 puntos.
+
+Evidencia: `src-tauri/tauri.conf.json::bundle/identifier`; `src-tauri/src/commands/mod.rs::BackendState::services`; `src-tauri/src/services/backups.rs::BackupService`; `src-tauri/src/services/tests.rs::portable_backups_restore_books_assets_and_device_key_without_the_original_installation`; `docs/instalacion-recuperacion-local.md (procedimiento, no evidencia ejecutada)`.
+
+Respaldo de criterios: C1 parcialmente: hay restauración de paquete y prueba aislada que recupera datos/recursos/clave. C2: el procedimiento enumera base, assets y custodia; solo .db no contiene los archivos. El comportamiento instalado no se comprobó.
+
+Criterios no cumplidos o sin verificar: C1: recuperación en una instalación real con el mismo usuario sigue sin comprobarse. C2 es requisito documental, no demostrable desde el código; el procedimiento existente exige el conjunto completo.
+
+Discrepancias: El backlog presenta solo respaldo manual; BackupService ya implementa paquete portable y automático al cerrar. La copia directa del archivo DPAPI sigue ligada al perfil, mientras el paquete porta la clave cifrada con contraseña.
+
+Para verificar: Instalar el paquete de entrega y restaurar una copia autorizada bajo el mismo perfil; verificar órdenes, fotos y revelado de contraseña. Revisar el aviso explícito de pérdida de recursos al copiar solo .db y registrar el resultado.
+
+### HRL-65 Pruebas piloto con personal del taller
+
+Estado: **No verificado**. Sprint 4 · 3 puntos.
+
+Evidencia: `tests/ui-restored.ts (escenario con datos e IPC simulados)`; `src/WorkshopApp.vue (flujo disponible)`; `no se encontró un acta de piloto comprobable en código`.
+
+Respaldo de criterios: El código ofrece el ciclo local, pero no demuestra participación ni aceptación de personas del taller.
+
+Criterios no cumplidos o sin verificar: C1: falta lista priorizada de hallazgos derivada de un piloto real.
+
+Discrepancias: Una prueba automatizada o escenario de demostración no equivale a un piloto con el personal.
+
+Para verificar: Realizar recepción, reparación, cobro, entrega y emisión de notas con personal autorizado; registrar participantes, versión, incidencias, prioridad y decisión de aceptación.
+
 
