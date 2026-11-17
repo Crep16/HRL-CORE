@@ -3,8 +3,7 @@ use crate::{
     domain::{contracts::AccessScope, evidence_contracts::*},
     error::AppError,
     repositories::{
-        audit::AuditRecord, evidence::EvidenceRepository, ledger::LedgerReader,
-        orders::OrderReader,
+        audit::AuditRecord, evidence::EvidenceRepository, ledger::LedgerReader, orders::OrderReader,
     },
 };
 use sqlx::SqlitePool;
@@ -46,12 +45,8 @@ impl EvidenceService {
         if order <= 0 {
             return Err(AppError::NotFound);
         }
-        let ext = match mime {
-            "image/jpeg" => "jpg",
-            "image/png" => "png",
-            "image/webp" => "webp",
-            _ => return Err(invalid("Formato de foto no permitido.")),
-        };
+        let (_, ext) =
+            evidence_format(mime).ok_or_else(|| invalid("Formato de evidencia no permitido."))?;
         Ok(format!("evidencias/{order}/{id}.{ext}"))
     }
     fn path(&self, order: i64, id: &str, mime: &str) -> Result<PathBuf, AppError> {
@@ -164,7 +159,7 @@ impl EvidenceService {
                     != p.bytes
             {
                 return Err(AppError::Conflict(
-                    "El identificador corresponde a otra fotografía.".into(),
+                    "El identificador corresponde a otra evidencia.".into(),
                 ));
             }
             tx.commit().await?;
@@ -180,7 +175,7 @@ impl EvidenceService {
             )
             .await?;
         fs::create_dir_all(path.parent().ok_or_else(|| invalid("Carpeta inválida."))?)
-            .map_err(|_| invalid("No se pudo crear la carpeta de fotos."))?;
+            .map_err(|_| invalid("No se pudo crear la carpeta de evidencias."))?;
         match fs::OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -194,11 +189,12 @@ impl EvidenceService {
                 {
                     drop(file);
                     let _ = fs::remove_file(&path);
-                    return Err(invalid("No se pudo escribir la foto completa."));
+                    return Err(invalid("No se pudo escribir la evidencia completa."));
                 }
             }
             Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                if fs::read(&path).map_err(|_| invalid("No se pudo leer la foto pendiente."))?
+                if fs::read(&path)
+                    .map_err(|_| invalid("No se pudo leer la evidencia pendiente."))?
                     != p.bytes
                 {
                     return Err(AppError::Conflict(

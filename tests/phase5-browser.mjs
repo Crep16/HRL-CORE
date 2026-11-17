@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile, unlink } from 'node:fs/promises';
+import {resolve} from 'node:path';
 
 const pages = await (await fetch('http://127.0.0.1:9224/json/list')).json();
 const targets = pages.filter(page => page.type === 'page' && (page.url === 'about:blank' || page.url.startsWith('http://127.0.0.1:1421/tests/')));
 assert.equal(targets.length, 1);
 const socket = new WebSocket(targets[0].webSocketDebuggerUrl);
+let downloadSocket;
 await new Promise((resolve, reject) => {
   socket.addEventListener('open', resolve, { once: true });
   socket.addEventListener('error', reject, { once: true });
@@ -31,7 +33,7 @@ function send(method, params = {}) {
   });
 }
 async function evaluate(expression) {
-  const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true });
+  const result = await send('Runtime.evaluate', { expression, returnByValue: true, awaitPromise: true, userGesture: true });
   if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description ?? result.exceptionDetails.text);
   return result.result.value;
 }
@@ -190,14 +192,57 @@ try {
   await evaluate(`(() => {const field=document.querySelector('.ev-detail textarea');field.value='Golpe lateral documentado';field.dispatchEvent(new Event('input',{bubbles:true}));})()`);
   await button('Guardar descripción','document.querySelector("dialog.evidence-gallery")');
   await waitFor('document.querySelector(".ev-detail textarea").value === "Golpe lateral documentado" && document.querySelector(".ev-detail-actions .btn-p").disabled');
-  await button('Retirar esta foto','document.querySelector("dialog.evidence-gallery")');
-  await waitFor('document.querySelector(".ev-navigation").textContent.includes("0 fotos")');
-  await button('Ver fotos retiradas','document.querySelector("dialog.evidence-gallery")');
-  await waitFor('!!document.querySelector(".ev-detail-actions button") && document.querySelector(".ev-detail-actions button").textContent === "Restaurar esta foto" && !document.querySelector(".ev-detail-actions button").disabled');
-  await button('Restaurar esta foto','document.querySelector("dialog.evidence-gallery")');
-  await button('Volver a fotos activas','document.querySelector("dialog.evidence-gallery")');
+  await button('Retirar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('document.querySelector(".ev-navigation").textContent.includes("0 archivos")');
+  await button('Ver evidencias retiradas','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('!!document.querySelector(".ev-detail-actions button") && document.querySelector(".ev-detail-actions button").textContent === "Restaurar evidencia" && !document.querySelector(".ev-detail-actions button").disabled');
+  await button('Restaurar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await button('Volver a evidencias activas','document.querySelector("dialog.evidence-gallery")');
   await waitFor('document.querySelector(".ev-detail textarea")?.value === "Golpe lateral documentado"');
   await screenshot('evidence-restored');
+  await evaluate(`(() => {const input=document.querySelector('.ev-entry input[type=file]');const transfer=new DataTransfer();transfer.items.add(new File(['%PDF-1.7\\ncontenido de prueba\\n%%EOF\\n'],'informe-prueba.pdf',{type:'application/pdf'}));input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+  await waitFor(`!!document.querySelector('.ev-stage a[download="informe-prueba.pdf"]')`);
+  assert.equal(await evaluate('document.querySelector(".ev-stage h3").textContent'),'Documento PDF');
+  const browserInfo=await(await fetch('http://127.0.0.1:9224/json/version')).json();
+  downloadSocket=new WebSocket(browserInfo.webSocketDebuggerUrl);
+  await new Promise(resolve=>downloadSocket.addEventListener('open',resolve,{once:true}));
+  const downloadConfigured=new Promise((resolve,reject)=>downloadSocket.addEventListener('message',event=>{const result=JSON.parse(event.data);if(result.id===1){if(result.error)reject(new Error(result.error.message));else resolve();}}));
+  downloadSocket.send(JSON.stringify({id:1,method:'Browser.setDownloadBehavior',params:{behavior:'allow',downloadPath:resolve('artifacts/phase5/downloads'),eventsEnabled:true}}));
+  await downloadConfigured;
+  await unlink('artifacts/phase5/downloads/informe-prueba.pdf').catch(error=>{if(error.code!=='ENOENT')throw error;});
+  const pdfLink=await evaluate('(()=>{const a=document.querySelector(".ev-stage a[download]");a.scrollIntoView({block:"center"});const r=a.getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()');
+  await send('Input.dispatchMouseEvent',{type:'mousePressed',...pdfLink,button:'left',clickCount:1});
+  await send('Input.dispatchMouseEvent',{type:'mouseReleased',...pdfLink,button:'left',clickCount:1});
+  let pdfCopy;
+  for(let attempt=0;attempt<50;attempt++){try{pdfCopy=await readFile('artifacts/phase5/downloads/informe-prueba.pdf');break;}catch{await new Promise(resolve=>setTimeout(resolve,100));}}
+  assert.ok(pdfCopy?.toString().startsWith('%PDF-1.7'),'Falta la copia local del PDF');
+  await button('Retirar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await button('Ver evidencias retiradas','document.querySelector("dialog.evidence-gallery")');
+  await waitFor(`!!document.querySelector('.ev-stage a[download="informe-prueba.pdf"]')`);
+  await button('Restaurar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await button('Volver a evidencias activas','document.querySelector("dialog.evidence-gallery")');
+  await evaluate(`(async () => {if(!MediaRecorder.isTypeSupported('video/mp4'))throw new Error('MP4 de prueba no compatible');const canvas=document.createElement('canvas');canvas.width=64;canvas.height=64;const context=canvas.getContext('2d');const stream=canvas.captureStream(10);const recorder=new MediaRecorder(stream,{mimeType:'video/mp4'});const chunks=[];recorder.ondataavailable=e=>chunks.push(e.data);const stopped=new Promise(resolve=>recorder.onstop=resolve);recorder.start();let frame=0;const drawing=setInterval(()=>{context.fillStyle=frame++%2?'red':'blue';context.fillRect(0,0,64,64);},50);await new Promise(resolve=>setTimeout(resolve,1000));recorder.stop();await stopped;clearInterval(drawing);stream.getTracks().forEach(track=>track.stop());const transfer=new DataTransfer();const file=new File(chunks,'video-prueba.mp4',{type:'video/mp4'});if(!file.size)throw new Error('Grabación de prueba vacía');transfer.items.add(file);const input=document.querySelector('.ev-entry input[type=file]');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+  await waitFor('document.querySelector(".ev-stage video")?.readyState>=1');
+  assert.ok(await evaluate('document.querySelector(".ev-stage video").controls'));
+  await evaluate('document.querySelector(".ev-stage video").play()');
+  await waitFor('document.querySelector(".ev-stage video").currentTime>0');
+  await evaluate('document.querySelector(".ev-stage video").pause()');
+  await unlink('artifacts/phase5/downloads/video-prueba.mp4').catch(error=>{if(error.code!=='ENOENT')throw error;});
+  await evaluate('document.querySelector(".ev-video a[download]").click()');
+  let videoCopy;
+  for(let attempt=0;attempt<50;attempt++){try{videoCopy=await readFile('artifacts/phase5/downloads/video-prueba.mp4');break;}catch{await new Promise(resolve=>setTimeout(resolve,100));}}
+  assert.ok(videoCopy?.includes(Buffer.from('ftyp')),'Falta la copia local del video');
+  for(const width of [375,760,1280]){
+    await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});await settle();
+    assert.ok(await evaluate('document.querySelector("dialog.evidence-gallery").scrollWidth<=document.querySelector("dialog.evidence-gallery").clientWidth+1'));
+    await screenshot(`video-evidence-${width}`);
+  }
+  await button('Retirar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await button('Ver evidencias retiradas','document.querySelector("dialog.evidence-gallery")');
+  await waitFor('!!document.querySelector(".ev-stage video")');
+  await button('Restaurar evidencia','document.querySelector("dialog.evidence-gallery")');
+  await button('Volver a evidencias activas','document.querySelector("dialog.evidence-gallery")');
+  console.log('PDF y MP4: carga, copia de PDF, reproducción de video, retiro/restauración y tres anchos aprobados con IPC simulado.');
   await evaluate('document.querySelector("dialog.evidence-gallery .ev-close").click()');
   for(const width of [760,375]){
     await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});
@@ -294,5 +339,6 @@ try {
   assert.deepEqual(errors, []);
   console.log('Revisión de navegador aprobada.');
 } finally {
+  downloadSocket?.close();
   socket.close();
 }

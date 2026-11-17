@@ -6,6 +6,7 @@ const element=useTemplateRef<HTMLElement>('element'),url=ref('');
 let observer:IntersectionObserver|undefined,disposed=false;
 async function load(){
  observer?.disconnect();
+ if(!props.mime.startsWith('image/'))return;
  let original='';
  try{
   const data=await useWorkshopDataStore().readPhoto(props.orderId,props.id);

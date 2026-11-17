@@ -1108,6 +1108,129 @@ fn restored_evidence_and_company_reopen_without_business_json() {
 }
 
 #[test]
+fn video_and_pdf_evidence_share_permissions_retry_restore_and_file_persistence() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::evidence_contracts::{NewEvidence, UpdateEvidence};
+        let directory = tempfile::tempdir().unwrap();
+        let file = directory.path().join("attachments.db");
+        let db = Database::open_file(&file).await.unwrap();
+        let pool = db.pool().clone();
+        let services = BackendServices::new(db, keys()).await.unwrap();
+        services.access.initialize(setup()).await.unwrap();
+        let order = services.orders.create(order()).await.unwrap();
+        let formats=[("application/pdf","pdf",b"%PDF-1.7\ncontenido\n%%EOF\n".to_vec(),"document"),("video/mp4","mp4",b"\x00\x00\x00\x10ftypisom\x00\x00\x00\x00\x00\x00\x00\x08moov\x00\x00\x00\x09mdat0".to_vec(),"video")];
+        for (index, (mime, ext, bytes, kind)) in formats.iter().enumerate() {
+            let id = format!("{:032x}", index + 1);
+            let payload = || NewEvidence {
+                id: id.clone(),
+                order_id: order.id,
+                original_name: format!("original.{ext}"),
+                mime: (*mime).into(),
+                source: "file".into(),
+                note: "Evidencia inicial".into(),
+                bytes: bytes.clone(),
+            };
+            let photo = services.evidence.add(payload()).await.unwrap();
+            let retried = services.evidence.add(payload()).await.unwrap();
+            assert_eq!(retried.id, photo.id);
+            assert_eq!(services.evidence.read(order.id, &id).await.unwrap(), *bytes);
+            assert_eq!(
+                sqlx::query_scalar::<_, String>(
+                    "SELECT tipo_archivo FROM evidencias WHERE codigo_archivo=?"
+                )
+                .bind(&id)
+                .fetch_one(&pool)
+                .await
+                .unwrap(),
+                *kind
+            );
+            let limited = format!("attachment-limited-{index}");
+            add_user(&pool, &limited, "limited").await;
+            services.access.login(login(&limited)).await.unwrap();
+            assert_eq!(services.evidence.read(order.id, &id).await.unwrap(), *bytes);
+            assert!(matches!(
+                services
+                    .evidence
+                    .update(UpdateEvidence {
+                        order_id: order.id,
+                        id: id.clone(),
+                        note: photo.note.clone(),
+                        deleted: true,
+                        expected_revision: photo.revision
+                    })
+                    .await,
+                Err(AppError::Forbidden)
+            ));
+            let mut other = payload();
+            other.id = format!("{:032x}", index + 100);
+            services.evidence.add(other).await.unwrap();
+            services.access.login(login("admin")).await.unwrap();
+            let edited = services
+                .evidence
+                .update(UpdateEvidence {
+                    order_id: order.id,
+                    id: id.clone(),
+                    note: "Descripción corregida".into(),
+                    deleted: false,
+                    expected_revision: photo.revision,
+                })
+                .await
+                .unwrap();
+            let removed = services
+                .evidence
+                .update(UpdateEvidence {
+                    order_id: order.id,
+                    id: id.clone(),
+                    note: edited.note.clone(),
+                    deleted: true,
+                    expected_revision: edited.revision,
+                })
+                .await
+                .unwrap();
+            services.access.login(login(&limited)).await.unwrap();
+            assert!(matches!(
+                services.evidence.read(order.id, &id).await,
+                Err(AppError::Forbidden)
+            ));
+            assert!(matches!(
+                services.evidence.list(order.id, true).await,
+                Err(AppError::Forbidden)
+            ));
+            services.access.login(login("admin")).await.unwrap();
+            let restored = services
+                .evidence
+                .update(UpdateEvidence {
+                    order_id: order.id,
+                    id: id.clone(),
+                    note: removed.note.clone(),
+                    deleted: false,
+                    expected_revision: removed.revision,
+                })
+                .await
+                .unwrap();
+            assert_eq!(restored.original_name, photo.original_name);
+            assert_eq!(restored.created_at, photo.created_at);
+        }
+        drop(services);
+        pool.close().await;
+        let services = BackendServices::new(Database::open_file(&file).await.unwrap(), keys())
+            .await
+            .unwrap();
+        services.access.login(login("admin")).await.unwrap();
+        for (index, (_, _, bytes, _)) in formats.iter().enumerate() {
+            assert_eq!(
+                services
+                    .evidence
+                    .read(order.id, &format!("{:032x}", index + 1))
+                    .await
+                    .unwrap(),
+                *bytes
+            );
+        }
+    });
+}
+
+#[test]
 fn pending_stages_retire_without_losing_history_and_completed_stages_cannot_retire() {
     tauri::async_runtime::block_on(async {
         use crate::domain::repair_contracts::*;

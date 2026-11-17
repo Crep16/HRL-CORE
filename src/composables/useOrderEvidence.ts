@@ -21,7 +21,7 @@ let disposed=false,imageVersion=0;
 const size=(n:number)=>n<1048576?`${Math.round(n/1024)} KB`:`${(n/1048576).toFixed(1)} MB`;
 const reason=(cause:unknown)=>cause && typeof cause==='object' && 'message' in cause ? String(cause.message) : String(cause);
 async function allowed(operation:string){return await requestAccess(operation,'clients')&&!disposed;}
-function releaseImage(){imageVersion++;if(imageUrl.value)URL.revokeObjectURL(imageUrl.value);imageUrl.value='';imageError.value='';}
+function releaseImage(){gallery.value?.querySelectorAll('video').forEach(video=>video.pause());imageVersion++;if(imageUrl.value)URL.revokeObjectURL(imageUrl.value);imageUrl.value='';imageError.value='';}
 async function loadImage(){
  releaseImage();const photo=selected.value;if(!photo){imageLoading.value=false;return;}
  const version=imageVersion;imageLoading.value=true;
@@ -77,8 +77,9 @@ async function openCamera(){
  cameraError.value='';await camera.value?.open();
 }
 async function checkPhoto(file:File){
- if(!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Selecciona una foto JPG, PNG o WebP.');
- if(!file.size||file.size>20*1024*1024)throw new Error('La foto debe ocupar como máximo 20 MB.');
+ if(!['image/jpeg','image/png','image/webp','application/pdf','video/mp4'].includes(file.type))throw new Error('Selecciona una imagen JPG, PNG o WebP, un PDF o un video MP4.');
+ if(!file.size||file.size>20*1024*1024)throw new Error('La evidencia debe ocupar como máximo 20 MB.');
+ if(!file.type.startsWith('image/'))return;
  const url=URL.createObjectURL(file);try{const image=new Image();image.src=url;await image.decode();if(!image.naturalWidth)throw new Error();}
  catch{throw new Error('No se pudo abrir la imagen. Prueba con otra foto.');}finally{URL.revokeObjectURL(url);}
 }
@@ -88,19 +89,19 @@ async function upload(item:Upload){
  const bytes=Array.from(new Uint8Array(await item.file.arrayBuffer()));
  return await useWorkshopDataStore().addPhoto({id:item.id,orderId:props.orderId,originalName:item.file.name,mime:item.file.type,source:item.source,note:item.note,bytes});
 }
-function include(photo:Photo){if(disposed)return;if(!photo.deleted){photos.value=[...photos.value.filter(p=>p.id!==photo.id),photo];selectedId.value=photo.id;loaded.value=true;}message.value='Foto guardada en este equipo.';}
+function include(photo:Photo){if(disposed)return;if(!photo.deleted){photos.value=[...photos.value.filter(p=>p.id!==photo.id),photo];selectedId.value=photo.id;loaded.value=true;}message.value='Evidencia guardada en este equipo.';}
 async function importFiles(event:Event){
  const input=event.target as HTMLInputElement;const chosen=Array.from(input.files??[]);input.value='';
  if(!chosen.length||busy.value)return;
  if(dirty.value&&!await saveNote())return;
- busy.value=true;error.value='';message.value='Guardando fotografías…';
+ busy.value=true;error.value='';message.value='Guardando evidencias…';
  const errors:string[]=[];
  for(const file of chosen){
   const item=newUpload(file,'file','');
   try{include(await upload(item));}
   catch(cause){pending.value.push(item);errors.push(`${file.name}: ${reason(cause)}`);}
  }
- busy.value=false;message.value=errors.length?'Hay fotos pendientes de guardar. Puedes reintentarlas.':'Fotografías guardadas en este equipo.';
+ busy.value=false;message.value=errors.length?'Hay evidencias pendientes de guardar. Puedes reintentarlas.':'Evidencias guardadas en este equipo.';
  error.value=errors.join('\n');await loadImage();
 }
 async function retry(){
@@ -123,8 +124,8 @@ async function remove(restore=false){
  const current=restore?photo:selected.value!;
  busy.value=true;error.value='';
  try{const updated=await useWorkshopDataStore().updatePhoto({orderId:props.orderId,id:current.id,note:current.note,deleted:!restore,expectedRevision:current.revision});
-  if(restore){if(showRemoved.value){photos.value=photos.value.filter(p=>p.id!==updated.id);selectedId.value=photos.value[0]?.id??'';}else{photos.value.push(updated);selectedId.value=updated.id;}removed.value=undefined;message.value='Foto restaurada.';}
-  else{removed.value=updated;photos.value=photos.value.filter(p=>p.id!==updated.id);selectedId.value=photos.value[0]?.id??'';message.value='Foto retirada. El archivo y su historial se conservan.';}
+  if(restore){if(showRemoved.value){photos.value=photos.value.filter(p=>p.id!==updated.id);selectedId.value=photos.value[0]?.id??'';}else{photos.value.push(updated);selectedId.value=updated.id;}removed.value=undefined;message.value='Evidencia restaurada.';}
+  else{removed.value=updated;photos.value=photos.value.filter(p=>p.id!==updated.id);selectedId.value=photos.value[0]?.id??'';message.value='Evidencia retirada. El archivo y su historial se conservan.';}
   await loadImage();
  }catch(cause){error.value=reason(cause);}finally{busy.value=false;}
 }

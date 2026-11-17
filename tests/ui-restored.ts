@@ -29,6 +29,8 @@ let stageNames=[...repair.stages];
 const summary={id:1,folio:order.folio,clientName:order.client.fullName,serial:order.equipment.serial,item:order.equipment.item,status:order.status,receivedAt:order.receivedAt,currency:order.currency,priceMinor:order.priceMinor,netMinor:order.netMinor,pendingMinor:order.pendingMinor,creditMinor:0,delivered:false};
 const photo={id:'11112222333344445555666677778888',orderId:'1',originalName:'foto-de-prueba.png',mime:'image/png',sizeBytes:68,source:'file',note:'Recepción',authorName:'Operador de prueba',createdAt:'2026-11-05T15:00:00Z',deleted:false,revision:1};
 const photoBytes=Array.from(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aZ1sAAAAASUVORK5CYII='),c=>c.charCodeAt(0)));
+const attachments=[photo];
+const attachmentBytes=new Map([[photo.id,photoBytes]]);
 const backups={folder:'Carpeta de pruebas / Respaldos',automatic:false,files:[] as {name:string;bytes:number}[]};
 mockIPC((command,args)=>{
   if(command==='logout_user'){draftGuardTest.logoutCalls++;return null;}
@@ -84,13 +86,21 @@ mockIPC((command,args)=>{
   if(command==='list_normalized_users')return [{id:1,name:'admin',role:'administrator',accessLevel:'complete',active:true,permissions:[]}];
   if(command==='list_normalized_logbook')return {entries:[{id:1,entity:'ordenes',entityId:'1',orderId:order.folio,authorId:'1',authorName:'Administrador de prueba',operation:'orders.create',details:[{field:'client',oldValue:null,newValue:order.client.fullName}],occurredAt:'2026-11-05T15:00:00Z',eventDate:null,currency:'MXN',reason:null,result:'success'}],total:1,page:0,pageSize:50,authors:[{id:'1',name:'Administrador de prueba'}]};
   if(command==='list_normalized_finances')return [{id:order.folio,databaseId:1,client:order.client.fullName,equipment:'Laptop Marca Modelo',status:order.status,currency:'MXN',totalMinor:150000,collectedMinor:50000,receivedMinor:50000,adjustedMinor:0,refundedMinor:0,creditMinor:0,balanceMinor:100000,costsMinor:0,profitMinor:150000,delivered:false,paid:false,classification:'pending',excluded:false,received:order.receivedAt,deliveredAt:null,settledAt:null,payments:[{amountMinor:50000,occurredAt:'2026-11-05T15:00:00Z',kind:'receipt'}],expenses:[]}];
-  if(command==='list_normalized_evidence')return photo.deleted===Boolean((args as {deleted:boolean}).deleted)?[structuredClone(photo)]:[];
-  if(command==='read_normalized_evidence')return photoBytes;
+  if(command==='list_normalized_evidence')return structuredClone(attachments.filter(item=>item.deleted===Boolean((args as {deleted:boolean}).deleted)));
+  if(command==='read_normalized_evidence')return attachmentBytes.get((args as {id:string}).id);
+  if(command==='add_normalized_evidence'){
+    const input=(args as {input:{id:string;orderId:number;originalName:string;mime:string;source:string;note:string;bytes:number[]}}).input;
+    if(input.mime==='application/pdf' && String.fromCharCode(...input.bytes.slice(0,5))!=='%PDF-')throw {code:'VALIDATION_ERROR',message:'El archivo no corresponde a un PDF.'};
+    const existing=attachments.find(item=>item.id===input.id);if(existing)return structuredClone(existing);
+    const value={...photo,...input,orderId:String(input.orderId),sizeBytes:input.bytes.length,deleted:false,revision:1};
+    attachments.push(value);attachmentBytes.set(input.id,input.bytes);return structuredClone(value);
+  }
   if(command==='update_normalized_evidence'){
-    const payload=(args as {payload:{note:string;deleted:boolean;expectedRevision:number}}).payload;
-    if(payload.expectedRevision!==photo.revision)throw {code:'CONFLICT',message:'La foto cambió. Actualiza la galería.'};
-    photo.note=payload.note;photo.deleted=payload.deleted;photo.revision++;
-    return structuredClone(photo);
+    const payload=(args as {payload:{id:string;note:string;deleted:boolean;expectedRevision:number}}).payload;
+    const value=attachments.find(item=>item.id===payload.id)!;
+    if(payload.expectedRevision!==value.revision)throw {code:'CONFLICT',message:'La evidencia cambió. Actualiza la galería.'};
+    value.note=payload.note;value.deleted=payload.deleted;value.revision++;
+    return structuredClone(value);
   }
   if(command==='finish_temporary_access')return null;
   throw {code:'VALIDATION_ERROR',message:`Comando de prueba no configurado: ${command} ${JSON.stringify(args)}`};

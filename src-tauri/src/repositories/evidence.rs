@@ -1,5 +1,5 @@
 use crate::{domain::evidence_contracts::*, error::AppError};
-use sqlx::{sqlite::SqliteRow, Row, SqliteConnection};
+use sqlx::{Row, SqliteConnection, sqlite::SqliteRow};
 pub struct EvidenceRepository;
 pub struct StoredEvidence {
     pub value: Evidence,
@@ -65,7 +65,9 @@ impl EvidenceRepository {
         author: i64,
         path: &str,
     ) -> Result<i64, AppError> {
-        Ok(sqlx::query("INSERT INTO evidencias(codigo_archivo,id_orden,id_autor,nombre_original,ruta_relativa,tipo_archivo,mime,tamano_bytes,origen,descripcion,descripcion_inicial) VALUES (?,?,?,?,?,'image',?,?,?,?,?)").bind(&p.id).bind(p.order_id).bind(author).bind(&p.original_name).bind(path).bind(&p.mime).bind(p.bytes.len() as i64).bind(&p.source).bind(&p.note).bind(&p.note).execute(db).await?.last_insert_rowid())
+        let (kind, _) = evidence_format(&p.mime)
+            .ok_or_else(|| AppError::Validation("Formato de evidencia no permitido.".into()))?;
+        Ok(sqlx::query("INSERT INTO evidencias(codigo_archivo,id_orden,id_autor,nombre_original,ruta_relativa,tipo_archivo,mime,tamano_bytes,origen,descripcion,descripcion_inicial) VALUES (?,?,?,?,?,?,?,?,?,?,?)").bind(&p.id).bind(p.order_id).bind(author).bind(&p.original_name).bind(path).bind(kind).bind(&p.mime).bind(p.bytes.len() as i64).bind(&p.source).bind(&p.note).bind(&p.note).execute(db).await?.last_insert_rowid())
     }
     pub async fn update(
         &self,
