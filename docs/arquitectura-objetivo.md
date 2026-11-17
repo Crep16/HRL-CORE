@@ -115,7 +115,7 @@ Confirmadas en la conversación del 4 de noviembre de 2026:
 - Conservar la contraseña del equipo recuperable mediante cifrado. `credenciales_dispositivos` guarda un sobre AES-256-GCM; la clave no se almacena en SQLite. Su gestión y conexión al guardado se implementarán con los servicios, no en esta fase de modelos.
 - Conservar estados y etapas personalizados sin modificar los catálogos al operar: texto alternativo en la orden o en su secuencia de etapas. Se preservan las siete opciones visuales actuales y se añaden Pendiente, Reparado y Cancelado de la petición, además de Irreparable.
 - Conservar método de pago libre, moneda EUR, modo de publicación y opciones actuales de documentos. Los costos de refacciones mantienen su significado vigente.
-- La conservación transitoria del cargador anterior finalizó el 13 de noviembre de 2026 (Jira HRL-134). Las migraciones 001–013 están archivadas en `src-tauri/migrations/legacy/` y no se registran en el plugin SQL. Solo las pruebas del sistema anterior las ejecutan explícitamente sobre bases aisladas mediante `test_support`. El cargador `db/migrations.rs` aplica las migraciones normalizadas 001 y 002 y rechaza bases del esquema anterior. El retiro de comandos y del plugin anterior sigue pendiente en HRL-135.
+- La conservación transitoria del cargador anterior finalizó el 13 de noviembre de 2026 (Jira HRL-134). Las migraciones 001–013 están archivadas en `src-tauri/migrations/legacy/` y no se registran en el plugin SQL. Solo las pruebas del sistema anterior las ejecutan explícitamente sobre bases aisladas mediante `test_support`. El cargador `db/migrations.rs` aplica en orden las migraciones registradas del esquema normalizado (actualmente 001–005) y rechaza bases del esquema anterior. El retiro de comandos y del plugin anterior sigue pendiente en HRL-135.
 
 Los identificadores Rust de las nuevas capas están en inglés; tablas y columnas SQL en español. `Money` encapsula centavos y operaciones comprobadas; las credenciales protegidas encapsulan su representación y no implementan `Serialize` ni `Debug`. Los structs de registros describen los datos de dominio. La inyección de repositorios y los servicios pertenecen a las fases siguientes.
 
@@ -198,3 +198,19 @@ repositorio abstrae la persistencia, siguiendo la composición ya existente.
 Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, LogbookView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
 
 Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Bitácora incorpora `entity` y `entityId` en sus tipos y presenta la identidad del registro mediante su viewmodel. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.
+
+## Migraciones vigentes y criterio de instalación (17 de noviembre de 2026)
+
+El usuario aprobó actualizar el criterio de HRLP-10: una instalación nueva crea `hrl_core_3fn.db` y aplica en orden las migraciones registradas del esquema actual, sin ejecutar `legacy/`. La antigua expresión «solo 001 y 002» describía una versión anterior; no impide incorporar migraciones nuevas para cambios autorizados. El backlog original y su auditoría estática conservan aquella redacción como referencia histórica.
+
+| Versión | Archivo registrado | Cambio |
+|---|---|---|
+| 001 | `001_esquema_objetivo.sql` | Línea base normalizada, FK, vistas y restricciones de inmutabilidad. |
+| 002 | `002_prefijo_documentos.sql` | Prefijo para documentos. |
+| 003 | `003_antecedentes_equipo.sql` | Antecedentes de equipo en texto unificado. |
+| 004 | `004_ocultar_nombres_etapas.sql` | Preferencia de nombres personalizados ocultos del selector. |
+| 005 | `005_retirar_etapas_pendientes.sql` | Retirada lógica de etapas pendientes y marca de completado previo. |
+
+El registro está en `src-tauri/src/db/migrations.rs::migrator`. No depende de leer `docs/` en ejecución. `schema.sql` y `BASELINE_SQL` siguen representando la misma línea base 001; las ampliaciones se aplican mediante las migraciones posteriores, sin editar una ya aplicada. `docs/esquema-objetivo.sql` refleja las ampliaciones documentadas.
+
+Las pruebas de base comprueban la aplicación reentrante de cinco migraciones, reapertura, integridad y FK por conexión, rechazo de esquema anterior/checksum modificado y restricciones sobre libros y auditoría. La prueba de migración de etapas comprueba actualización desde 004 a 005 conservando órdenes y fechas. La suite completa de 105 pruebas Rust y `cargo check` pasaron al validar HRLP-67, junto con build y pruebas frontend. No se modificó código ni se deshabilitaron pruebas para ajustar este criterio.
