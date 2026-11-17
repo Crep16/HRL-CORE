@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DraftLeaveDialog from '../components/ui/DraftLeaveDialog.vue';
 import { nextTick, ref, watch } from "vue";
 import OrderDeleteDialog from '../components/orders/OrderDeleteDialog.vue';
 import AppHeader from "../components/layout/AppHeader.vue";
@@ -12,7 +13,7 @@ import type { TemporaryAccessContext } from "../composables/useTemporaryAccessFo
 import { statusTone } from "../data/orderStatuses";
 withDefaults(defineProps<{embedded?:boolean}>(),{embedded:false});
 const emit=defineEmits<{repairs:[]}>();
-const { receivedLabel,orderPosition,goToOrder,editExisting,trashed,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, editing, folio, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, prepareLeave, listPage, listPages, refreshList, changeListPage, canViewHistory, openHistory } = provideReceptionForm();
+const { leaveGuard, receivedLabel,orderPosition,goToOrder,editExisting,trashed,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, editing, folio, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, prepareLeave, listPage, listPages, refreshList, changeListPage, canViewHistory, openHistory } = provideReceptionForm();
 const lookupDialog = ref<HTMLDialogElement>();
 function showLookup() { lookupDialog.value?.showModal(); }
 async function lookupAndClose() { await lookup(); if (!errorMessage.value) lookupDialog.value?.close(); }
@@ -84,6 +85,7 @@ defineExpose({ prepareLeave,editing,hasChanges,trashed,showLookup,openHistory,ca
         </div>
       </section>
     </main>
+    <DraftLeaveDialog id="reception-leave" area="Recepción" :open="leaveGuard.open.value" :busy="leaveGuard.busy.value" :error="leaveGuard.error.value" @save="leaveGuard.save" @discard="leaveGuard.discard" @keep="leaveGuard.keep" />
     <TemporaryAccessDialog :request="request" choose-operation @close="request = null" @approved="request = null" />
     <OrderHistoryDialog /><OrderDeleteDialog :order="deleteTarget" :busy="store.isLoading" :error="errorMessage" @confirm="setDeleted(true)" @cancel="deleteOpen=false" />
     <dialog ref="lookupDialog" class="workshop-dialog" aria-labelledby="lookup-title"><header><h2 id="lookup-title">Consultar orden</h2><button type="button" class="btn btn-s" @click="lookupDialog?.close()">Cerrar</button></header><form @submit.prevent="lookupAndClose"><label for="lookup-order">Folio o identificador</label><input id="lookup-order" v-model="lookupId" maxlength="100" required :disabled="store.isLoading || hasChanges"><p v-if="errorMessage" role="alert">{{ errorMessage }}</p><footer><button type="submit" class="btn btn-p" :disabled="store.isLoading || hasChanges || !auth.can('clients.view','clients')">Consultar orden</button></footer></form></dialog>

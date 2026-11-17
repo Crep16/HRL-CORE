@@ -6,6 +6,7 @@ import { createPinia, disposePinia, setActivePinia } from "pinia";
 import { clearMocks, mockIPC } from "@tauri-apps/api/mocks";
 import { parseMinorUnits, formatMinorUnits } from "../src/utils/minorUnits.ts";
 import { createReceptionForm } from "../src/composables/useReceptionForm.ts";
+import { useDraftLeaveGuard } from '../src/composables/useDraftLeaveGuard.ts';
 import { useAccessForm } from "../src/composables/useAccessForm.ts";
 import { useWindowProfile } from "../src/composables/useWindowProfile.ts";
 import { useTemporaryAccessForm } from "../src/composables/useTemporaryAccessForm.ts";
@@ -124,6 +125,60 @@ test("new receipt and payment inputs follow independent presentation permissions
   form.discard(); assert.equal(form.editing.value, false);
   useAuthStore().permissions = [];
   form.begin(); assert.equal(form.editing.value, false);
+});
+
+test('draft leave guard preserves failed saves, prevents concurrent actions and cancels on disposal', async () => {
+  const scope = effectScope();
+  let release!: (saved: boolean) => void;
+  let saves = 0, discards = 0;
+  const guard = scope.run(() => useDraftLeaveGuard({
+    save: () => { saves++; return new Promise<boolean>(resolve => { release = resolve; }); },
+    discard: () => { discards++; },
+  }))!;
+  const leaving = guard.request();
+  assert.equal(guard.request(), leaving);
+  const saving = guard.save();
+  await guard.save(); guard.discard(); guard.keep();
+  assert.equal(saves, 1); assert.equal(discards, 0); assert.equal(guard.open.value, true);
+  release(false); await saving;
+  assert.match(guard.error.value, /No se guardaron/);
+  guard.keep(); assert.equal(await leaving, false);
+  const retry = guard.request();
+  const retriedSave = guard.save(); release(true); await retriedSave;
+  assert.equal(await retry, true);
+  const discarded = guard.request(); guard.discard();
+  assert.equal(await discarded, true); assert.equal(discards, 1);
+  const disposed = guard.request(); scope.stop();
+  assert.equal(await disposed, false);
+});
+
+test('reception navigation offers keeping, discarding and saving without discarding an uncertain receipt', async () => {
+  let uncertain = false, calls = 0;
+  mockIPC((command, args) => {
+    if (command === 'login_user') return session;
+    if (command === 'list_reception_orders') return {items: [], total: 0};
+    assert.equal(command, 'create_order'); calls++;
+    if (uncertain) throw {code: 'RESULT_UNCERTAIN', message: 'Confirma el resultado.'};
+    return response((args as {payload: CreateOrderPayload}).payload);
+  });
+  await useAuthStore().loginUser({username: 'admin', password: 'test-only'});
+  const form = await mountModel(createReceptionForm);
+  form.begin(); form.draft.client.fullName = 'Borrador conservado';
+  const keep = form.prepareLeave(); form.leaveGuard.keep();
+  assert.equal(await keep, false); assert.equal(form.draft.client.fullName, 'Borrador conservado');
+  const discard = form.prepareLeave(); form.leaveGuard.discard();
+  assert.equal(await discard, true); assert.equal(form.editing.value, false); assert.equal(calls, 0);
+  form.begin(); form.draft.client.fullName = 'Orden guardada';
+  const save = form.prepareLeave(); await form.leaveGuard.save();
+  assert.equal(await save, true); assert.equal(form.editing.value, false); assert.equal(calls, 1);
+  form.begin(); form.draft.client.fullName = 'Cobro por confirmar';
+  form.deposit.value = '1.00'; form.method.value = 'Efectivo'; uncertain = true;
+  const blocked = form.prepareLeave(); await form.leaveGuard.save(); form.leaveGuard.discard();
+  assert.equal(form.uncertain.value, true); assert.equal(form.leaveGuard.open.value, true);
+  assert.match(form.leaveGuard.error.value, /Confirma el resultado/);
+  assert.equal(form.draft.client.fullName, 'Cobro por confirmar');
+  form.leaveGuard.keep(); assert.equal(await blocked, false);
+  assert.equal(await form.prepareLeave(), false);
 });
 
 test('login loads the active-name picker without creating a session and submits the selected name',async()=>{

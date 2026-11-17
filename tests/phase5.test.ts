@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, mock, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSSRApp, effectScope, markRaw, nextTick, ref } from 'vue';
+import { createSSRApp, effectScope, getCurrentInstance, markRaw, nextTick, ref } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { createPinia, disposePinia, setActivePinia } from 'pinia';
 import { useEvidenceCamera } from '../src/composables/useEvidenceCamera.ts';
@@ -250,6 +250,7 @@ test('the moved container retains company drafts and blocks leaving during an op
     const component = (await server.ssrLoadModule('/src/WorkshopApp.vue')).default;
     const prepared = { ...component, async setup(props: unknown, context: unknown) {
       const model = component.setup(props, context);
+      const instance = getCurrentInstance()!;
       model.workspace.page = 'company';
       model.companyDirty.value = true;
       assert.equal(await model.prepareLeave(), false);
@@ -261,6 +262,13 @@ test('the moved container retains company drafts and blocks leaving during an op
       assert.equal(await model.prepareLeave(), false);
       model.printing.value = false;
       assert.equal(await model.prepareLeave(), true);
+      let attempts = 0;
+      instance.refs.repair = {async save() {attempts++; return false;}};
+      model.workspace.page = 'repairs';
+      assert.equal(await model.prepareLeave(), false);
+      await model.navigate('Clientes');
+      assert.equal(model.workspace.page, 'repairs');
+      assert.equal(attempts, 2);
       return model;
     } };
     await renderToString(createSSRApp(prepared).use(pinia));

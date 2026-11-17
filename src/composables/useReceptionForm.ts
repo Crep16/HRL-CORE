@@ -8,6 +8,7 @@ import type { CreateOrderPayload, OrderResponse, OrderSearchField } from "../typ
 import { useCompany } from './useCompany.ts';
 import { legacyOrder } from '../utils/legacyOrder.ts';
 import { equipmentHistoryText } from '../utils/equipmentHistoryText.ts';
+import { useDraftLeaveGuard } from './useDraftLeaveGuard.ts';
 function emptyDraft(): CreateOrderPayload {
   return {
     client: { id: null, fullName: "", phone: "", email: null },
@@ -190,16 +191,21 @@ export function createReceptionForm() {
     showPassword.value = true;
   }
   async function prepareLeave() {
-    if (store.isLoading || hasChanges.value) { message.value = "Guarda o descarta la captura antes de salir de Recepción."; return false; }
+    if (store.isLoading || uncertain.value) { message.value = "Confirma el resultado del guardado antes de salir de Recepción."; return false; }
+    if (hasChanges.value && !await leaveGuard.request()) return false;
     clearSecret();
     return true;
   }
+  const leaveGuard = useDraftLeaveGuard({
+    save: async () => { await submit(); return !editing.value && !uncertain.value; },
+    discard: () => { if (uncertain.value || store.isLoading) return false; discard(); return true; },
+  });
   function beforeUnload(event: BeforeUnloadEvent) { if (hasChanges.value) { event.preventDefault(); event.returnValue = ""; } }
   window.addEventListener("beforeunload", beforeUnload);
   watch(() => auth.sessionVersion, () => { clearSecret(); });
   onBeforeUnmount(() => { clearTimeout(searchTimer); clearSecret(); if (pending) pending.devicePassword = null; pending = null; window.removeEventListener("beforeunload", beforeUnload); });
   if (store.currentOrder) display(store.currentOrder);
-  return { historyNotes,receivedLabel,priceLabel,depositLabel,orderPosition,goToOrder,editExisting,trashed,delivered,changePassword,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, price, deposit, method, editing, canEdit, canPay, folio, showPassword, message, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, togglePassword, prepareLeave, listPage, listPages, refreshList, changeListPage, historyOpen, historyPage, historyPages, canViewHistory, loadHistory, openHistory, closeHistory };
+  return { leaveGuard, historyNotes,receivedLabel,priceLabel,depositLabel,orderPosition,goToOrder,editExisting,trashed,delivered,changePassword,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, price, deposit, method, editing, canEdit, canPay, folio, showPassword, message, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, togglePassword, prepareLeave, listPage, listPages, refreshList, changeListPage, historyOpen, historyPage, historyPages, canViewHistory, loadHistory, openHistory, closeHistory };
 }
 export type ReceptionForm = ReturnType<typeof createReceptionForm>;
 const key: InjectionKey<ReceptionForm> = Symbol("reception-form");

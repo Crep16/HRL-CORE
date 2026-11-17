@@ -25,3 +25,15 @@ Evidencia: `src/composables/useDraftLeaveGuard.ts`, `useCompanyWorkspace.ts::pre
 La guarda encapsula la elección pendiente y compone callbacks; no introduce herencia ni reglas de negocio en la vista. El diálogo contiene presentación, eventos y manejo del foco. Conserva fuentes y colores del taller, sin animación adicional (energía, ritmo y movimiento: 1). En ventanas estrechas apila acciones; usa botones de al menos 44 px, Escape para seguir editando, recorrido Tab dentro del diálogo y restauración del foco. Se aplicaron antislop-ui, antislop-human, antislop-layoutmobile y la guía estática de UI/UX Pro Max; Python/py no estuvo disponible por denegación de acceso de Windows.
 
 Validación: fase 5 10/10, IPC 14/14, notas de empresa 3/3, build de TypeScript/Vite y `npm run test:browser`. Se verificaron también los tres caminos de salida, guardado rechazado y confirmado, cierre de sesión, Escape, Tab y foco en Chrome aislado con IPC simulado, a 360/540/768/1280 px. Capturas en `artifacts/draft-guards/`. Las comprobaciones Rust de la sección anterior siguen vigentes; este paso no modifica backend. La prueba del diálogo no sustituye las validaciones físicas de los tickets No verificado.
+
+## HRLP-28 · Guardas de borrador
+
+Referencia original: HRL-28, epic HRL-3. Resultado: Hecho.
+
+Recepción integra la guarda compartida del commit `24d7416`. Navegación y cierre de sesión esperan la elección guardar/descartar/seguir editando; los fallos conservan la captura. Una solicitud financiera incierta no se puede descartar, incluso si el error ocurre después de abrir el diálogo. Se conserva el identificador y el payload para reintentar. No cambia el guardado automático de Reparaciones ni su bloqueo ante fallo.
+
+Evidencia: `src/composables/useReceptionForm.ts::prepareLeave`, `src/views/ReceptionView.vue`, `src/composables/useWorkshop.ts::prepareLeave/navigate/logout` y las pruebas nuevas en `tests/phase4.test.ts`, `tests/backups.test.ts` y `tests/draft-guards-browser.mjs`.
+
+Validación: UI 14/14, respaldos 6/6, pagos 4/4, finanzas 4/4, fase 5 10/10, IPC 14/14, notas 3/3 y build. Las pruebas verifican una única solicitud pendiente, acciones bloqueadas mientras guarda, rechazo sin salida, cancelación al desmontar, los tres caminos de Recepción y la prohibición de descartar un cobro incierto. La prueba de cierre confirma que no hay respaldo ni cierre hasta una elección aceptada; un guardado rechazado mantiene la ventana abierta. `node tests/draft-guards-browser.mjs` verifica también guardado y descarte de Recepción, Empresa, navegación, cierre de sesión y teclado en los cuatro anchos. La regresión `npm run test:browser` pasó con la nueva elección en Empresa.
+
+La simulación de IPC y el foco de un modal bajo un contenedor inerte no sustituyen la ejecución nativa del instalador, cámara, impresora o cambio de perfil de Windows.

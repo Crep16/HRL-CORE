@@ -9,6 +9,7 @@ import {useBackupStore} from '../src/stores/useBackupStore.ts';
 import {useBackupClose} from '../src/composables/useBackupClose.ts';
 import {backupApi} from '../src/services/api/backups.ts';
 import {windowApi} from '../src/services/api/window.ts';
+import {useDraftLeaveGuard} from '../src/composables/useDraftLeaveGuard.ts';
 globalThis.window={} as Window & typeof globalThis;
 let pinia:ReturnType<typeof createPinia>;
 beforeEach(()=>{pinia=createPinia();setActivePinia(pinia);});
@@ -59,4 +60,18 @@ test('failed backup keeps the window open and discarding the new copy is explici
 test('draft guards prevent both backup and closing until the draft is resolved',async()=>{
  let calls=0;mock.method(backupApi,'automatic',async()=>{calls++;return null;});mock.method(windowApi,'finishClose',async()=>{calls++;});
  const model=await closeModel(async()=>false);await model.close();await model.withoutBackup();assert.equal(calls,0);assert.match(model.error.value,/cambios/);
+});
+
+test('native close waits for the draft choice and never closes after a rejected save',async()=>{
+ const calls:string[]=[];
+ mock.method(backupApi,'automatic',async()=>{calls.push('backup');return null;});
+ mock.method(windowApi,'finishClose',async()=>{calls.push('close');});
+ let saved=false;
+ let guard!:ReturnType<typeof useDraftLeaveGuard>;
+ await renderToString(createSSRApp({setup(){guard=useDraftLeaveGuard({save:async()=>saved,discard:()=>{}});return()=>null;}}).use(pinia));
+ const model=await closeModel(()=>guard.request());
+ const cancelled=model.close();await guard.save();assert.deepEqual(calls,[]);
+ assert.equal(guard.open.value,true);guard.keep();await cancelled;assert.deepEqual(calls,[]);
+ const confirmed=model.close();saved=true;await guard.save();await confirmed;
+ assert.deepEqual(calls,['backup','close']);
 });
