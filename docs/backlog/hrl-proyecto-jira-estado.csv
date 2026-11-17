@@ -195,7 +195,7 @@ Criterios de aceptación:
 - Dado que falla la auditoría, entonces se revierte toda la creación.
 - Dado dos creaciones simultáneas, entonces no comparten folio.
 
-Depende de: HRL-10, HRL-11, HRL-43, HRL-50","3","Sprint 2","High","8","clientes","","Por hacer","No verificado"
+Depende de: HRL-10, HRL-11, HRL-43, HRL-50","3","Sprint 2","High","8","clientes","","Finalizada","Verificado"
 "24","Story","Ficha de recepción","Objetivo: Capturar y consultar los datos de recepción de una orden.
 
 Reglas:
@@ -208,7 +208,7 @@ Criterios de aceptación:
 - Dado una orden en consulta, entonces los campos no son editables hasta pasar a edición.
 - Dado el panel de estado, entonces Pagado y Entregado se muestran por separado.
 
-Depende de: HRL-23, HRL-12","3","Sprint 2","High","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-23, HRL-12","3","Sprint 2","High","5","clientes","","Finalizada","Verificado"
 "25","Story","Listado lateral, búsqueda y consulta por folio","Objetivo: Encontrar y recorrer las órdenes.
 
 Reglas:
@@ -221,7 +221,7 @@ Criterios de aceptación:
 - Dado una búsqueda lenta seguida de otra, entonces se muestra el resultado de la última.
 - Dado un folio inexistente, entonces se informa sin error técnico.
 
-Depende de: HRL-23, HRL-12","3","Sprint 2","Medium","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-23, HRL-12","3","Sprint 2","Medium","5","clientes","","Finalizada","Verificado"
 "26","Story","Edición de orden con control de revisión","Objetivo: Modificar una orden sin pisar cambios de otra persona.
 
 Reglas:
@@ -233,7 +233,7 @@ Criterios de aceptación:
 - Dado una captura modificada, cuando se cancela, entonces se pide confirmación.
 - Dado un cambio de cliente compartido, entonces las demás órdenes no cambian.
 
-Depende de: HRL-24, HRL-13","3","Sprint 2","High","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-24, HRL-13","3","Sprint 2","High","5","clientes","","Finalizada","Verificado"
 "27","Story","Contraseña del equipo cifrada","Objetivo: Guardar la contraseña del equipo de forma recuperable pero protegida.
 
 Reglas:
@@ -245,7 +245,7 @@ Criterios de aceptación:
 - Dado una orden, cuando se pide revelarla, entonces se exige la solicitud expresa y el permiso.
 - Dado la base, entonces solo contiene el sobre cifrado.
 
-Depende de: HRL-23, HRL-14","3","Sprint 2","High","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-23, HRL-14","3","Sprint 2","High","5","clientes","","Finalizada","Verificado"
 "28","Story","Guardas de borrador","Objetivo: No perder capturas al cambiar de apartado o cerrar sesión.
 
 Reglas:
@@ -256,7 +256,7 @@ Criterios de aceptación:
 - Dado una captura pendiente, cuando se cambia de apartado, entonces se pide guardar o descartar.
 - Dado un fallo al guardar Reparaciones, entonces la salida se bloquea.
 
-Depende de: HRL-24","3","Sprint 2","Medium","3","clientes","","Por hacer","No verificado"
+Depende de: HRL-24","3","Sprint 2","Medium","3","clientes","","En curso","Verificado"
 "29","Story","Evidencias fotográficas: captura e incorporación","Objetivo: Documentar con fotografías el equipo, por archivo o cámara.
 
 Reglas:
@@ -269,7 +269,7 @@ Criterios de aceptación:
 - Dado una orden en papelera, entonces no se pueden agregar evidencias.
 - Dado un lote con fallos parciales, entonces se guardan las válidas.
 
-Depende de: HRL-23, HRL-13, HRL-11","3","Sprint 2","Medium","8","clientes","","Por hacer","No verificado"
+Depende de: HRL-23, HRL-13, HRL-11","3","Sprint 2","Medium","8","clientes","","Finalizada","Verificado"
 "30","Story","Evidencias: descripción, retiro y restauración","Objetivo: Mantener las evidencias ya incorporadas.
 
 Reglas:
@@ -282,7 +282,7 @@ Criterios de aceptación:
 - Dado un usuario sin permiso de Borrar, entonces no ve ni retira evidencias.
 - Dado una descripción con 501 caracteres, entonces se rechaza.
 
-Depende de: HRL-29","3","Sprint 3","Medium","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-29","3","Sprint 3","Medium","5","clientes","","En curso","Verificado"
 "31","Story","Papelera de órdenes","Objetivo: Retirar una orden del listado activo sin perder su expediente.
 
 Reglas:
@@ -294,7 +294,7 @@ Criterios de aceptación:
 - Dado una orden restaurada, entonces vuelve al listado con su historial.
 - Dado una orden con cobros, cuando se elimina, entonces no cambia su saldo.
 
-Depende de: HRL-23, HRL-43","3","Sprint 3","Medium","5","clientes","","Por hacer","No verificado"
+Depende de: HRL-23, HRL-43","3","Sprint 3","Medium","5","clientes","","Finalizada","Verificado"
 "32","Story","Abrir reparación sobre la orden seleccionada","Objetivo: Entrar al trabajo técnico desde la orden elegida en Clientes.
 
 Reglas:

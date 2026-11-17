@@ -170,4 +170,114 @@ Criterios no cumplidos o sin verificar: Ninguno en la lectura estática del prot
 
 Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
 
+## HRL-3 · Registro de clientes y recepción de órdenes
+
+### HRL-23 Crear orden y asignar folio
+
+Estado: **Hecho**. Sprint 2 · 8 puntos.
+
+Evidencia: `src-tauri/src/services/orders.rs::OrderService::create`; `src-tauri/src/repositories/orders.rs::reserve_folio/insert_order`; `src-tauri/src/services/tests.rs::concurrent_receipts_use_distinct_folios_and_audit_authorship/failed_order_or_payment_audit_rolls_back_all_rows_and_the_folio_reservation`.
+
+Respaldo de criterios: C1: reserva folio en backend con secuencia y UNIQUE. C2: creación, abono inicial y auditoría comparten BEGIN IMMEDIATE. C3: incremento atómico de secuencia y comprobación de colisión evitan compartir folio.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-24 Ficha de recepción
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src/components/orders/OrderForm.vue::<template>`; `src/components/orders/OrderSidePanel.vue::<template>`; `src/composables/useReceptionForm.ts::createReceptionForm/submit`; `src-tauri/src/services/orders.rs::validate`.
+
+Respaldo de criterios: C1: required, parseMinorUnits y validación Rust rechazan faltantes e importes inválidos. C2: readonly depende de canEdit y editar es explícito. C3: panel separa delivered y estado de pago.
+
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
+
+Discrepancias: La regla de ficha pide golpes y líquidos independientes en pantalla; OrderForm usa Antecedentes del equipo unificado mediante historyNotes. Backend conserva los campos anteriores y añade history.notes con la migración 003.
+
+### HRL-25 Listado lateral, búsqueda y consulta por folio
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src-tauri/src/repositories/orders.rs::OrderRepository::list/find_id`; `src-tauri/src/services/orders.rs::OrderService::find`; `src/stores/useOrderStore.ts::listOrders`; `src/composables/useReceptionForm.ts::refreshList/goToOrder/lookup`; `src-tauri/src/error.rs::AppError::fmt`.
+
+Respaldo de criterios: C1: SQL filtra según all/order/client/serial y frontend pide páginas de cinco. C2: listVersion y sessionVersion descartan respuestas antiguas. C3: referencia inexistente produce NOT_FOUND con mensaje de registro no disponible. goToOrder cruza páginas.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-26 Edición de orden con control de revisión
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/orders.rs::OrderService::edit`; `src/composables/useReceptionForm.ts::cancel/discard/submit`; `src/views/ReceptionView.vue::discardDialog`.
+
+Respaldo de criterios: C1: compara revisión antes de actualizar. C2: cancel abre diálogo de descarte cuando hasChanges. C3: cambio de datos crea nuevo cliente/equipo y reasocia solo esta orden. La edición rechaza initial_payment.
+
+Criterios no cumplidos o sin verificar: Ninguno en la lectura estática.
+
+Discrepancias: No se identificaron discrepancias adicionales en el alcance revisado.
+
+### HRL-27 Contraseña del equipo cifrada
+
+Estado: **Hecho**. Sprint 2 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/crypto.rs::CryptoService::encrypt/decrypt`; `src-tauri/src/services/orders.rs::OrderService::get/create/history`; `src-tauri/src/repositories/orders.rs::insert_credential/load_any`; `src/composables/useReceptionForm.ts::togglePassword`; `src/stores/useOrderStore.ts::acceptOrder`; `src/components/company/CompanyNote.vue`.
+
+Respaldo de criterios: C1: DTO de listado no transporta clave, auditoría omite secreto y plantilla de nota no la imprime. C2: include_device_password explícito y require de clients.view o repairs.view. C3: credenciales_dispositivos guarda sobre AES-256-GCM, no texto claro.
+
+Criterios no cumplidos o sin verificar: Ninguno de los criterios de implementación en la lectura estática. La custodia con otro usuario Windows se verifica en HRL-14/63.
+
+Discrepancias: AGENTS.md aún presenta cifrar/hashear/retirar como pendiente; arquitectura-objetivo.md confirma cifrado y CryptoService ya lo implementa. No existe un permiso exclusivo de revelado: se utiliza el permiso de consulta de la orden.
+
+### HRL-28 Guardas de borrador
+
+Estado: **En progreso**. Sprint 2 · 3 puntos.
+
+Evidencia: `src/composables/useReceptionForm.ts::prepareLeave/cancel`; `src/composables/useWorkshop.ts::prepareLeave/navigate/logout`; `src/composables/useRepairScreen.ts::save`.
+
+Respaldo de criterios: C2: salir de Reparaciones espera save y bloquea si devuelve false. C1 parcialmente: detecta cambios en recepción/empresa e impide salir.
+
+Criterios no cumplidos o sin verificar: C1: al cambiar de apartado o cerrar sesión no abre una elección para guardar o descartar. Recepción y Empresa muestran un aviso y bloquean; el descarte de recepción existe al pulsar Cancelar.
+
+Discrepancias: El backlog exige solicitar guardar o descartar al navegar; useWorkshop::prepareLeave y createReceptionForm::prepareLeave solo devuelven false con aviso.
+
+### HRL-29 Evidencias fotográficas: captura e incorporación
+
+Estado: **Hecho**. Sprint 2 · 8 puntos.
+
+Evidencia: `src-tauri/src/domain/evidence_contracts.rs::validate`; `src-tauri/src/services/evidence.rs::EvidenceService::add`; `src/composables/useOrderEvidence.ts::checkPhoto/importFiles/upload`; `src/composables/useEvidenceCamera.ts::enable/stop/take`.
+
+Respaldo de criterios: C1: valida MIME, firma y límite 20 MiB en Rust; frontend además decodifica imagen. C2: ledger.active rechaza orden en papelera. C3: importFiles procesa por archivo, conserva válidas y acumula fallos. Cámara solicita audio:false y detiene tracks; funcionamiento físico reservado a HRL-63.
+
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
+
+Discrepancias: evidencias.md describe Evidencias_orden y migración histórica 012/013; el flujo actual usa evidencias y archivos bajo assets-3fn/evidencias.
+
+### HRL-30 Evidencias: descripción, retiro y restauración
+
+Estado: **En progreso**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/evidence.rs::EvidenceService::list/read/update`; `src-tauri/src/repositories/evidence.rs::EvidenceRepository::update`; `src/composables/useOrderEvidence.ts::remove/toggleRemoved`.
+
+Respaldo de criterios: C1: update cambia retirada sin borrar bytes y admite restaurar. C3: note.chars().count()>500 se rechaza. C2 parcialmente: retirar/restaurar y leer retiradas exigen evidence.delete.
+
+Criterios no cumplidos o sin verificar: C2 literal «sin permiso de Borrar no ve evidencias» no se cumple para fotos activas: se ven con evidence.view. Si se pretendía decir «no ve evidencias retiradas», esa versión sí tiene respaldo.
+
+Discrepancias: El criterio C2 contradice la regla de la misma historia que permite consultar con Visualizar Clientes. Código y evidencias.md distinguen activas de retiradas. Se marca En progreso con la redacción literal, sin resolver la ambigüedad ni cambiar la regla.
+
+### HRL-31 Papelera de órdenes
+
+Estado: **Hecho**. Sprint 3 · 5 puntos.
+
+Evidencia: `src-tauri/src/services/orders.rs::OrderService::trash/list`; `src-tauri/src/repositories/orders.rs::OrderRepository::trash/load_any`; `src/views/ReceptionView.vue::<template>`; `src-tauri/src/services/evidence.rs::EvidenceService::add`; `src-tauri/src/services/repairs.rs::RepairService::load`.
+
+Respaldo de criterios: C1: trash solo marca eliminada_en e incrementa revisión; conserva expediente y libros. C2: deleted=false restaura y audita orders.restore. C3: no escribe en tablas financieras ni altera saldos.
+
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
+
+Discrepancias: La UI oculta Papelera sin orders.delete, pero OrderService::list con trashed=true solo exige clients.view; la restricción de consultar papelera no está comprobada con el mismo permiso en backend.
+
 
