@@ -48,7 +48,7 @@ Reglas:
 Criterios de aceptación:
 - Dado un comando IPC, cuando se ejecuta, entonces solo delega en un servicio y no contiene SQL.
 - Dado un importe, entonces viaja y se guarda como centavos enteros (150.25 = 15025).
-- Dado un comando invocado sin permiso aunque la UI lo permita, entonces el servicio lo rechaza.","1","Sprint 1","High","8","base","","En curso","Verificado"
+- Dado un comando invocado sin permiso aunque la UI lo permita, entonces el servicio lo rechaza.","1","Sprint 1","High","8","base","","Finalizada","Verificado"
 "12","Story","Arquitectura frontend MVVM con Pinia","Objetivo: Organizar el frontend en Vista, ViewModel (composables y stores) y capa de transporte.
 
 Reglas:
@@ -661,7 +661,7 @@ Reglas:
 Criterios de aceptación:
 - Dado una base anterior, entonces se importa sin perder folios ni movimientos.
 
-Depende de: HRL-15","9","","Low","8","futuro","","Por hacer","No verificado"
+Depende de: HRL-15","9","","Low","8","futuro","","Por hacer","Verificado"
 "67","Story","Video y documentos como evidencia","Objetivo: Ampliar evidencias más allá de las imágenes.
 
 Reglas:
@@ -670,7 +670,7 @@ Reglas:
 Criterios de aceptación:
 - Dado un video o documento, entonces se guarda con los mismos permisos que una foto.
 
-Depende de: HRL-30","9","","Low","8","futuro","","Por hacer","No verificado"
+Depende de: HRL-30","9","","Low","8","futuro","","Por hacer","Verificado"
 "68","Story","Respaldo y migración automáticos entre instalaciones","Objetivo: Automatizar lo que hoy es un procedimiento manual.
 
 Reglas:
@@ -679,5 +679,5 @@ Reglas:
 Criterios de aceptación:
 - Dado una instalación nueva, entonces se restaura una copia completa sin pasos manuales.
 
-Depende de: HRL-64","9","","Low","8","futuro","","Por hacer","No verificado"
+Depende de: HRL-64","9","","Low","8","futuro","","En curso","Verificado"
 

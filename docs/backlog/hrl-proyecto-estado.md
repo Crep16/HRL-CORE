@@ -1,6 +1,6 @@
 # Estado del backlog HRL Proyecto
 
-Corte: 17 de noviembre de 2026. Revisión estática del árbol de trabajo; no se ejecutaron la aplicación, builds ni pruebas. Hecho significa respaldo en código de los criterios y reglas revisados, no certificación nativa. La existencia de una prueba no acredita que haya pasado. En progreso también incluye criterios respaldados con reglas obligatorias incompletas. Verificado en el CSV significa dictamen obtenido por lectura; No verificado exige ejecución o validación externa.
+Corte: 17 de noviembre de 2026. Revisión estática del árbol de trabajo; no se ejecutaron la aplicación, builds ni pruebas. Hecho significa respaldo en código de los criterios y reglas revisados, no certificación nativa. La existencia de una prueba no acredita que haya pasado. Las discrepancias de reglas se reportan aun cuando los criterios explícitos estén respaldados. Verificado en el CSV significa dictamen obtenido por lectura; No verificado exige ejecución o validación externa.
 
 Fuentes originales leídas: docs/hrl-proyecto-backlog.md y docs/hrl-proyecto-jira.csv. Las rutas homónimas pedidas bajo docs/backlog/ no existen. docs/contexto-vistas-modulos.md tampoco existe: se leyó docs/contexto-funcional-vistas-y-estructura.md. Se leyeron AGENTS.md, arquitectura-objetivo.md y las seis especificaciones de negocio pedidas. La documentación se usa para contrastar; los dictámenes se basan en el código actual. Los cambios locales previos en documentación se consideran parte del árbol leído y no se modifican. Inventario de existencias excluido.
 
@@ -22,15 +22,15 @@ Discrepancias: El backlog y la sección de cierre del cargador en arquitectura-o
 
 ### HRL-11 Arquitectura backend en capas
 
-Estado: **En progreso**. Sprint 1 · 8 puntos.
+Estado: **Hecho**. Sprint 1 · 8 puntos.
 
 Evidencia: `src-tauri/src/commands/mod.rs::create_order`; `src-tauri/src/services/orders.rs::OrderService::new/create`; `src-tauri/src/domain/money.rs::Money`; `src-tauri/src/services/access.rs::AccessService::require`; `src-tauri/src/db/migrations.rs::apply`.
 
 Respaldo de criterios: C1: los comandos delegan y no contienen SQL. C2: Money encapsula i64 y los DTO usan price_minor. C3: los servicios llaman a require dentro de transacciones.
 
-Criterios no cumplidos o sin verificar: Ningún criterio explícito sin respaldo; la regla «repositorios contienen el SQL» no se cumple de forma exclusiva: db/migrations.rs::apply ejecuta SELECT de reconocimiento del esquema.
+Criterios no cumplidos o sin verificar: Ninguno de los tres criterios explícitos en la lectura estática.
 
-Discrepancias: AGENTS.md exige SQL exclusivamente en repositories; la detección del esquema anterior está en db/migrations.rs. Se conserva el estado En progreso por esta regla arquitectónica.
+Discrepancias: AGENTS.md exige SQL exclusivamente en repositories; la detección del esquema anterior está en db/migrations.rs. Los tres criterios de aceptación de HRL-11 sí tienen respaldo, por eso se clasifica Hecho; la excepción arquitectónica queda reportada sin modificar código.
 
 ### HRL-12 Arquitectura frontend MVVM con Pinia
 
@@ -707,5 +707,45 @@ Criterios no cumplidos o sin verificar: C1: falta lista priorizada de hallazgos 
 Discrepancias: Una prueba automatizada o escenario de demostración no equivale a un piloto con el personal.
 
 Para verificar: Realizar recepción, reparación, cobro, entrega y emisión de notas con personal autorizado; registrar participantes, versión, incidencias, prioridad y decisión de aceptación.
+
+## HRL-9 · Pendientes futuros
+
+### HRL-66 Importación de datos desde la base anterior
+
+Estado: **Pendiente**. Backlog · 8 puntos.
+
+Evidencia: `src-tauri/src/db/migrations.rs::apply`; `src-tauri/src/lib.rs::run`; `src-tauri/src/services/backups.rs::BackupService::restore`.
+
+Respaldo de criterios: El cargador rechaza explícitamente el esquema anterior; restaurar un paquete normalizado no transforma hrl_datos.db.
+
+Criterios no cumplidos o sin verificar: C1: no hay importador activo que conserve folios y movimientos de la base anterior.
+
+Discrepancias: Coincide con la regla de no migrar datos anteriores sin definir su conservación.
+
+### HRL-67 Video y documentos como evidencia
+
+Estado: **Pendiente**. Backlog · 8 puntos.
+
+Evidencia: `src-tauri/src/domain/evidence.rs::AttachmentKind`; `src-tauri/src/domain/evidence_contracts.rs::validate`; `src-tauri/src/services/evidence.rs::EvidenceService::relative`; `src/composables/useOrderEvidence.ts::checkPhoto`.
+
+Respaldo de criterios: El dominio contempla Video/Document, pero validate/relative/checkPhoto solo admiten JPEG, PNG y WebP.
+
+Criterios no cumplidos o sin verificar: C1: video y documento se rechazan; no hay carga, lectura ni validación de esos formatos bajo el flujo de evidencias.
+
+Discrepancias: Que existan variantes de dominio y soporte previsto en esquema no acredita implementación utilizable; el backlog reconoce esa limitación.
+
+### HRL-68 Respaldo y migración automáticos entre instalaciones
+
+Estado: **En progreso**. Backlog · 8 puntos.
+
+Evidencia: `src-tauri/src/services/backups.rs::BackupService::automatic/capture/restore`; `src-tauri/src/services/backup_archive.rs`; `src/stores/useBackupStore.ts::restore`; `src/composables/useBackupClose.ts`; `src-tauri/src/services/tests.rs::portable_backups_restore_books_assets_and_device_key_without_the_original_installation`.
+
+Respaldo de criterios: C1 parcialmente: hay captura automática al cerrar (si se habilita), paquete completo cifrado y restauración que reprotege clave con DPAPI del destino. Existe prueba de instalaciones temporales con el mismo usuario.
+
+Criterios no cumplidos o sin verificar: C1: no se restaura «sin pasos manuales»: requiere elegir archivo, escribir clave y reiniciar. Falta validación entre perfiles/equipos Windows reales.
+
+Discrepancias: El backlog y el contexto funcional presentan respaldo automático como futuro; ya hay implementación en BackupService y UI. La portabilidad de custodia está implementada al importar, pero no probada aquí entre identidades reales.
+
+Para verificar: Para cerrar la parte nativa, restaurar en otro perfil/equipo autorizado; para cumplir C1 literal debe definirse y respaldarse la restauración sin selección/clave/reinicio manuales.
 
 

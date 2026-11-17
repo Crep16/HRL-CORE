@@ -1,10 +1,10 @@
 # Resumen de revisión del backlog
 
-Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 56/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
+Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de pruebas, builds ni validación nativa. Revisión de 59/59 historias y tareas; los ítems aún sin revisar en commits intermedios no suman como Hecho. Epics excluidas de puntos y porcentajes; sus columnas nuevas quedan vacías para no atribuirles un estado no solicitado. Los cuatro ítems sin sprint forman Backlog.
 
 | Sprint | Fechas 2026 | Ítems | Puntos totales | Puntos Hecho | Porcentaje |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Sprint 1 | 26–30 oct | 13 | 70 | 42 | 60.0% |
+| Sprint 1 | 26–30 oct | 13 | 70 | 50 | 71.4% |
 | Sprint 2 | 2–6 nov | 12 | 70 | 67 | 95.7% |
 | Sprint 3 | 9–13 nov | 17 | 76 | 57 | 75.0% |
 | Sprint 4 | 16–20 nov | 13 | 69 | 42 | 60.9% |
@@ -13,7 +13,7 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 ## Discrepancias entre documentación y código
 
 - HRL-10: El backlog y la sección de cierre del cargador en arquitectura-objetivo.md describen 001–002; el cargador activo incluye 003. Evidencia: src-tauri/src/db/migrations.rs::migrator/apply.
-- HRL-11: AGENTS.md exige SQL exclusivamente en repositories; la detección del esquema anterior está en db/migrations.rs. Se conserva el estado En progreso por esta regla arquitectónica. Evidencia: src-tauri/src/commands/mod.rs::create_order.
+- HRL-11: AGENTS.md exige SQL exclusivamente en repositories; la detección del esquema anterior está en db/migrations.rs. Los tres criterios de aceptación de HRL-11 sí tienen respaldo, por eso se clasifica Hecho; la excepción arquitectónica queda reportada sin modificar código. Evidencia: src-tauri/src/commands/mod.rs::create_order.
 - HRL-12: El contexto funcional antiguo describe llamadas IPC dispersas y ausencia de Pinia; src/services/api y src/stores ya implementan la separación. Evidencia: src/services/api/transport.ts::request.
 - HRL-13: El contrato contiene más códigos que las cinco categorías resumidas en el backlog; no implica pérdida de esas categorías. Evidencia: src-tauri/src/error.rs::AppError::code/serialize.
 - HRL-14: El respaldo portable ahora tiene código propio; copiar solamente SQLite sigue sin incluir archivos y custodia. Evidencia: src-tauri/src/services/key_store.rs::OsKeyStore::open_key/protect.
@@ -46,6 +46,9 @@ Corte: 17 de noviembre de 2026. Solo lectura de código; sin ejecución de prueb
 - HRL-63: Los PASS de documentos anteriores son antecedentes fechados; no prueban por sí solos la validación nativa completa solicitada. Evidencia: src/composables/useEvidenceCamera.ts::enable/take/stop.
 - HRL-64: El backlog presenta solo respaldo manual; BackupService ya implementa paquete portable y automático al cerrar. La copia directa del archivo DPAPI sigue ligada al perfil, mientras el paquete porta la clave cifrada con contraseña. Evidencia: src-tauri/tauri.conf.json::bundle/identifier.
 - HRL-65: Una prueba automatizada o escenario de demostración no equivale a un piloto con el personal. Evidencia: tests/ui-restored.ts (escenario con datos e IPC simulados).
+- HRL-66: Coincide con la regla de no migrar datos anteriores sin definir su conservación. Evidencia: src-tauri/src/db/migrations.rs::apply.
+- HRL-67: Que existan variantes de dominio y soporte previsto en esquema no acredita implementación utilizable; el backlog reconoce esa limitación. Evidencia: src-tauri/src/domain/evidence.rs::AttachmentKind.
+- HRL-68: El backlog y el contexto funcional presentan respaldo automático como futuro; ya hay implementación en BackupService y UI. La portabilidad de custodia está implementada al importar, pero no probada aquí entre identidades reales. Evidencia: src-tauri/src/services/backups.rs::BackupService::automatic/capture/restore.
 
 Las rutas originales reales están en docs/, no en docs/backlog/. El contexto solicitado se sustituyó por el documento funcional existente. Los totales declarados por el original se contrastan con las filas del CSV, sin corregir los originales.
 
