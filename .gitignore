@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentación y artefactos locales
+/artifacts/
+/docs/
+/diseños legacy/
+/memoria-datos/
