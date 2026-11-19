@@ -17,7 +17,7 @@ defineExpose({ prepareLeave: () => !busy.value && !hasSecrets.value });
   <section class="access-shell">
     <header class="access-brand">
       <img :src="logo" alt="HRL" width="106" height="46">
-      <div><strong>Bitácora del taller</strong><span>Acceso en este equipo</span></div>
+      <div><strong>Gestión del taller</strong><span>Acceso en este equipo</span></div>
     </header>
     <div class="access-layout">
       <aside class="access-guide" aria-label="Configuración de acceso">

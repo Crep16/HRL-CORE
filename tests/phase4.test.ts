@@ -387,11 +387,12 @@ test("restored workspace renders every original section through the normalized c
       ['repairs',['Notas del técnico','Línea de tiempo','Garantías','Refacciones','Publicación en la web','Movimientos de dinero']],
       ['company',['Datos generales','Notas impresas','Cláusulas','Folios y garantías','Así sale en la nota']],
       ['users',['Cuentas','Nivel de acceso','Clave maestra','Registrar abonos']],
-      ['logbook',['Historial de cambios','Resumen financiero de órdenes','Detalle del movimiento']],
+      ['logbook',['Finanzas','Cobros, saldos pendientes, costos y ganancias','Detalle financiero']],
     ] as const){
       workspace.page=page;
       const html=await renderToString(createSSRApp(appModule.default).use(pinia));
       for(const text of checks)assert.ok(html.includes(text),`${page}: falta ${text}`);
+      if(page==='logbook')assert.doesNotMatch(html,/Bitácora|Historial de cambios|Detalle del movimiento|Historial de esta orden/);
       assert.match(html,/aria-label="Secciones"/);
       assert.doesNotMatch(html,/Espacios de trabajo|Taller actual|Recepción nueva/);
     }

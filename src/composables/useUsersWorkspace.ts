@@ -11,7 +11,7 @@ export function useUsersWorkspace() {
   const search = ref(''); const loaded = ref(false); const message = ref(''); const failed = ref(false); const selectedGrants = ref<string[]>([]);
   const empty = () => ({ id:null as number|null,name:'',role:'technician',password:'',confirmation:'',masterPassword:'',accessLevel:'limited',active:true });
   const draft = reactive(empty());
-  const sections = [{id:'clients',name:'Clientes'},{id:'repairs',name:'Reparaciones'},{id:'logbook',name:'Bitácora'},{id:'company',name:'Empresa'}];
+  const sections = [{id:'clients',name:'Clientes'},{id:'repairs',name:'Reparaciones'},{id:'logbook',name:'Finanzas'},{id:'company',name:'Empresa'}];
   const actions = [{id:'view',name:'Visualizar'},{id:'create',name:'Crear'},{id:'edit',name:'Editar'},{id:'delete',name:'Borrar'}];
   const roles: Record<string,string> = {complete:'Completo',limited:'Limitado',custom:'Personalizado'};
   const filtered = computed(() => accounts.value.filter(account => `${account.name} ${roles[account.accessLevel]}`.toLocaleLowerCase('es').includes(search.value.trim().toLocaleLowerCase('es'))));

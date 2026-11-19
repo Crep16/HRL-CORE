@@ -1,1 +1,1 @@
-export const financialClasses:Record<string,string>={all:'Todas',incomplete:'Incompletas',completed:'Completadas',paid_uncollected:'Pagadas sin entregar',delivered_unpaid:'Entregadas con saldo pendiente',pending:'Sin liquidar ni entregar'};
+export const financialClasses:Record<string,string>={all:'Todas',incomplete:'Con pago o entrega pendientes',completed:'Pagadas y entregadas',paid_uncollected:'Pagadas sin entregar',delivered_unpaid:'Entregadas con saldo pendiente',pending:'Sin liquidar ni entregar'};

@@ -201,26 +201,32 @@ test('clause ordering and undo preserve identifiers, position and focused contro
   assert.equal(focused, 'clause-a');
 });
 
-test('logbook view renders the affected entity, folio and estimated-delivery differences', async () => {
+test('finances renders payment and delivery breakdown without audit controls', async () => {
   const { createServer } = await import('vite');
   const server = await createServer({ server: { middlewareMode: true, hmr: false, ws: false }, appType: 'custom' });
   const pinia = createPinia();
   setActivePinia(pinia);
   try {
-    const component = (await server.ssrLoadModule('/src/views/LogbookView.vue')).default;
-    const entry = { id: 1, entity: 'ordenes', entityId: '42', orderId: 'ORD-009', authorName: 'Operador',
-      operation: 'orders.edit', occurredAt: '2026-11-14T12:00:00Z', currency: 'MXN',
-      details: [{ field: 'estimatedDelivery', oldValue: '2026-11-15', newValue: '2026-11-20' }] };
+    const component = (await server.ssrLoadModule('/src/views/FinancesView.vue')).default;
+    const { financialTotals } = await import('../src/models/finances.ts');
+    const order = { id:'ORD-009',client:'Cliente',equipment:'Laptop',status:'Reparado',currency:'MXN',
+      totalMinor:150000,collectedMinor:150000,balanceMinor:0,costsMinor:60000,profitMinor:90000,
+      delivered:false,paid:true,classification:'paid_uncollected',excluded:false,
+      received:'2026-11-14',deliveredAt:null,settledAt:null,payments:[],expenses:[] };
+    const filters = {query:'',classification:'all',dateBasis:'received',from:'',to:'',scope:'active'};
     const prepared = { ...component, setup(props: unknown, context: unknown) {
       const model = component.setup(props, context);
-      model.selected.value = entry;
-      model.result.value = { entries: [entry], total: 1, page: 0, pageSize: 50, authors: [] };
-      return model;
+      return {...model,totals:ref(financialTotals([order],filters,'America/Cancun')),
+        filtered:ref([order]),visible:ref([order]),selected:ref(order)};
     } };
     const html = await renderToString(createSSRApp(prepared).use(pinia));
-    for (const text of ['Orden #42', 'ORD-009', 'Entrega estimada', '2026-11-15', '2026-11-20', 'Antes', 'Después']) {
+    for (const text of ['Finanzas', 'ORD-009', 'Ganancia estimada de trabajos pagados',
+      'Ganancia estimada de trabajos con deuda', 'Desglose por pago y entrega',
+      'Pagadas y entregadas', 'Pagadas sin entregar', 'Entregadas con saldo pendiente',
+      'Sin liquidar ni entregar', '900.00', 'Detalle financiero']) {
       assert.ok(html.includes(text), text);
     }
+    assert.doesNotMatch(html,/Historial de cambios|Historial de esta orden|Detalle del movimiento|Antes|Después|Bitácora/);
   } finally { disposePinia(pinia); await server.close(); }
 });
 

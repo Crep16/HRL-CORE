@@ -112,7 +112,7 @@ try {
   for (const name of ['clients', 'repairs', 'company', 'users', 'logbook']) {
     await view(name);
     const layout = await evaluate('({heading: document.querySelector("h1")?.innerText, width: innerWidth, content: document.documentElement.scrollWidth})');
-    const headings = { clients: 'Órdenes', repairs: 'Reparaciones', company: 'Empresa', users: 'Usuarios', logbook: 'Bitácora interna' };
+    const headings = { clients: 'Órdenes', repairs: 'Reparaciones', company: 'Empresa', users: 'Usuarios', logbook: 'Finanzas' };
     assert.equal(layout.heading, headings[name], name);
     assert.ok(layout.content <= layout.width + 1, `${name}: desbordamiento horizontal`);
     if (name === 'repairs') {

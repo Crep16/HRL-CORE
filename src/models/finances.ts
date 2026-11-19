@@ -30,6 +30,16 @@ export function filterFinancialOrders(
   });
 }
 
+type FinancialBreakdown = {
+  classification: string;
+  count: number;
+  total: number;
+  collected: number;
+  balance: number;
+  costs: number;
+  profit: number;
+};
+
 type FinancialTotal = {
   currency: string;
   total: number;
@@ -42,6 +52,9 @@ type FinancialTotal = {
   costs: number;
   profit: number;
   completedProfit: number;
+  paidProfit: number;
+  pendingProfit: number;
+  breakdown: FinancialBreakdown[];
   excludedCollected: number;
 };
 
@@ -53,7 +66,10 @@ export function financialTotals(orders: FinancialOrder[], filters: FinancialFilt
       group = {
         currency: order.currency, total: 0, collected: 0, received: 0, adjusted: 0,
         refunded: 0, credit: 0, balance: 0, costs: 0, profit: 0, completedProfit: 0,
-        excludedCollected: 0,
+        paidProfit: 0, pendingProfit: 0, excludedCollected: 0,
+        breakdown: ['completed', 'paid_uncollected', 'delivered_unpaid', 'pending'].map(classification => ({
+          classification, count: 0, total: 0, collected: 0, balance: 0, costs: 0, profit: 0,
+        })),
       };
       totals.set(order.currency, group);
     }
@@ -80,6 +96,17 @@ export function financialTotals(orders: FinancialOrder[], filters: FinancialFilt
     group.balance += order.balanceMinor;
     group.costs += order.costsMinor;
     group.profit += order.profitMinor;
+    if (order.paid) group.paidProfit += order.profitMinor;
+    else group.pendingProfit += order.profitMinor;
+    const breakdown = group.breakdown.find(item => item.classification === order.classification);
+    if (breakdown) {
+      breakdown.count++;
+      breakdown.total += order.totalMinor;
+      breakdown.collected += collected;
+      breakdown.balance += order.balanceMinor;
+      breakdown.costs += order.costsMinor;
+      breakdown.profit += order.profitMinor;
+    }
     if (order.classification === 'completed') group.completedProfit += order.profitMinor;
   }
   return [...totals.values()];

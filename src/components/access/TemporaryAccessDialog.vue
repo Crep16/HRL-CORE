@@ -8,12 +8,12 @@ const { auth, username, password, reason, errorMessage, reset, approve } = useTe
 const dialog = ref<HTMLDialogElement>();
 const operation = ref("orders.create");
 let previousFocus: HTMLElement | null = null;
-const labels = { clients: "Clientes", repairs: "Reparaciones", company: "Empresa", users: "Usuarios", logbook: "Bitácora" };
+const labels = { clients: "Clientes", repairs: "Reparaciones", company: "Empresa", users: "Usuarios", logbook: "Finanzas" };
 const actionGroups: Record<string,Record<string,string>> = {
   clients:{'clients.view':'Consultar Clientes','orders.create':'Crear una orden','orders.edit':'Editar una orden','orders.delete':'Enviar a papelera o restaurar','evidence.add':'Agregar fotografías','evidence.edit':'Editar descripciones','evidence.delete':'Retirar o restaurar fotografías','payments.add':'Registrar abono inicial'},
   repairs:{'repairs.view':'Consultar Reparaciones','repairs.edit':'Editar seguimiento','notes.add':'Agregar notas y avances','stages.advance':'Completar etapa','warranties.add':'Agregar garantía','parts.add':'Agregar refacción','publication.edit':'Editar preferencias de publicación','payments.add':'Registrar abono','payments.adjust':'Corregir abono','payments.refund':'Devolver saldo a favor'},
   company:{'company.view':'Consultar Empresa','company.edit':'Editar Empresa'},
-  logbook:{'logbook.view':'Consultar Bitácora'},users:{'users.manage':'Administrar usuarios'},
+  logbook:{'logbook.view':'Consultar Finanzas'},users:{'users.manage':'Administrar usuarios'},
 };
 const actions = computed(() => actionGroups[props.request?.scope ?? 'clients']!);
 watch(() => props.request, async (request) => {

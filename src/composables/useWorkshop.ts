@@ -13,7 +13,7 @@ import type ReceptionView from '../views/ReceptionView.vue';
 import type RepairsView from '../views/RepairsView.vue';
 import type CompanyNote from '../components/company/CompanyNote.vue';
 import type CompanyView from '../views/CompanyView.vue';
-const labels:Record<AccessScope,string>={clients:'Clientes',repairs:'Reparaciones',logbook:'Bitácora',company:'Empresa',users:'Usuarios'};
+const labels:Record<AccessScope,string>={clients:'Clientes',repairs:'Reparaciones',logbook:'Finanzas',company:'Empresa',users:'Usuarios'};
 export function useWorkshop(){
   const backups=useBackupStore(),canBackup=computed(()=>backups.canManage);
   const auth=useAuthStore(), orders=useOrderStore(), workspace=useWorkspaceStore(), companyStore=useCompanyStore();

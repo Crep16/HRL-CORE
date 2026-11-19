@@ -15,7 +15,7 @@ onMounted(() => {
 });
 onUnmounted(() => { observer?.disconnect(); window.removeEventListener('scroll', measureHeader); });
 const levels = { complete: 'Acceso completo', limited: 'Acceso limitado', custom: 'Acceso personalizado' };
-const tabIcons: Record<string, string> = { Clientes: 'clients', Reparaciones: 'repair', Bitácora: 'logbook', Empresa: 'company', Usuarios: 'users' };
+const tabIcons: Record<string, string> = { Clientes: 'clients', Reparaciones: 'repair', Finanzas: 'finances', Empresa: 'company', Usuarios: 'users' };
 
 withDefaults(defineProps<{
   tabs: string[];

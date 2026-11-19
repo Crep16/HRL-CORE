@@ -70,7 +70,7 @@ src/                    (estado actual → destino)
   types/                se queda; es el MODEL (Order, Money, Payment...)
   utils/                se queda, solo funciones puras
   data/                 se queda, solo catálogos estáticos (por confirmar su contenido)
-  views/        (nuevo) ClientsView.vue RepairsView.vue LogbookView.vue CompanyView.vue UsersView.vue AccessView.vue
+  views/        (nuevo) ClientsView.vue RepairsView.vue FinancesView.vue CompanyView.vue UsersView.vue AccessView.vue
   stores/       (nuevo) useOrdersStore.ts usePaymentsStore.ts useSessionStore.ts ...
   services/api/ (nuevo) ordersApi.ts paymentsApi.ts ...  ← único lugar con invoke()
   WorkshopApp.vue       se divide en views/ y queda como contenedor/navegación
@@ -195,9 +195,9 @@ la escritura. Se mantienen los identificadores en inglés de los contratos y
 las columnas SQL en español. El servicio encapsula la transacción y el
 repositorio abstrae la persistencia, siguiendo la composición ya existente.
 
-Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, LogbookView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
+Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
 
-Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Bitácora incorpora `entity` y `entityId` en sus tipos y presenta la identidad del registro mediante su viewmodel. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.
+Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Desde el 19 de noviembre de 2026, Finanzas sustituye a la pantalla de Bitácora y su viewmodel de consulta de auditoría. `useFinancialWorkspace` orquesta la pantalla y `models/finances.ts` agrega los totales por moneda, pago y entrega. Se conservan los contratos internos `logbook` y `logbook.view`, así como la auditoría transaccional y el historial de órdenes en Clientes. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.
 
 ## Migraciones vigentes y criterio de instalación (17 de noviembre de 2026)
 

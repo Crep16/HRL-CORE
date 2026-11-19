@@ -31,6 +31,11 @@ test('financial totals keep currencies and excluded collections separate', () =>
     currency: 'MXN', total: 60000, collected: 60000, received: 75000, adjusted: -10000,
     refunded: 5000, credit: 0, balance: 0, costs: 10000, profit: 50000,
     completedProfit: 50000, excludedCollected: 60000,
+    paidProfit: 50000, pendingProfit: 0,
+    breakdown: [
+      {classification:'completed',count:1,total:60000,collected:60000,balance:0,costs:10000,profit:50000},
+      ...['paid_uncollected','delivered_unpaid','pending'].map(classification=>({classification,count:0,total:0,collected:0,balance:0,costs:0,profit:0})),
+    ],
   });
   assert.equal(totals[1].excludedCollected, 0);
 });
@@ -43,6 +48,8 @@ test('payment periods include adjustments and refunds on their own local dates',
   assert.equal(totals[0].refunded, 5000);
   assert.equal(totals[0].collected, -15000);
   assert.equal(totals[0].total, 60000);
+  assert.equal(totals[0].breakdown[0].collected, -15000);
+  assert.equal(totals[0].breakdown[0].profit, 50000);
   const receiptDay = { ...paymentFilters, from: '2026-11-09', to: '2026-11-09' };
   assert.equal(financialTotals([order], receiptDay, 'America/Cancun')[0].received, 75000);
 });
@@ -79,4 +86,12 @@ test('each financial class filters independently and only completed orders contr
   assert.equal(totals.balance, 95000);
   assert.equal(totals.profit, 200000);
   assert.equal(totals.completedProfit, 50000);
+  assert.equal(totals.paidProfit, 100000);
+  assert.equal(totals.pendingProfit, 100000);
+  assert.equal(totals.breakdown.reduce((sum,item)=>sum+item.profit,0),totals.profit);
+  assert.equal(totals.breakdown.reduce((sum,item)=>sum+item.balance,0),totals.balance);
+  assert.deepEqual(totals.breakdown.map(item=>[item.classification,item.count,item.collected,item.balance]),[
+    ['completed',1,60000,0],['paid_uncollected',1,60000,0],
+    ['delivered_unpaid',1,25000,35000],['pending',1,0,60000],
+  ]);
 });
