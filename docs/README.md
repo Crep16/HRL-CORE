@@ -22,7 +22,7 @@ de HRL CORE. El seguimiento de tareas se consulta en Jira, proyecto
 | Papelera de órdenes | [papelera-ordenes.md](papelera-ordenes.md) |
 | Respaldos portables | [respaldos-portables.md](respaldos-portables.md) |
 | Instalación y recuperación | [instalacion-recuperacion-local.md](instalacion-recuperacion-local.md) |
-| Propuesta del contrato del portal | [backlog/contrato-portal-propuesta-v1.md](backlog/contrato-portal-propuesta-v1.md) |
+| Contrato del portal y adaptación HRL CORE | [contrato/CONTRATO-FIRESTORE.md](contrato/CONTRATO-FIRESTORE.md) |
 | Logos y variantes conservados | [brand/index.html](brand/index.html) |
 
 El DDL que ejecuta la aplicación se compila desde `src-tauri/migrations/`.

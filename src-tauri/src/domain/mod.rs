@@ -7,6 +7,7 @@ pub mod ledger;
 pub mod money;
 pub mod orders;
 pub mod permissions;
+pub mod portal;
 pub mod repairs;
 pub mod security;
 pub mod user_contracts;

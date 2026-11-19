@@ -1,5 +1,41 @@
 # Arquitectura objetivo de HRL CORE
 
+## Proyección pública del portal (19 de noviembre de 2026)
+
+El contrato de trabajo está en `docs/contrato/CONTRATO-FIRESTORE.md`. La propuesta
+elegida usa Firebase Auth y REST de Firestore; la app conserva las reglas locales.
+Esta primera fase implementa exclusivamente el dominio de la proyección pública.
+Cola, repositorios, servicios de publicación, autenticación, envío y QR siguen pendientes.
+
+`domain/portal.rs` conserva nombres ingleses para tipos y métodos; los campos del
+documento usan las claves españolas del contrato. `PublicEquipment`, `PublicStage`, `PublicPayment` y `PublicTimestamp`
+encapsulan datos con constructores validados. `PublicProjection` abstrae la selección
+de campos y la retirada sin contenido; `SignedProjection` conserva el documento y
+su huella sin permitir mutaciones independientes. Son composición y encapsulamiento;
+no se introduce herencia ni un trait sin implementación de I/O que sustituir.
+
+El objeto público se construye expresamente, sin serializar la orden completa.
+Las secciones ocultas se omiten y los avances privados se excluyen antes de validar
+el contenido exportable. Los límites del portal no reducen los límites de la app.
+Los importes son centavos enteros y conservan el cobro neto con saldo a favor.
+La integración posterior obtendrá los saldos de `vista_saldos_orden`.
+
+`PublicTimestamp` exige un instante con zona horaria y precisión de milisegundos;
+no transforma fechas sin hora en instantes ficticios. El vencimiento deriva solo
+de la entrega efectiva más siete días. La persistencia actual de entrega guarda
+solo la fecha: resolver el registro del instante y los casos históricos queda
+pendiente de la fase de integración, sin migración de datos implícita.
+
+La huella SHA-256 usa JSON de transporte, claves ordenadas por UTF-16, texto UTF-8
+y fechas UTC con milisegundos. Coincide con el vector de referencia del portal.
+No se agrega JSON a SQLite ni se modifica el esquema en esta fase. Las pruebas
+están en `src-tauri/src/domain/portal/tests.rs`.
+
+Validación de esta fase: 114 pruebas Rust aprobadas, incluidas nueve del portal;
+`cargo check --offline` y `npm.cmd run build` correctos. Las pruebas de DPAPI
+requieren ejecución fuera del entorno restringido de herramientas. No se ejecutó
+el emulador de Firestore ni una prueba contra Firebase real.
+
 ## 1. Conceptos (para exponerlos ante el profesor)
 
 | Concepto | Qué es | Dónde se aplica aquí |

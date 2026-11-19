@@ -1,0 +1,136 @@
+rules_version = '2';
+
+// Adaptación local: docs/contrato/CONTRATO-FIRESTORE.md; pendiente de acordar con el portal.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // UID de la cuenta de Firebase Authentication del emisor (HRL CORE).
+    // Mientras diga REEMPLAZAR, nadie puede escribir.
+    function esEmisor() {
+      return request.auth != null && request.auth.uid == 'REEMPLAZAR_UID_HRL_CORE';
+    }
+
+    function texto(v, max) {
+      return v is string && v.size() <= max;
+    }
+
+    function textoLleno(v, max) {
+      return texto(v, max) && v.trim().size() > 0;
+    }
+
+    function opcional(d, campo) {
+      return !(campo in d);
+    }
+
+    function control() {
+      return ['versionContrato', 'idPublico', 'revision', 'publicado', 'actualizadoEn', 'huella'];
+    }
+
+    // folio no se publica (decisión del contrato), por eso no está en la lista
+    function permitidos() {
+      return control().concat(['accesoHasta', 'recibidoEn', 'entregaEstimada', 'entregadoEn',
+                               'equipo', 'estadoTecnico', 'etapas', 'eventos', 'notaPublica',
+                               'garantias', 'pago']);
+    }
+
+    function controlValido(d, idPublico) {
+      return d.keys().hasAll(control())
+        && d.versionContrato == 1
+        && d.idPublico == idPublico
+        && d.revision is int && d.revision >= 1 && d.revision <= 9007199254740991
+        && d.publicado is bool
+        && d.actualizadoEn == request.time                       // hora del servidor
+        && d.huella is string && d.huella.matches('^[0-9a-f]{64}$');  // SHA-256 en hex
+    }
+
+    // Vence 7 días después de la entrega efectiva; sin entrega no hay vencimiento
+    function vencimientoValido(d) {
+      return (opcional(d, 'accesoHasta') && opcional(d, 'entregadoEn'))
+        || ('entregadoEn' in d && 'accesoHasta' in d
+            && d.entregadoEn is timestamp && d.accesoHasta is timestamp
+            && d.accesoHasta == d.entregadoEn + duration.value(7, 'd'));
+    }
+
+    function fechasValidas(d) {
+      return (opcional(d, 'recibidoEn') || d.recibidoEn is timestamp)
+        && (opcional(d, 'entregaEstimada') || d.entregaEstimada is timestamp)
+        && (opcional(d, 'entregadoEn') || d.entregadoEn is timestamp);
+    }
+
+    function equipoValido(e) {
+      return e is map
+        && e.keys().hasAll(['tipo', 'marca', 'modelo'])
+        && e.keys().hasOnly(['tipo', 'marca', 'modelo'])
+        && textoLleno(e.tipo, 60) && texto(e.marca, 60) && texto(e.modelo, 100);
+    }
+
+    // Un saldo a favor conserva el cobrado real y deja pendiente cero.
+    function pagoValido(p) {
+      return p is map
+        && p.keys().hasAll(['moneda', 'totalCentavos', 'cobradoCentavos', 'pendienteCentavos'])
+        && p.keys().hasOnly(['moneda', 'totalCentavos', 'cobradoCentavos', 'pendienteCentavos'])
+        && p.moneda is string && p.moneda.matches('^[A-Z]{3}$')
+        && p.totalCentavos is int && p.totalCentavos >= 0
+        && p.cobradoCentavos is int && p.cobradoCentavos >= 0
+        && p.pendienteCentavos is int && p.pendienteCentavos >= 0
+        && p.totalCentavos <= 9007199254740991
+        && p.cobradoCentavos <= 9007199254740991
+        && p.pendienteCentavos <= 9007199254740991
+        && p.pendienteCentavos == (p.totalCentavos > p.cobradoCentavos
+            ? p.totalCentavos - p.cobradoCentavos : 0);
+    }
+
+    // Secciones ocultas = campo omitido. Lista vacía = sección visible sin elementos.
+    // Las reglas no recorren listas: validan tipo y tamaño; cada elemento lo valida
+    // HRL CORE antes de encolar (contrato §5) y el portal ignora elementos mal formados.
+    function seguimientoValido(d) {
+      return d.keys().hasOnly(permitidos())
+        && d.keys().hasAll(['equipo', 'estadoTecnico', 'etapas'])
+        && equipoValido(d.equipo)
+        && textoLleno(d.estadoTecnico, 100)
+        && d.etapas is list && d.etapas.size() <= 30
+        && (opcional(d, 'eventos') || (d.eventos is list && d.eventos.size() <= 200))
+        && (opcional(d, 'notaPublica') || texto(d.notaPublica, 4000))
+        && (opcional(d, 'garantias') || (d.garantias is list && d.garantias.size() <= 20))
+        && (opcional(d, 'pago') || pagoValido(d.pago))
+        && fechasValidas(d)
+        && vencimientoValido(d);
+    }
+
+    // Documento retirado: solo control y vencimiento, sin datos de seguimiento
+    function retiradoValido(d) {
+      return d.keys().hasOnly(control().concat(['accesoHasta', 'entregadoEn']))
+        && fechasValidas(d)
+        && vencimientoValido(d);
+    }
+
+    function documentoValido(d, idPublico) {
+      return controlValido(d, idPublico)
+        && (d.publicado ? seguimientoValido(d) : retiradoValido(d));
+    }
+
+    function vigente(d) {
+      return opcional(d, 'accesoHasta') || request.time < d.accesoHasta;
+    }
+
+    match /seguimiento/{idPublico} {
+      // Quien tiene el enlace lee mientras no venza; el emisor siempre, para reconciliar
+      allow get: if resource == null || vigente(resource.data) || esEmisor();
+      allow list: if false;
+
+      allow create: if esEmisor() && documentoValido(request.resource.data, idPublico);
+
+      // Revisión estrictamente creciente: un envío atrasado o repetido se rechaza
+      allow update: if esEmisor()
+        && documentoValido(request.resource.data, idPublico)
+        && request.resource.data.revision > resource.data.revision;
+
+      // Se despublica con un documento retirado, no se borra
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
