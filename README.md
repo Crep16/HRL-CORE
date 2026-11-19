@@ -7,8 +7,8 @@ de cómputo. Usa Vue 3, TypeScript, Pinia, Tailwind, Tauri, Rust y SQLite.
 
 - Clientes: recepción, búsqueda y edición de órdenes, antecedentes en texto libre y papelera recuperable.
 - Reparaciones: etapas, notas públicas e internas, garantías, refacciones y movimientos de dinero.
-- Evidencias: fotografías JPG, PNG y WebP, descripción, retiro y restauración conservando el original.
-- Bitácora y Finanzas: auditoría inmutable, saldos, costos y totales separados por moneda.
+- Evidencias: fotografías JPG, PNG y WebP, documentos PDF y videos MP4; captura con cámara, descripción, retiro y restauración conservando el original.
+- Finanzas: cobros, saldos, costos y ganancias estimadas de trabajos pagados y con deuda, separados por moneda y entrega.
 - Empresa y Usuarios: configuración de documentos, cuentas, permisos y autorización temporal.
 
 El primer inicio solicita clave maestra y administrador. No hay cuentas ni
@@ -39,9 +39,16 @@ equipo requieren su custodia DPAPI original. Un respaldo útil debe incluir
 base, recursos y custodia. Copiar solamente SQLite no basta.
 Consulta [recuperación local](docs/instalacion-recuperacion-local.md).
 
-`legacy/frontend/`, `src-tauri/legacy/` y `src-tauri/migrations/legacy/`
-conservan referencias y pruebas del sistema anterior. No se cargan en la
-aplicación. Las pruebas Rust históricas siguen compilándose solo con `cfg(test)`.
+`src-tauri/legacy/` y `src-tauri/migrations/legacy/` conservan las dependencias
+de las pruebas de regresión Rust. No se cargan en la aplicación de producción;
+siguen compilándose solo con `cfg(test)`. `schema.sql` se conserva porque una
+prueba comprueba que coincide con la migración base.
+
+`docs/` conserva las reglas funcionales y técnicas vigentes. Los diseños,
+exportaciones y el frontend archivado no forman parte del código activo.
+`dist/` se genera con `npm.cmd run build`; no se versiona y Tauri lo regenera
+mediante `beforeBuildCommand` antes de empaquetar. Los perfiles y capturas de
+prueba de `artifacts/` tampoco se versionan.
 
 ## Desarrollo y validación
 
@@ -77,12 +84,13 @@ desactiva la caché incremental para reducir espacio en disco.
 
 ## Pendientes y documentación
 
-La publicación en el portal requiere un contrato y entorno acordados. La
-importación histórica, los formatos adicionales de evidencia y el traslado
-de claves entre instalaciones necesitan definiciones previas. Cámara,
-impresión física y aceptación con personal se validan en el equipo acordado.
-No se genera instalador durante esta etapa por indicación del usuario.
+El proyecto de trabajo en Jira es **HRL Proyecto**, clave **HRLP**. La publicación
+en el portal requiere aprobar el contrato y conectar el servicio externo.
+La importación de la base antigua requiere confirmar qué datos se conservarán.
+Cámara, impresión física, instalación, restauración entre perfiles y aceptación
+con personal se validan en el equipo acordado; las pruebas simuladas no acreditan
+ese recorrido.
 
-Las reglas vigentes están en `docs/*.md`. Lee [AGENTS.md](AGENTS.md) antes de
+Las reglas vigentes se enumeran en [documentación](docs/README.md). Lee [AGENTS.md](AGENTS.md) antes de
 modificar código y [arquitectura objetivo](docs/arquitectura-objetivo.md) para
 seguir las dependencias y convenciones.

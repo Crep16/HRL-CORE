@@ -23,8 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Documentación y artefactos locales
+# Artefactos generados y memoria local
 /artifacts/
-/docs/
 /diseños legacy/
 /memoria-datos/

@@ -10,7 +10,7 @@ El servicio Rust valida tamaño, origen, MIME y estructura básica del formato: 
 
 La tabla activa es `evidencias`; `tipo_archivo` contiene `image`, `video` o `document`. Los recursos están bajo `assets-3fn/evidencias/<id_orden>/<codigo_archivo>.<extensión>` junto a la base normalizada. La base sola no contiene los archivos. El esquema ya admitía estos tipos y no se añadió migración para esta ampliación.
 
-Se ejecutaron 105 pruebas Rust, comprobación Rust, suites UI/fase 5/IPC, build y recorrido de Chrome con IPC simulado: carga de PDF/MP4, copia PDF, reproducción de un video de prueba, retiro/restauración y tres anchos de ventana. La validación de códecs y guardado de copias dentro del WebView instalado permanece en el recorrido nativo HRLP-63. Detalles: `docs/backlog/avance-pendientes-2026-11-17.md`.
+Se ejecutaron 105 pruebas Rust, comprobación Rust, suites UI/fase 5/IPC, build y recorrido de Chrome con IPC simulado: carga de PDF/MP4, copia PDF, reproducción de un video de prueba, retiro/restauración y tres anchos de ventana. La validación de códecs y guardado de copias dentro del WebView instalado permanece en el recorrido nativo HRLP-63. La implementación y sus pruebas están registradas en el commit `37137e3`; el informe histórico se conserva en Git y en la memoria local.
 
 Las secciones siguientes describen la implementación histórica anterior al esquema normalizado; sus rutas, nombres de tablas y comandos antiguos no sustituyen los anteriores.
 

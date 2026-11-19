@@ -121,7 +121,7 @@ Los identificadores Rust de las nuevas capas están en inglés; tablas y columna
 
 El SQL entregable es `schema.sql` en la raíz y su copia versionada de migración en `src-tauri/migrations/001_esquema_objetivo.sql`. Esta referencia documentada contiene el mismo DDL. El cargador no depende de que la carpeta `docs/` esté disponible.
 
-Véase [el diseño y validación de la Fase 1](fase-1-base-de-datos-y-modelos.md) para las relaciones, pruebas y límites de esta transición.
+Véase [SQLite y migraciones](sqlite.md) para el esquema vigente y `src-tauri/src/db/tests.rs` para las pruebas de integridad y transición.
 
 ## Recepción unificada sobre 3NF
 
@@ -157,7 +157,7 @@ Los importes permanecen enteros y no se añade JSON de negocio a SQLite.
 El cargador incorpora 002_prefijo_documentos.sql, además de la base 001.
 Los recursos binarios se guardan en assets-3fn con nombres controlados por el
 servicio y referencias en SQLite. No se migran ni modifican automáticamente
-las bases anteriores. Véase restauracion-diseno.md para cobertura y validación.
+las bases anteriores. La cobertura vigente está en `tests/` y en las pruebas Rust de `src-tauri/src/`; el procedimiento de validación está en `README.md`.
 
 ## Cierre del backend normalizado del 13 de noviembre de 2026
 
@@ -197,7 +197,7 @@ repositorio abstrae la persistencia, siguiendo la composición ya existente.
 
 Las pantallas están en `src/views/` como AccessView, ReceptionView, RepairsView, FinancesView, CompanyView y UsersView. `WorkshopApp.vue` contiene la composición y utiliza `useWorkshop` para navegación y guardas. Cámara y cláusulas delegan estado, validación y ciclo de vida en `useEvidenceCamera` y `useCompanyClauses`. Los días sugeridos de garantía y la actualización tras pagos se orquestan en `useRepairScreen`.
 
-Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Desde el 19 de noviembre de 2026, Finanzas sustituye a la pantalla de Bitácora y su viewmodel de consulta de auditoría. `useFinancialWorkspace` orquesta la pantalla y `models/finances.ts` agrega los totales por moneda, pago y entrega. Se conservan los contratos internos `logbook` y `logbook.view`, así como la auditoría transaccional y el historial de órdenes en Clientes. Véase `fase-5-vistas-y-validacion.md` para pruebas, revisión visual y límites de verificación nativa.
+Los composables encapsulan sus referencias reactivas y componen callbacks de eventos. Los componentes conservan su presentación y contratos. Desde el 19 de noviembre de 2026, Finanzas sustituye a la pantalla de Bitácora y su viewmodel de consulta de auditoría. `useFinancialWorkspace` orquesta la pantalla y `models/finances.ts` agrega los totales por moneda, pago y entrega. Se conservan los contratos internos `logbook` y `logbook.view`, así como la auditoría transaccional y el historial de órdenes en Clientes. Las pruebas de vistas están en `tests/phase4.test.ts` y `tests/phase5.test.ts`; el renderizado con IPC simulado no acredita cámara, impresora ni instalación nativa.
 
 ## Migraciones vigentes y criterio de instalación (17 de noviembre de 2026)
 
