@@ -298,7 +298,8 @@ test("Vue renders the catalog fields with native limits and readonly saved order
     assert.match(html, /9 en total/);
     assert.match(html, /id="lookup-order"/);
     assert.match(html, /aria-label="Avanzar entre órdenes"/);
-    assert.match(html, /aria-label="Buscar en"/);
+    assert.doesNotMatch(html, /aria-label="Buscar en"/);
+    assert.match(html, /placeholder="Orden, cliente o serie"/);
     assert.match(html, /Cambiar orden/);
     assert.match(html, />admin</);
     assert.doesNotMatch(html, /id="temporary-operation"/);

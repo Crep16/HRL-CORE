@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, mock, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSSRApp, effectScope, getCurrentInstance, markRaw, nextTick, ref } from 'vue';
+import { createRenderer, createSSRApp, effectScope, getCurrentInstance, markRaw, nextTick, reactive, ref } from 'vue';
 import { renderToString } from 'vue/server-renderer';
 import { createPinia, disposePinia, setActivePinia } from 'pinia';
 import { useEvidenceCamera } from '../src/composables/useEvidenceCamera.ts';
 import { useCompanyClauses } from '../src/composables/useCompanyClauses.ts';
 import { defaultCompany } from '../src/composables/useCompany.ts';
 import { useRepairScreen } from '../src/composables/useRepairScreen.ts';
+import { useModalDialog } from '../src/composables/useModalDialog.ts';
+import { useAuthStore } from '../src/stores/useAuthStore.ts';
+import { useWorkshopDataStore } from '../src/stores/useWorkshopDataStore.ts';
 import type { Order } from '../src/types/order.ts';
 
 const originalGlobals = new Map(['document', 'navigator', 'HTMLElement'].map(name => [name, Object.getOwnPropertyDescriptor(globalThis, name)]));
@@ -15,6 +18,7 @@ let focused = '';
 let targets: Map<string, FocusTarget>;
 class FocusTarget {
   disabled = false;
+  isConnected = true;
   id: string;
   constructor(id: string) { this.id = id; }
   focus() { focused = this.id; documentStub.activeElement = this; }
@@ -242,6 +246,97 @@ test('repair warranty suggestions follow the selected company policy in the view
       model.selectWarrantyType('parts');
       assert.equal(model.days.value, model.company.value.partsDays);
       assert.equal(model.warrantyType.value, 'parts');
+      return () => null;
+    } }).use(pinia));
+  } finally { disposePinia(pinia); }
+});
+
+test('modal dismissal requires an outside press and restores focus, while saving blocks dismissal', async () => {
+  const props = reactive({ open: false, busy: false });
+  let closed = 0;
+  let model!: ReturnType<typeof useModalDialog>;
+  const input = new FocusTarget('part');
+  const trigger = targets.get('clause-add')!;
+  const dialog = markRaw({ open: false,
+    showModal() { this.open = true; }, close() { this.open = false; },
+    querySelector: () => input,
+    getBoundingClientRect: () => ({ left: 100, right: 500, top: 100, bottom: 400 }),
+  });
+  const renderer = createRenderer<Record<string, unknown>, Record<string, unknown>>({
+    patchProp() {}, insert() {}, remove() {}, createElement: () => ({}), createText: () => ({}),
+    createComment: () => ({}), setText() {}, setElementText() {}, parentNode: () => null, nextSibling: () => null,
+  });
+  const app = renderer.createApp({ setup() {
+    model = useModalDialog(props, () => { closed++; props.open = false; });
+    model.dialog.value = dialog as unknown as HTMLDialogElement;
+    return () => null;
+  } });
+  app.mount({});
+  const event = (x: number, y: number) => ({ target: dialog, clientX: x, clientY: y }) as unknown as PointerEvent;
+  try {
+    props.open = true; await nextTick();
+    assert.equal(dialog.open, true);
+    assert.equal(focused, 'part');
+    model.pointerDown(event(120, 120)); model.click(event(120, 120));
+    model.pointerDown(event(120, 120)); model.click(event(20, 20));
+    assert.equal(closed, 0);
+    props.busy = true;
+    model.pointerDown(event(20, 20)); model.click(event(20, 20)); model.requestClose();
+    assert.equal(closed, 0);
+    props.busy = false;
+    model.pointerDown(event(20, 20)); model.click(event(20, 20)); await nextTick();
+    assert.equal(closed, 1);
+    assert.equal(dialog.open, false);
+    assert.equal(documentStub.activeElement, trigger);
+    props.open = true; await nextTick(); model.requestClose(); await nextTick();
+    assert.equal(closed, 2);
+    props.open = true; await nextTick();
+  } finally { app.unmount(); }
+  assert.equal(dialog.open, false);
+  assert.equal(documentStub.activeElement, trigger);
+});
+
+test('part and warranty dialogs preserve drafts and errors until a confirmed save', async () => {
+  const pinia = createPinia(); setActivePinia(pinia);
+  const auth = useAuthStore(pinia), store = useWorkshopDataStore(pinia);
+  auth.user = {id:1,name:'Operador',loginName:'operador',role:'technician',accessLevel:'custom',active:true,createdAt:'2026-11-19'};
+  auth.permissions = ['parts.add', 'warranties.add'];
+  let fail = true, saves = 0;
+  mock.method(store, 'saveRepair', async (_id, repair) => {
+    saves++;
+    if (fail) throw { code: 'CONFLICT', message: 'La orden cambió. Vuelve a consultar.' };
+    return { repair, revision: saves + 1, payment: {totalMinor:0,collectedMinor:0,receivedMinor:0,adjustedMinor:0,refundedMinor:0,creditMinor:0,paid:true} };
+  });
+  try {
+    await renderToString(createSSRApp({ async setup() {
+      const model = useRepairScreen({ order: {databaseId:1} as Order }, () => {});
+      model.ready.value = true;
+      model.part.value = 'Pantalla'; model.price.value = 600;
+      model.openPart(); model.closePart(); model.openPart();
+      assert.equal(model.part.value, 'Pantalla');
+      await model.addPart();
+      assert.equal(model.addingPart.value, true);
+      assert.equal(model.price.value, 600);
+      assert.match(model.partError.value, /La orden cambió/);
+      assert.equal(model.repair.value.parts.length, 0);
+      fail = false; await model.addPart();
+      assert.equal(model.addingPart.value, false);
+      assert.deepEqual(model.repair.value.parts, [{name:'Pantalla',price:600}]);
+      assert.equal(model.part.value, '');
+      model.warranty.value = 'Pantalla'; model.days.value = 90;
+      model.openWarranty(); model.closeWarranty(); model.openWarranty();
+      assert.equal(model.warranty.value, 'Pantalla');
+      fail = true; await model.addWarranty();
+      assert.equal(model.addingWarranty.value, true);
+      assert.match(model.warrantyError.value, /La orden cambió/);
+      assert.equal(model.repair.value.warranties.length, 0);
+      fail = false; await model.addWarranty();
+      assert.equal(model.addingWarranty.value, false);
+      assert.deepEqual(model.repair.value.warranties, [{name:'Pantalla',days:90}]);
+      auth.permissions = [];
+      model.openPart(); model.openWarranty();
+      assert.equal(model.addingPart.value, false);
+      assert.equal(model.addingWarranty.value, false);
       return () => null;
     } }).use(pinia));
   } finally { disposePinia(pinia); }

@@ -1,4 +1,5 @@
-.app .top{height:auto;min-height:76px;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:10px 18px}
+.app .top{position:sticky;top:0;z-index:100;flex-shrink:0;height:auto;min-height:76px;display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:10px 18px}
+html{scroll-padding-top:calc(var(--app-header-bottom,76px) + 16px)}
 .app .top .logo-tile{margin:0;padding:4px 10px;flex-shrink:0}
 .app .top .logo-tile img{height:36px;max-width:125px;object-fit:contain}
 .app .top .tabs{display:flex;flex-wrap:wrap;min-width:0;min-height:48px;align-self:stretch}

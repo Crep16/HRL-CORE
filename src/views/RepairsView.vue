@@ -3,17 +3,39 @@ import SearchSelect from '../components/ui/SearchSelect.vue';
 import AppNotice from '../components/ui/AppNotice.vue';
 import PaymentsPanel from '../components/repairs/PaymentsPanel.vue';
 import StageRemovalDialog from '../components/repairs/StageRemovalDialog.vue';
+import FormDialog from '../components/ui/FormDialog.vue';
 import type { Order } from '../types/order';
 import { useRepairScreen } from '../composables/useRepairScreen';
 const props = defineProps<{ order: Order }>();
 const emit = defineEmits<{ back: []; saved: [] }>();
-const {canRemoveStage,requestRemoveStage,stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged}=useRepairScreen(props,emit);
+const {openPart,closePart,openWarranty,closeWarranty,partError,warrantyError,canRemoveStage,requestRemoveStage,stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged}=useRepairScreen(props,emit);
 defineExpose({ save });
 </script>
 
 <template>
   <div class="repair-page">
     <StageRemovalDialog :name="stageAction?.name" :suggestion="stageAction?.suggestion ?? false" :busy="busy" :error="stageActionError" @confirm="confirmStageAction" @cancel="stageAction=undefined" />
+    <FormDialog :open="addingPart" title="Agregar refacción" :busy="busy" :error="partError" @close="closePart">
+      <form class="repair-entry-form" @submit.prevent="addPart">
+        <fieldset :disabled="busy || !ready">
+          <div class="fld"><label for="part">Refacción</label><input id="part" v-model="part" required autofocus /></div>
+          <div class="fld"><label for="price">Costo · {{ order.currency ?? company.currency }}</label><input id="price" v-model.number="price" type="number" min="0" step="0.01" required /></div>
+        </fieldset>
+        <footer><button type="button" class="btn btn-s" :disabled="busy" @click="closePart">Cancelar</button><button type="submit" class="btn btn-p" :disabled="busy || !ready">Guardar refacción</button></footer>
+      </form>
+    </FormDialog>
+    <FormDialog :open="addingWarranty" title="Agregar garantía" :busy="busy" :error="warrantyError" @close="closeWarranty">
+      <p class="help">La garantía de esta orden empieza a contar el día de la entrega.</p>
+      <form class="repair-entry-form" @submit.prevent="addWarranty">
+        <fieldset :disabled="busy || !ready">
+          <SearchSelect id="warranty-type" v-model="warrantyType" label="Tipo de garantía sugerida" :disabled="busy || !ready" :options="[{value:'parts',label:'Refacciones'},{value:'labor',label:'Mano de obra'}]" @update:model-value="selectWarrantyType" />
+          <div class="fld"><label for="warranty">Concepto</label><input id="warranty" v-model="warranty" required autofocus /></div>
+          <div class="fld"><label for="days">Días de cobertura</label><input id="days" v-model.number="days" type="number" min="1" max="3650" required /></div>
+          <p v-if="days === 0" class="help">Empresa no tiene días sugeridos para este tipo. Escribe los días acordados para registrar la garantía.</p>
+        </fieldset>
+        <footer><button type="button" class="btn btn-s" :disabled="busy" @click="closeWarranty">Cancelar</button><button type="submit" class="btn btn-p" :disabled="busy || !ready">Guardar garantía</button></footer>
+      </form>
+    </FormDialog>
     <AppNotice v-if="busy" message="Consultando o guardando el seguimiento…" :closable="false" />
     <AppNotice v-else :message="message" @dismiss="message=''" />
     <div class="work">
@@ -74,25 +96,19 @@ defineExpose({ save });
       <aside class="aside" aria-label="Publicación, garantías y refacciones">
         <section class="card block"><h2 class="h3">Publicación en la web</h2><span class="pill amber" style="align-self:flex-start">Sin configurar</span><div class="seg"><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'auto'}" @click="repair.syncMode = 'auto'">Automática</button><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'manual'}" @click="repair.syncMode = 'manual'">Manual</button></div><p class="help">Los cambios se guardan en este equipo. La conexión con el portal web está pendiente.</p><button class="btn btn-p" disabled>Publicar cambios</button><div class="sep"></div><b>Qué ve el cliente</b><div v-for="option in repair.visibility" :key="option.label" class="swrow"><span>{{ option.label }}</span><button class="sw" :disabled="!can('publication.edit') || busy || !ready" :class="{on:option.enabled}" role="switch" :aria-checked="option.enabled" :aria-label="option.label" @click="option.enabled = !option.enabled"><span></span></button></div></section>
         <section class="block">
-          <h2 class="sec">Garantías<button class="lnk" :disabled="!can('warranties.add') || busy || !ready" @click="addingWarranty = !addingWarranty">+ Agregar</button></h2>
-          <p v-if="repair.warranties.length || addingWarranty" class="help">La garantía de esta orden empieza a contar el día de la entrega.</p>
+          <h2 class="sec">Garantías<button class="lnk" aria-label="Agregar garantía" :disabled="!can('warranties.add') || busy || !ready" @click="openWarranty">+ Agregar</button></h2>
+          <p v-if="repair.warranties.length" class="help">La garantía de esta orden empieza a contar el día de la entrega.</p>
           <div v-for="(item, i) in repair.warranties" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ item.days }} días de cobertura</div></div><span class="pill amber">{{ order.delivered ? 'Entrega registrada' : 'Empieza al entregar' }}</span></div>
           <p v-if="!repair.warranties.length" class="help">Sin garantías registradas.</p>
-          <form v-if="addingWarranty" class="compose" :inert="busy || !ready" @submit.prevent="addWarranty">
-            <SearchSelect id="warranty-type" v-model="warrantyType" label="Tipo de garantía sugerida" :options="[{value:'parts',label:'Refacciones'},{value:'labor',label:'Mano de obra'}]" @update:model-value="selectWarrantyType" />
-            <div class="fld"><label for="warranty">Concepto</label><input id="warranty" v-model="warranty" required /></div>
-            <div class="fld"><label for="days">Días de cobertura</label><input id="days" v-model.number="days" type="number" min="1" max="3650" required /></div>
-            <p v-if="days === 0" class="help">Empresa no tiene días sugeridos para este tipo. Escribe los días acordados para registrar la garantía.</p>
-            <button class="btn btn-p">Guardar garantía</button>
-          </form>
         </section>
-        <section class="block"><h2 class="sec">Refacciones usadas<button class="lnk" :disabled="!can('parts.add') || busy || !ready" @click="addingPart = !addingPart">+ Agregar</button></h2><div v-for="(item, i) in repair.parts" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ money(item.price) }}</div></div><span class="pill teal">Registrada</span></div><p v-if="!repair.parts.length" class="help">Sin refacciones registradas.</p><form v-if="addingPart" class="compose" :inert="busy || !ready" @submit.prevent="addPart"><div class="fld"><label for="part">Refacción</label><input id="part" v-model="part" required /></div><div class="fld"><label for="price">Costo</label><input id="price" v-model.number="price" type="number" min="0" step="0.01" required /></div><button class="btn btn-p">Guardar refacción</button></form></section>
+        <section class="block"><h2 class="sec">Refacciones usadas<button class="lnk" aria-label="Agregar refacción" :disabled="!can('parts.add') || busy || !ready" @click="openPart">+ Agregar</button></h2><div v-for="(item, i) in repair.parts" :key="i" class="row"><div><div class="n">{{ item.name }}</div><div class="s">{{ money(item.price) }}</div></div><span class="pill teal">Registrada</span></div><p v-if="!repair.parts.length" class="help">Sin refacciones registradas.</p></section>
       </aside>
     </div>
   </div>
 </template>
 <style scoped src="../assets/styles/repairs.css"></style>
 <style scoped>
+.repair-entry-form{display:grid;gap:20px;margin-top:16px}.repair-entry-form footer{margin-top:0}
 .actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}.note textarea{min-height:120px;padding:14px 16px;font-size:15.5px}.row{justify-content:space-between;flex-wrap:wrap}.work{display:grid;grid-template-columns: minmax(240px, .8fr) minmax(480px, 1.65fr) minmax(280px, 1fr)}.rail,.aside{min-width:0}.sheet{margin-left:8px}.steps{overflow:auto}.st-l{font-size:11px}.notice{margin:12px 28px;padding:12px 16px}
 @media(max-width:1200px){.work{grid-template-columns:280px minmax(0,1fr)}.aside{grid-column:2;padding-left:8px}.sh-b,.sh-h{padding:24px}.num{font-size:36px}}
 @media(max-width:760px){.work{display:flex;flex-direction:column}.rail,.aside{width:100%;padding:20px 16px}.sheet{width:calc(100% - 32px);margin:0 16px;flex:auto}.g2{grid-template-columns:1fr}.ev{grid-template-columns:70px 26px minmax(0,1fr);gap:8px}.st-l{font-size:10px}.st-c{width:28px;height:28px}}

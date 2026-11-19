@@ -13,11 +13,10 @@ import type { TemporaryAccessContext } from "../composables/useTemporaryAccessFo
 import { statusTone } from "../data/orderStatuses";
 withDefaults(defineProps<{embedded?:boolean}>(),{embedded:false});
 const emit=defineEmits<{repairs:[]}>();
-const { leaveGuard, receivedLabel,orderPosition,goToOrder,editExisting,trashed,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, editing, folio, errorMessage, hasChanges, query, searchField, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, prepareLeave, listPage, listPages, refreshList, changeListPage, canViewHistory, openHistory } = provideReceptionForm();
+const { leaveGuard, receivedLabel,orderPosition,goToOrder,editExisting,trashed,deleteOpen,deleteTarget,edit,toggleTrash,setDeleted,auth, store, draft, editing, folio, errorMessage, hasChanges, query, oldestFirst, visibleOrders, lookupId, discardOpen, uncertain, canRetry, begin, submit, cancel, discard, select, lookup, prepareLeave, listPage, listPages, refreshList, changeListPage, canViewHistory, openHistory } = provideReceptionForm();
 const lookupDialog = ref<HTMLDialogElement>();
 function showLookup() { lookupDialog.value?.showModal(); }
 async function lookupAndClose() { await lookup(); if (!errorMessage.value) lookupDialog.value?.close(); }
-const searchFields = [{ value: 'all', label: 'Todo' }, { value: 'order', label: 'Orden' }, { value: 'client', label: 'Cliente' }, { value: 'serial', label: 'Serie' }] as const;
 const request = ref<TemporaryAccessContext | null>(null);
 watch(editing, async (active) => { if (active) { await nextTick(); document.getElementById("cliente")?.focus(); } });
 const discardDialog = ref<HTMLDialogElement>();
@@ -44,9 +43,6 @@ defineExpose({ prepareLeave,editing,hasChanges,trashed,showLookup,openHistory,ca
         <div class="rail-h"><div><h1 tabindex="-1" class="h-disp">{{ trashed ? 'Papelera' : 'Órdenes' }}</h1><p class="subt">{{ store.total }} en total</p></div><button v-if="!trashed" type="button" class="btn btn-p" :disabled="store.isLoading || uncertain || !auth.can('orders.create', 'clients')" @click="begin"><AppIcon name="add" />Nueva orden</button></div>
         <label for="q" class="sr">Buscar órdenes por folio, cliente o serie</label>
         <div class="search"><AppIcon name="search" /><input id="q" v-model="query" type="search" placeholder="Orden, cliente o serie" maxlength="100" :disabled="store.isLoading"></div>
-        <div class="seg" role="group" aria-label="Buscar en">
-          <button v-for="field in searchFields" :key="field.value" type="button" :class="{ on: searchField === field.value }" :aria-pressed="searchField === field.value" :disabled="!auth.can('clients.view', 'clients')" @click="searchField = field.value">{{ field.label }}</button>
-        </div>
         <div class="tools"><button v-if="trashed || auth.can('orders.delete','clients')" class="lnk trash-toggle" type="button" :disabled="hasChanges || store.isLoading" @click="toggleTrash"><AppIcon :name="trashed ? 'clients' : 'trash'" />{{ trashed ? 'Ver órdenes' : 'Papelera' }}</button><button type="button" class="lnk" :aria-pressed="oldestFirst" :disabled="!auth.can('clients.view', 'clients')" :title="oldestFirst ? 'Primero las más antiguas' : 'Primero las más recientes'" @click="oldestFirst = !oldestFirst"><svg class="i sm sort-icon" :class="{ reversed: oldestFirst }" viewBox="0 0 24 24" aria-hidden="true"><path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16" /></svg>Cambiar orden</button></div>
         <p v-if="store.isListing" role="status" class="help">Buscando órdenes…</p>
         <p v-if="store.listError" role="alert" class="help workshop-list-error">{{ store.listError.message }}</p>

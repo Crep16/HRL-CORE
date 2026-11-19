@@ -77,6 +77,7 @@ const workspaceTab = ref<'work' | 'history'>('work');
 const now = () => companyDateTime(company.value.timezone);
 const date = ref(now());
 const addingWarranty = ref(false);
+const warrantyError = ref('');
 const warranty = ref('');
 const warrantyType = ref<'parts' | 'labor'>('parts');
 const days = ref(company.value.partsDays);
@@ -85,6 +86,7 @@ function selectWarrantyType(value: string) {
   days.value = warrantyType.value === 'labor' ? company.value.laborDays : company.value.partsDays;
 }
 const addingPart = ref(false);
+const partError = ref('');
 const part = ref('');
 const price = ref(0);
 const money = (value: number) => new Intl.NumberFormat(company.value.locale, { style:'currency', currency:props.order.currency ?? company.value.currency }).format(value);
@@ -108,18 +110,28 @@ async function complete() {
   await commit(next => { next.events.unshift({ id:nextEventId(), date:now(), title:`${next.stages[next.completed]}: etapa completada`, detail:'', stage:next.stages[next.completed]!, public:true }); next.completed++; });
 }
 async function addWarranty() {
-  if (!warranty.value.trim() || !can('warranties.add')) return;
+  if (busy.value || !ready.value || !can('warranties.add')) return;
+  warrantyError.value = '';
+  if (!warranty.value.trim()) { warrantyError.value = 'Escribe el concepto de la garantía.'; return; }
   if (await commit(next => next.warranties.push({ name:warranty.value.trim(), days:days.value }))) { warranty.value=''; addingWarranty.value=false; }
+  else warrantyError.value = message.value;
 }
 async function addPart() {
-  if (!part.value.trim() || !can('parts.add')) return;
+  if (busy.value || !ready.value || !can('parts.add')) return;
+  partError.value = '';
+  if (!part.value.trim()) { partError.value = 'Escribe el nombre de la refacción.'; return; }
   if (await commit(next => next.parts.push({ name:part.value.trim(), price:price.value }))) { part.value=''; price.value=0; addingPart.value=false; }
+  else partError.value = message.value;
 }
+function openPart() { if (ready.value && !busy.value && can('parts.add')) { partError.value=''; addingPart.value=true; } }
+function closePart() { if (!busy.value) addingPart.value=false; }
+function openWarranty() { if (ready.value && !busy.value && can('warranties.add')) { warrantyError.value=''; addingWarranty.value=true; } }
+function closeWarranty() { if (!busy.value) addingWarranty.value=false; }
 async function appendNote() {
   if (!newNote.value.trim() || !can('notes.add')) return;
   const text = newNote.value.trim();
   if (await commit(next => { const old=next[noteType.value]; next[noteType.value] = old ? `${old}\n${text}` : text; })) newNote.value='';
 }
 async function back() { if (await save()) emit('back'); }
-return {canRemoveStage,requestRemoveStage,stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
+return {openPart,closePart,openWarranty,closeWarranty,partError,warrantyError,canRemoveStage,requestRemoveStage,stageAction,stageActionError,canManageStageNames,removableStageName,requestHideStageName,confirmStageAction,repair,payment,save,message,ready,dirty,reload,moneyBusy,busy,can,newNote,company,stages,customStage,customStageName,stageOptions,noteType,title,detail,stage,publicEvent,workspaceTab,now,date,addingWarranty,warranty,warrantyType,days,selectWarrantyType,addingPart,part,price,money,addEvent,complete,addWarranty,addPart,appendNote,back,orderDisplayStatus,paymentsChanged};
 }
