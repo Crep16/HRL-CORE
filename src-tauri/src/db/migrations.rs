@@ -45,6 +45,13 @@ pub fn migrator() -> Migrator {
                 include_str!("../../migrations/005_retirar_etapas_pendientes.sql").into(),
                 false,
             ),
+            Migration::new(
+                6,
+                "publicacion_portal".into(),
+                MigrationType::Simple,
+                include_str!("../../migrations/006_publicacion_portal.sql").into(),
+                false,
+            ),
         ]),
         ..Migrator::DEFAULT
     }

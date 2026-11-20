@@ -4,8 +4,17 @@
 
 El contrato de trabajo está en `docs/contrato/CONTRATO-FIRESTORE.md`. La propuesta
 elegida usa Firebase Auth y REST de Firestore; la app conserva las reglas locales.
-Esta primera fase implementa exclusivamente el dominio de la proyección pública.
-Cola, repositorios, servicios de publicación, autenticación, envío y QR siguen pendientes.
+La proyección pública se complementa con `PublicationQueue`, `PortalService` y
+`PortalRepository`. La migración 006 añade una cola normalizada de revisiones
+inmutables y estados de envío separados. La captura se integra en órdenes,
+reparaciones y pagos dentro de su transacción; no realiza peticiones de red.
+
+`PublicationQueue` recibe el repositorio y la auditoría por constructor. Los
+servicios locales reciben la cola por composición. Los saldos no se almacenan:
+la revisión conserva el precio y marcas de los libros inmutables, para reconstruir
+exactamente su pago al reintentar. Los códigos se generan con `OsRng`, sin sesgo
+de módulo, y se reservan mediante una restricción única. Los límites del portal
+no impiden guardar contenido local válido; los errores de proyección se registran.
 
 `domain/portal.rs` conserva nombres ingleses para tipos y métodos; los campos del
 documento usan las claves españolas del contrato. `PublicEquipment`, `PublicStage`, `PublicPayment` y `PublicTimestamp`
@@ -23,13 +32,15 @@ La integración posterior obtendrá los saldos de `vista_saldos_orden`.
 `PublicTimestamp` exige un instante con zona horaria y precisión de milisegundos;
 no transforma fechas sin hora en instantes ficticios. El vencimiento deriva solo
 de la entrega efectiva más siete días. La persistencia actual de entrega guarda
-solo la fecha: resolver el registro del instante y los casos históricos queda
-pendiente de la fase de integración, sin migración de datos implícita.
+solo la fecha; `portal_ordenes.entrega_instante` registra el instante de las nuevas
+entregas. Los casos históricos quedan sin inferir ni migrar. Las fechas de
+calendario se transportan como medianoche UTC sin atribuirles una hora real.
 
 La huella SHA-256 usa JSON de transporte, claves ordenadas por UTF-16, texto UTF-8
 y fechas UTC con milisegundos. Coincide con el vector de referencia del portal.
-No se agrega JSON a SQLite ni se modifica el esquema en esta fase. Las pruebas
-están en `src-tauri/src/domain/portal/tests.rs`.
+No se agrega JSON a SQLite. Las pruebas
+están en `src-tauri/src/domain/portal/tests.rs` y en los casos `portal_*` de
+`src-tauri/src/services/tests.rs`.
 
 Validación de esta fase: 114 pruebas Rust aprobadas, incluidas nueve del portal;
 `cargo check --offline` y `npm.cmd run build` correctos. Las pruebas de DPAPI

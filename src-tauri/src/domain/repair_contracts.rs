@@ -54,7 +54,7 @@ impl Default for Repair {
             technician: String::new(),
             public_note: String::new(),
             internal_note: String::new(),
-            sync_mode: "manual".into(),
+            sync_mode: "auto".into(),
             events: vec![],
             warranties: vec![],
             parts: vec![],
@@ -70,7 +70,7 @@ impl Default for Repair {
                 },
                 Visibility {
                     label: "Resumen de pago".into(),
-                    enabled: false,
+                    enabled: true,
                 },
                 Visibility {
                     label: "Notas del técnico".into(),

@@ -15,6 +15,7 @@ pub struct OrderService {
     access: Arc<AccessService>,
     audit: Arc<AuditService>,
     crypto: Arc<CryptoService>,
+    publication: Arc<super::portal::PublicationQueue>,
 }
 
 fn invalid(message: &str) -> AppError {
@@ -269,6 +270,14 @@ impl OrderService {
                 &changes,
             )
             .await?;
+        if old.delivered != payload.delivered {
+            self.publication
+                .delivered(&mut tx, old.id, payload.delivered)
+                .await?;
+        }
+        self.publication
+            .capture(&mut tx, old.id, author.id, false)
+            .await?;
         let result = self
             .repository
             .load(&mut tx, old.id)
@@ -326,6 +335,11 @@ impl OrderService {
                 )],
             )
             .await?;
+        if p.deleted {
+            self.publication
+                .withdraw(&mut tx, p.order_id, user.id)
+                .await?;
+        }
         tx.commit().await.map_err(AppError::Commit)?;
         Ok(())
     }
@@ -421,6 +435,7 @@ impl OrderService {
         access: Arc<AccessService>,
         audit: Arc<AuditService>,
         crypto: Arc<CryptoService>,
+        publication: Arc<super::portal::PublicationQueue>,
     ) -> Self {
         Self {
             pool,
@@ -428,6 +443,7 @@ impl OrderService {
             access,
             audit,
             crypto,
+            publication,
         }
     }
     pub async fn create(&self, payload: CreateOrderPayload) -> Result<OrderResponse, AppError> {
@@ -652,6 +668,9 @@ impl OrderService {
                     ("equipmentHistory", None, payload.history.notes.clone()),
                 ],
             )
+            .await?;
+        self.publication
+            .capture(&mut tx, id, author.id, false)
             .await?;
         let result = self
             .repository

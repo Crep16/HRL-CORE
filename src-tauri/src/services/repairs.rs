@@ -12,6 +12,7 @@ pub struct RepairService {
     ledger: Arc<dyn LedgerReader>,
     access: Arc<AccessService>,
     audit: Arc<AuditService>,
+    publication: Arc<super::portal::PublicationQueue>,
 }
 impl RepairService {
     pub fn new(
@@ -20,6 +21,7 @@ impl RepairService {
         ledger: Arc<dyn LedgerReader>,
         access: Arc<AccessService>,
         audit: Arc<AuditService>,
+        publication: Arc<super::portal::PublicationQueue>,
     ) -> Self {
         Self {
             pool,
@@ -27,6 +29,7 @@ impl RepairService {
             ledger,
             access,
             audit,
+            publication,
         }
     }
     pub async fn load(&self, id: i64) -> Result<Snapshot, AppError> {
@@ -180,6 +183,7 @@ impl RepairService {
             ));
         }
         let operations = operations(&old, next).map_err(AppError::Validation)?;
+        let changed = !operations.is_empty();
         if next.events[..next.events.len() - old.events.len()]
             .iter()
             .any(|e| !next.stages.contains(&e.stage))
@@ -327,6 +331,11 @@ impl RepairService {
                     )
                     .await?;
             }
+        }
+        if changed {
+            self.publication
+                .capture(&mut tx, id, user.id, false)
+                .await?;
         }
         let (repair, revision) = self.repository.load(&mut tx, id).await?;
         let payment = self.ledger.state(&mut tx, id).await?;

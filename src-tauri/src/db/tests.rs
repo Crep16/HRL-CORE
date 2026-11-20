@@ -73,11 +73,11 @@ fn baseline_is_explicit_reentrant_and_matches_the_sql_deliverable() {
             migrations::BASELINE_SQL,
             include_str!("../../../schema.sql")
         );
-        assert_eq!(migrations::migrator().iter().count(), 5);
+        assert_eq!(migrations::migrator().iter().count(), 6);
         let db = Database::in_memory().await.unwrap();
         seed(db.pool()).await;
         migrations::apply(db.pool()).await.unwrap();
-        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 5);
+        assert_eq!(count(db.pool(), "_sqlx_migrations").await, 6);
         assert_eq!(count(db.pool(), "ordenes").await, 2);
         assert_eq!(
             sqlx::query_scalar::<_, String>("PRAGMA integrity_check")
@@ -128,7 +128,7 @@ fn every_pool_connection_enforces_foreign_keys_and_file_reopen_preserves_data() 
         db.close().await;
         let reopened = Database::open_file(&file).await.unwrap();
         assert_eq!(count(reopened.pool(), "ordenes").await, 2);
-        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 5);
+        assert_eq!(count(reopened.pool(), "_sqlx_migrations").await, 6);
         reopened.close().await;
     });
 }

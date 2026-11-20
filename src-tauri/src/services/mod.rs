@@ -6,6 +6,7 @@ pub mod company;
 pub mod crypto;
 pub mod key_store;
 pub mod orders;
+pub mod portal;
 pub mod recovery;
 pub mod users;
 
@@ -17,6 +18,7 @@ use crate::{
 use std::sync::Arc;
 
 pub struct BackendServices {
+    pub portal: Arc<portal::PortalService>,
     pub backups: backups::BackupService,
     pub evidence: evidence::EvidenceService,
     pub reports: reports::ReportService,
@@ -68,6 +70,18 @@ impl BackendServices {
         );
         let crypto = Arc::new(crypto::CryptoService::new(keys));
         let order_repository = Arc::new(OrderRepository);
+        let portal_repository = Arc::new(crate::repositories::portal::PortalRepository);
+        let publication = Arc::new(portal::PublicationQueue::new(
+            portal_repository.clone(),
+            audit.clone(),
+        ));
+        let portal = Arc::new(portal::PortalService::new(
+            pool.clone(),
+            portal_repository,
+            publication.clone(),
+            access.clone(),
+            audit.clone(),
+        ));
         let ledger_repository = Arc::new(crate::repositories::ledger::LedgerRepository);
         let users = users::UserService::new(
             pool.clone(),
@@ -88,12 +102,14 @@ impl BackendServices {
             ledger_repository.clone(),
             access.clone(),
             audit.clone(),
+            publication.clone(),
         );
         let ledger = ledger::LedgerService::new(
             pool.clone(),
             ledger_repository.clone(),
             access.clone(),
             audit.clone(),
+            publication.clone(),
         );
         let reports = reports::ReportService::new(
             pool.clone(),
@@ -111,9 +127,16 @@ impl BackendServices {
             audit.clone(),
             assets,
         );
-        let orders =
-            orders::OrderService::new(pool, order_repository, access.clone(), audit, crypto);
+        let orders = orders::OrderService::new(
+            pool,
+            order_repository,
+            access.clone(),
+            audit,
+            crypto,
+            publication,
+        );
         Ok(Self {
+            portal,
             backups,
             access,
             orders,

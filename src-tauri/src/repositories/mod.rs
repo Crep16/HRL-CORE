@@ -3,6 +3,7 @@ pub mod audit;
 pub mod backups;
 pub mod company;
 pub mod orders;
+pub mod portal;
 pub mod users;
 
 pub mod ledger;

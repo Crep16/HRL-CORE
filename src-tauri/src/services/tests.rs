@@ -10,6 +10,212 @@ use crate::{
 use sqlx::SqlitePool;
 use std::sync::Arc;
 
+#[test]
+fn portal_queue_preserves_the_exact_snapshot_across_later_money_and_price_changes() {
+    tauri::async_runtime::block_on(async {
+        use crate::repositories::portal::PortalRepository;
+        let (pool, services) = fixture().await;
+        let mut initial = order();
+        initial.price_minor = 60000;
+        let created = services.orders.create(initial).await.unwrap();
+        let first: i64 = sqlx::query_scalar("SELECT min(id) FROM portal_publicaciones")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let before = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), first)
+            .await
+            .unwrap()
+            .document;
+        assert_eq!(before["pago"]["cobradoCentavos"], 0);
+        assert!(before.get("folio").is_none());
+        let code = before["idPublico"].as_str().unwrap();
+        assert_eq!(code.len(), 14);
+        assert_ne!(code, created.folio);
+        services
+            .ledger
+            .record(crate::domain::ledger_contracts::MoneyRequest {
+                request_id: "portal-receipt-0001".into(),
+                order_id: created.id,
+                kind: "receipt".into(),
+                payment_id: None,
+                amount_minor: 60000,
+                expected_minor: 0,
+                method: "Efectivo".into(),
+                reason: String::new(),
+            })
+            .await
+            .unwrap();
+        let mut changed = order();
+        changed.price_minor = 50000;
+        services
+            .orders
+            .edit(EditOrderPayload {
+                order_id: created.id,
+                revision: created.revision,
+                value: changed,
+                delivered: false,
+                change_password: false,
+            })
+            .await
+            .unwrap();
+        let after = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), first)
+            .await
+            .unwrap()
+            .document;
+        assert_eq!(before, after);
+        let last: i64 = sqlx::query_scalar("SELECT max(id) FROM portal_publicaciones")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let current = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), last)
+            .await
+            .unwrap()
+            .document;
+        assert_eq!(current["pago"]["totalCentavos"], 50000);
+        assert_eq!(current["pago"]["cobradoCentavos"], 60000);
+        assert_eq!(current["pago"]["pendienteCentavos"], 0);
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>(
+                "SELECT count(*) FROM portal_envios WHERE estado='pending'"
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap(),
+            1
+        );
+        assert!(
+            sqlx::query("UPDATE portal_publicaciones SET estado_tecnico='Otro' WHERE id=?")
+                .bind(first)
+                .execute(&pool)
+                .await
+                .is_err()
+        );
+        assert!(
+            sqlx::query("INSERT INTO portal_publicacion_etapas VALUES(?,999,'Intrusa',0,NULL)")
+                .bind(first)
+                .execute(&pool)
+                .await
+                .is_err()
+        );
+        assert!(
+            sqlx::query("DELETE FROM portal_publicaciones WHERE id=?")
+                .bind(first)
+                .execute(&pool)
+                .await
+                .is_err()
+        );
+    });
+}
+
+#[test]
+fn portal_manual_withdrawal_rotation_and_delivery_follow_the_public_contract() {
+    tauri::async_runtime::block_on(async {
+        use crate::{
+            domain::repair_contracts::SaveRepairPayload, repositories::portal::PortalRepository,
+        };
+        let (pool, services) = fixture().await;
+        let created = services.orders.create(order()).await.unwrap();
+        let mut snapshot = services.repairs.load(created.id).await.unwrap();
+        snapshot.repair.sync_mode = "manual".into();
+        services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: created.id,
+                revision: snapshot.revision,
+                repair: snapshot.repair,
+            })
+            .await
+            .unwrap();
+        assert_eq!(
+            sqlx::query_scalar::<_, i64>(
+                "SELECT count(*) FROM portal_envios WHERE estado='pending'"
+            )
+            .fetch_one(&pool)
+            .await
+            .unwrap(),
+            0
+        );
+        let published = services.portal.action(created.id, "publish").await.unwrap();
+        let code = published["code"].clone();
+        let withdrawn = services
+            .portal
+            .action(created.id, "withdraw")
+            .await
+            .unwrap();
+        assert_eq!(withdrawn["enabled"], false);
+        let last: i64 = sqlx::query_scalar("SELECT max(id) FROM portal_publicaciones")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let document = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), last)
+            .await
+            .unwrap()
+            .document;
+        assert_eq!(document["publicado"], false);
+        assert!(document.get("equipo").is_none());
+        let rotated = services.portal.action(created.id, "rotate").await.unwrap();
+        assert_ne!(rotated["code"], code);
+        services
+            .orders
+            .edit(EditOrderPayload {
+                order_id: created.id,
+                revision: created.revision,
+                value: order(),
+                delivered: true,
+                change_password: false,
+            })
+            .await
+            .unwrap();
+        services.portal.action(created.id, "publish").await.unwrap();
+        let last: i64 = sqlx::query_scalar("SELECT max(id) FROM portal_publicaciones")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let document = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), last)
+            .await
+            .unwrap()
+            .document;
+        let delivered =
+            chrono::DateTime::parse_from_rfc3339(document["entregadoEn"].as_str().unwrap())
+                .unwrap();
+        let until = chrono::DateTime::parse_from_rfc3339(document["accesoHasta"].as_str().unwrap())
+            .unwrap();
+        assert_eq!(until - delivered, chrono::TimeDelta::days(7));
+        services.access.logout().await.unwrap();
+        assert!(matches!(
+            services.portal.action(created.id, "publish").await,
+            Err(AppError::Unauthorized)
+        ));
+    });
+}
+
+#[test]
+fn portal_storage_failure_rolls_back_the_order_and_invalid_public_text_does_not() {
+    tauri::async_runtime::block_on(async {
+        let (pool, services) = fixture().await;
+        sqlx::raw_sql("CREATE TRIGGER reject_portal BEFORE INSERT ON portal_envios BEGIN SELECT RAISE(ABORT,'prueba'); END;").execute(&pool).await.unwrap();
+        assert!(services.orders.create(order()).await.is_err());
+        assert_eq!(count(&pool, "ordenes").await, 0);
+        assert_eq!(count(&pool, "portal_publicaciones").await, 0);
+        sqlx::raw_sql("DROP TRIGGER reject_portal")
+            .execute(&pool)
+            .await
+            .unwrap();
+        let mut value = order();
+        value.equipment.model = "x".repeat(101);
+        let saved = services.orders.create(value).await.unwrap();
+        assert_eq!(saved.folio, "ORD-001");
+        assert_eq!(count(&pool, "ordenes").await, 1);
+        assert_eq!(count(&pool, "portal_envios").await, 0);
+        assert!(services.portal.status(saved.id).await.unwrap()["error"].is_string());
+    });
+}
+
 struct TestKeys([u8; 32]);
 impl KeyProvider for TestKeys {
     fn active_key_id(&self) -> &str {
@@ -538,6 +744,7 @@ fn injected_audit_failure_rolls_back_repairs_expenses_and_evidence_including_its
             Arc::new(LedgerRepository),
             services.access.clone(),
             audit.clone(),
+            services.portal.queue.clone(),
         );
         let mut snapshot = repairs.load(created.id).await.unwrap();
         snapshot.repair.public_note = "Cambio que se debe revertir".into();
@@ -652,6 +859,7 @@ fn injected_balance_failure_after_repair_write_reverts_repair_and_audit() {
             Arc::new(RejectBalance),
             services.access.clone(),
             Arc::new(super::audit::AuditService::new(Arc::new(AuditRepository))),
+            services.portal.queue.clone(),
         );
         let mut repair = before.repair;
         repair.public_note = "Se revierte al fallar el saldo".into();
@@ -2245,7 +2453,8 @@ fn reception_list_search_reference_history_and_balances_survive_reopen() {
             })
             .await
             .unwrap();
-        assert_eq!(history.total, 2);
+        assert_eq!(history.total, 3);
+        assert!(history.items.iter().any(|item| item.operation == "publication.edit"));
         assert!(
             history
                 .items

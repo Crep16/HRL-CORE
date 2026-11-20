@@ -330,6 +330,10 @@ impl PublicProjection {
 }
 
 impl SignedProjection {
+    pub fn document(&self) -> Result<serde_json::Value, ProjectionError> {
+        serde_json::to_value(self)
+            .map_err(|_| ProjectionError("No se pudo preparar el documento público."))
+    }
     pub fn fingerprint(&self) -> &str {
         &self.huella
     }

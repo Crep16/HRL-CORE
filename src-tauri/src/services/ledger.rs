@@ -12,6 +12,7 @@ pub struct LedgerService {
     repository: Arc<LedgerRepository>,
     access: Arc<AccessService>,
     audit: Arc<AuditService>,
+    publication: Arc<super::portal::PublicationQueue>,
 }
 #[derive(serde::Serialize)]
 pub struct Ledger {
@@ -24,12 +25,14 @@ impl LedgerService {
         repository: Arc<LedgerRepository>,
         access: Arc<AccessService>,
         audit: Arc<AuditService>,
+        publication: Arc<super::portal::PublicationQueue>,
     ) -> Self {
         Self {
             pool,
             repository,
             access,
             audit,
+            publication,
         }
     }
     pub async fn list(&self, id: i64) -> Result<Ledger, AppError> {
@@ -166,6 +169,9 @@ impl LedgerService {
                     ("method", None, Some(r.method.clone())),
                 ],
             )
+            .await?;
+        self.publication
+            .capture(&mut tx, r.order_id, user.id, false)
             .await?;
         let result = self.repository.state(&mut tx, r.order_id).await?;
         tx.commit().await?;

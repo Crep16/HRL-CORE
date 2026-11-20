@@ -236,9 +236,23 @@ La huella coincide con el vector JavaScript del portal. `actualizadoEn` queda fu
 del objeto local; el futuro emisor lo agregará como transformación `REQUEST_TIME`.
 El módulo no almacena JSON de negocio, no escribe en SQLite y no transmite datos.
 
-Esta fase no conecta todavía las escrituras con una cola, no activa publicación
-automática, ni añade autenticación, envío o QR. Las opciones guardadas y la UI
-siguen con su comportamiento actual hasta la fase de integración correspondiente.
+La fase de persistencia incorpora la migración 006 y conecta las escrituras de
+órdenes, reparaciones y pagos con la cola. Las órdenes nuevas usan publicación
+automática y pago visible por defecto; las preferencias ya guardadas se conservan.
+La captura y su auditoría comparten la transacción del cambio local. Un dato que
+excede los límites del portal deja un error de publicación sin impedir el trabajo
+local. Un fallo de almacenamiento o auditoría revierte toda la transacción.
+
+Los encabezados, etapas, eventos y garantías de cada revisión son inmutables y
+normalizados. No se guarda JSON ni el saldo calculado: el pago se reconstruye con
+el precio de esa revisión y los identificadores máximos de los libros inmutables
+en el momento de captura. Los estados de envío se guardan por separado.
+
+Las fechas de calendario de recepción, entrega estimada y avances se transportan
+como medianoche UTC de ese día; expresan una fecha, no una hora real del evento.
+La entrega efectiva usa un instante UTC registrado al marcar la entrega, sin
+atribuir horas a entregas históricas. El código sigue el formato de trabajo del
+portal: doce caracteres criptográficos, en tres grupos de cuatro.
 
 ## 13. Pendientes para cerrar el contrato
 
