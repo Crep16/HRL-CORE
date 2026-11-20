@@ -48,6 +48,7 @@ async function renderNote(kind: 'entry' | 'exit') {
 
 test('exit note renders the public summary and warranty from delivery without printing secrets', async () => {
   mockIPC(command => {
+    if(command==='portal_order_status')return {code:null,enabled:false};
     assert.equal(command, 'normalized_repair_summary');
     return {
       technician: 'Técnico de prueba', publicNote: 'Resumen público de reparación',
@@ -78,4 +79,15 @@ test('preparing a note rejects an unavailable or forbidden repair summary', asyn
   await assert.rejects(renderNote('exit'), error => {
     return typeof error === 'object' && error !== null && 'code' in error && error.code === 'FORBIDDEN';
   });
+});
+
+test('note includes only the public URL in its locally generated QR',async()=>{
+  mockIPC(command=>command==='portal_order_status'?{code:'K7QM-2XPA-9RTD',enabled:true,state:'pending',url:'https://portal.example.invalid/seguimiento/K7QM-2XPA-9RTD'}:{technician:'',publicNote:'',warranties:[]});
+  const html=await renderNote('entry');assert.ok(html.includes('K7QM-2XPA-9RTD'));assert.ok(html.includes('https://portal.example.invalid/seguimiento/K7QM-2XPA-9RTD'));
+  assert.ok(html.includes('data:image/png;base64,'));assert.ok(!html.includes(order.password));
+});
+
+test('a portal status error does not prevent preparing the local receipt',async()=>{
+  mockIPC(command=>{if(command==='portal_order_status')throw {code:'STORAGE_ERROR',message:'Error de prueba'};return {technician:'',publicNote:'',warranties:[]};});
+  const html=await renderNote('entry');assert.ok(html.includes('Notas de recepción'));assert.ok(!html.includes('data:image/png;base64,'));
 });

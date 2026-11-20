@@ -1,4 +1,5 @@
 .company-note{background:#fff;color:#12222d;padding:24px;font:12px/1.5 'Instrument Sans',Arial,sans-serif;overflow-wrap:anywhere;max-width:100%;text-align:left}
+.note-tracking{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:12px 0;padding:8px 0;border-top:1px solid #d5dde4;break-inside:avoid}.note-tracking img{width:100px;height:100px;object-fit:contain;flex-shrink:0}.note-tracking div{flex:1;min-width:110px;overflow-wrap:anywhere}.note-tracking h5{margin:0 0 4px;font-size:12px}.note-tracking strong{font-size:14px}.note-tracking p{margin:4px 0;font-size:10px}
 .company-note *{box-sizing:border-box}
 .note-company{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #17384a}
 .note-company>div{min-width:0}.note-company h3{margin:0 0 6px;font-size:18px;line-height:1.2}.note-company p{margin:2px 0;font-size:11px}

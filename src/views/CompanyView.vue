@@ -4,6 +4,7 @@ import CompanyClauses from '../components/company/CompanyClauses.vue';
 import SearchSelect from '../components/ui/SearchSelect.vue';
 import AppNotice from '../components/ui/AppNotice.vue';
 import CompanyNote from '../components/company/CompanyNote.vue';
+import PortalSettings from '../components/portal/PortalSettings.vue';
 import brandLogo from '../assets/images/brand/hrl-original.svg';
 import type { CompanySection } from '../types/company';
 import { paperLabels } from '../types/company';
@@ -19,11 +20,12 @@ defineExpose({prepareLeave});
   <main class="company-workspace" aria-labelledby="company-title">
     <header class="company-heading"><div><h1 tabindex="-1" id="company-title">Empresa</h1><p>Configura tus datos y el formato de las notas del taller.</p></div><span class="company-save-state" :class="{pending:hasPending}" role="status">{{ hasPending ? 'Cambios sin guardar' : 'Sin cambios pendientes' }}</span></header>
     <AppNotice :message="message" @dismiss="message=''" />
+    <PortalSettings />
     <div class="company-layout">
       <SearchSelect class="company-mobile-nav company-field" id="company-section-select" :model-value="section" label="Sección de Empresa" :options="sections.map(item=>({value:item.id,label:item.title}))" @update:model-value="goTo($event as CompanySection)" />
       <nav class="company-nav" aria-label="Configuración de Empresa">
         <button v-for="item in sections" :key="item.id" type="button" :class="{active:section===item.id}" :aria-current="section===item.id ? 'page' : undefined" @click="goTo(item.id)"><strong>{{ item.title }}</strong><span>{{ item.detail }}</span></button>
-        <p>Guardado en este equipo.<br />Web pendiente de conectar.</p>
+        <p>Guardado en este equipo.<br />El envío web se administra en Conexión con el portal.</p>
       </nav>
       <form class="company-panel" novalidate aria-labelledby="company-section-title" @submit.prevent="save">
         <fieldset class="company-permission-fields" :disabled="!can('company.edit') || saving">
@@ -64,7 +66,7 @@ defineExpose({prepareLeave});
             <label class="company-check"><input v-model="draft.printAddress" type="checkbox" /> Imprimir dirección y RFC</label>
             <label class="company-check"><input v-model="draft.signature" type="checkbox" /> Pedir firma del cliente</label>
             <label class="company-check"><input v-model="draft.webReference" type="checkbox" /> Imprimir referencia de la orden</label>
-            <p class="company-help">La referencia corresponde al folio interno. El portal web de seguimiento aún no está conectado.</p>
+            <p class="company-help">Esta referencia corresponde al folio del comprobante. El código y el QR de seguimiento se añaden al configurar la conexión con el portal.</p>
           </template>
           <CompanyClauses v-else-if="section==='clauses'" v-model="draft" @editing="clauseEditing=$event" />
           <template v-else-if="section==='paper'">

@@ -2,6 +2,7 @@
 import SearchSelect from '../components/ui/SearchSelect.vue';
 import AppNotice from '../components/ui/AppNotice.vue';
 import PaymentsPanel from '../components/repairs/PaymentsPanel.vue';
+import PortalPublication from '../components/portal/PortalPublication.vue';
 import StageRemovalDialog from '../components/repairs/StageRemovalDialog.vue';
 import FormDialog from '../components/ui/FormDialog.vue';
 import type { Order } from '../types/order';
@@ -94,7 +95,7 @@ defineExpose({ save });
         </div>
       </section>
       <aside class="aside" aria-label="Publicación, garantías y refacciones">
-        <section class="card block"><h2 class="h3">Publicación en la web</h2><span class="pill amber" style="align-self:flex-start">Sin configurar</span><div class="seg"><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'auto'}" @click="repair.syncMode = 'auto'">Automática</button><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'manual'}" @click="repair.syncMode = 'manual'">Manual</button></div><p class="help">Los cambios se guardan en este equipo. La conexión con el portal web está pendiente.</p><button class="btn btn-p" disabled>Publicar cambios</button><div class="sep"></div><b>Qué ve el cliente</b><div v-for="option in repair.visibility" :key="option.label" class="swrow"><span>{{ option.label }}</span><button class="sw" :disabled="!can('publication.edit') || busy || !ready" :class="{on:option.enabled}" role="switch" :aria-checked="option.enabled" :aria-label="option.label" @click="option.enabled = !option.enabled"><span></span></button></div></section>
+        <section class="card block"><h2 class="h3">Publicación en la web</h2><div class="seg"><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'auto'}" @click="repair.syncMode = 'auto'">Automática</button><button :disabled="!can('publication.edit') || busy || !ready" :class="{on:repair.syncMode === 'manual'}" @click="repair.syncMode = 'manual'">Manual</button></div><PortalPublication :order-id="order.databaseId!" :before-action="save" :disabled="busy || !ready" /><div class="sep"></div><b>Qué ve el cliente</b><div v-for="option in repair.visibility" :key="option.label" class="swrow"><span>{{ option.label }}</span><button class="sw" :disabled="!can('publication.edit') || busy || !ready" :class="{on:option.enabled}" role="switch" :aria-checked="option.enabled" :aria-label="option.label" @click="option.enabled = !option.enabled"><span></span></button></div></section>
         <section class="block">
           <h2 class="sec">Garantías<button class="lnk" aria-label="Agregar garantía" :disabled="!can('warranties.add') || busy || !ready" @click="openWarranty">+ Agregar</button></h2>
           <p v-if="repair.warranties.length" class="help">La garantía de esta orden empieza a contar el día de la entrega.</p>

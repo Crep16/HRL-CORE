@@ -5,12 +5,13 @@ import type { CompanySettings, NoteKind } from '../../types/company';
 import type { Order } from '../../types/order';
 import { useCompanyNote } from '../../composables/useCompanyNote';
 const props = defineProps<{ settings: CompanySettings; kind: NoteKind; order?: Order; folio?: string }>();
-const {clauses,total,repairSummary,summaryError,prepare,subtotal,money}=useCompanyNote(props);
+const {clauses,total,repairSummary,summaryError,tracking,trackingQr,trackingError,prepare,subtotal,money}=useCompanyNote(props);
 defineExpose({prepare});
 </script>
 
 <template>
   <AppNotice :message="summaryError" tone="error" />
+  <AppNotice :message="trackingError" tone="error" />
   <article class="company-note" :class="{ 'note-ticket':settings.paper !== 'letter', 'note-ticket60':settings.paper==='ticket60', 'note-landscape':settings.paper==='letter' && settings.orientation === 'landscape', 'clauses-back':settings.clausePosition === 'back' }" :aria-label="`Nota de ${kind === 'entry' ? 'entrada' : 'salida'}`">
     <div class="note-front">
       <header class="note-company">
@@ -45,6 +46,10 @@ defineExpose({prepare});
       </dl>
       <p v-if="kind==='exit' && repairSummary.technician">Técnico: {{ repairSummary.technician }}</p>
       <p v-if="settings.webReference && order" class="note-reference">Referencia de la orden: {{ order.id }}</p>
+      <section v-if="tracking?.code" class="note-tracking">
+        <img v-if="trackingQr" :src="trackingQr" alt="QR para consultar el seguimiento de este equipo" width="100" height="100" />
+        <div><h5>Código de seguimiento</h5><strong>{{ tracking.code }}</strong><p v-if="tracking.url">{{ tracking.url }}</p><p v-if="tracking.state!=='confirmed'">La actualización estará disponible al confirmarse el envío.</p><p>El acceso vence siete días después de la entrega.</p></div>
+      </section>
       <section v-if="clauses.length && settings.clausePosition === 'foot'" class="note-clauses">
         <h5>Cláusulas</h5><ol :class="{unnumbered:!settings.numberClauses}"><li v-for="clause in clauses" :key="clause.id"><strong>{{ clause.title }}.</strong> {{ clause.text }}</li></ol>
       </section>

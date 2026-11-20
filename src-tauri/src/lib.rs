@@ -45,6 +45,14 @@ pub fn run() {
         .manage(windowing::WindowProfileState::default())
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            commands::portal::portal_settings,
+            commands::portal::configure_portal,
+            commands::portal::connect_portal,
+            commands::portal::pause_portal,
+            commands::portal::resume_portal,
+            commands::portal::disconnect_portal,
+            commands::portal::portal_order_status,
+            commands::portal::portal_order_action,
             commands::backup_status,
             commands::configure_backup,
             commands::create_backup,

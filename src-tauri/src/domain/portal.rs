@@ -1,8 +1,19 @@
 use chrono::{DateTime, SecondsFormat, TimeDelta, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
 const MAX_SAFE_INTEGER: i64 = 9_007_199_254_740_991;
+
+#[derive(Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PortalConfig {
+    pub project_id: String,
+    pub api_key: String,
+    pub publisher_uid: String,
+    pub portal_url: String,
+    #[serde(default)]
+    pub paused: bool,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectionError(pub &'static str);
@@ -343,6 +354,18 @@ impl SignedProjection {
     pub fn public_id(&self) -> &str {
         &self.projection.id_publico
     }
+}
+
+pub fn fingerprint_document(document: &serde_json::Value) -> Result<String, ProjectionError> {
+    let mut content = document
+        .as_object()
+        .cloned()
+        .ok_or(ProjectionError("Documento público inválido."))?;
+    content.remove("huella");
+    content.remove("actualizadoEn");
+    let mut canonical = String::new();
+    canonical_json(&serde_json::Value::Object(content), &mut canonical)?;
+    Ok(format!("{:x}", Sha256::digest(canonical.as_bytes())))
 }
 
 fn text(value: &str, max: usize, required: bool) -> Result<(), ProjectionError> {

@@ -7,6 +7,8 @@ pub mod crypto;
 pub mod key_store;
 pub mod orders;
 pub mod portal;
+pub mod portal_publisher;
+pub mod portal_transport;
 pub mod recovery;
 pub mod users;
 
@@ -66,7 +68,7 @@ impl BackendServices {
             Arc::new(crate::repositories::backups::BackupRepository),
             access.clone(),
             keys.clone(),
-            root,
+            root.clone(),
         );
         let crypto = Arc::new(crypto::CryptoService::new(keys));
         let order_repository = Arc::new(OrderRepository);
@@ -81,7 +83,8 @@ impl BackendServices {
             publication.clone(),
             access.clone(),
             audit.clone(),
-        ));
+            root,
+        )?);
         let ledger_repository = Arc::new(crate::repositories::ledger::LedgerRepository);
         let users = users::UserService::new(
             pool.clone(),

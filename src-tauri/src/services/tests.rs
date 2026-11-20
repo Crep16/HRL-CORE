@@ -9,6 +9,8 @@ use crate::{
 };
 use sqlx::SqlitePool;
 use std::sync::Arc;
+#[path = "portal_sender_tests.rs"]
+mod portal_sender;
 
 #[test]
 fn portal_queue_preserves_the_exact_snapshot_across_later_money_and_price_changes() {
@@ -2454,7 +2456,12 @@ fn reception_list_search_reference_history_and_balances_survive_reopen() {
             .await
             .unwrap();
         assert_eq!(history.total, 3);
-        assert!(history.items.iter().any(|item| item.operation == "publication.edit"));
+        assert!(
+            history
+                .items
+                .iter()
+                .any(|item| item.operation == "publication.edit")
+        );
         assert!(
             history
                 .items

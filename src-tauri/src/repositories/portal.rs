@@ -1,20 +1,9 @@
+pub use crate::domain::portal::PortalConfig;
 use crate::error::AppError;
-use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sqlx::{Row, SqliteConnection};
 
 pub struct PortalRepository;
-
-#[derive(Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct PortalConfig {
-    pub project_id: String,
-    pub api_key: String,
-    pub publisher_uid: String,
-    pub portal_url: String,
-    #[serde(default)]
-    pub paused: bool,
-}
 
 pub struct PublicationRecord {
     pub id: i64,
@@ -26,6 +15,37 @@ pub struct PublicationRecord {
 }
 
 impl PortalRepository {
+    pub async fn has_confirmed(&self, db: &mut SqliteConnection) -> Result<bool, AppError> {
+        Ok(sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM portal_envios WHERE estado='confirmed')",
+        )
+        .fetch_one(db)
+        .await?)
+    }
+    pub async fn author(
+        &self,
+        db: &mut SqliteConnection,
+        record: &PublicationRecord,
+    ) -> Result<i64, AppError> {
+        sqlx::query_scalar("SELECT a.id_autor FROM auditoria a JOIN auditoria_detalle d ON d.id_auditoria=a.id WHERE a.id_orden=? AND a.entidad='portal_publicaciones' AND d.campo='publicationRevision' AND d.valor_nuevo=? ORDER BY a.id DESC LIMIT 1")
+            .bind(record.order_id).bind(record.revision.to_string()).fetch_optional(db).await?.ok_or_else(||AppError::Validation("Falta la autorización original de esta publicación.".into()))
+    }
+    pub async fn pending_codes(&self, db: &mut SqliteConnection) -> Result<Vec<i64>, AppError> {
+        Ok(sqlx::query_scalar("SELECT max(p.id) FROM portal_publicaciones p JOIN portal_envios e ON e.id_publicacion=p.id WHERE e.estado IN('pending','sending','conflict') GROUP BY p.codigo ORDER BY max(p.id)").fetch_all(db).await?)
+    }
+    pub async fn set_revision(
+        &self,
+        db: &mut SqliteConnection,
+        id: i64,
+        revision: i64,
+    ) -> Result<(), AppError> {
+        sqlx::query("UPDATE portal_ordenes SET revision=max(revision,?) WHERE id_orden=?")
+            .bind(revision)
+            .bind(id)
+            .execute(db)
+            .await?;
+        Ok(())
+    }
     pub async fn config(&self, db: &mut SqliteConnection) -> Result<PortalConfig, AppError> {
         let r = sqlx::query("SELECT * FROM portal_configuracion WHERE id=1")
             .fetch_one(db)
@@ -267,7 +287,7 @@ impl PortalRepository {
         })
     }
     pub async fn next(&self, db: &mut SqliteConnection, now: i64) -> Result<Option<i64>, AppError> {
-        Ok(sqlx::query_scalar("SELECT id_publicacion FROM portal_envios WHERE estado='pending' AND siguiente_intento<=? ORDER BY id_publicacion LIMIT 1").bind(now).fetch_optional(db).await?)
+        Ok(sqlx::query_scalar("SELECT e.id_publicacion FROM portal_envios e JOIN portal_publicaciones p ON p.id=e.id_publicacion WHERE e.estado='pending' AND e.siguiente_intento<=? AND NOT EXISTS(SELECT 1 FROM portal_publicaciones n WHERE n.codigo=p.codigo AND n.revision>p.revision) ORDER BY e.id_publicacion LIMIT 1").bind(now).fetch_optional(db).await?)
     }
     pub async fn result(
         &self,
@@ -278,23 +298,50 @@ impl PortalRepository {
         next: i64,
         confirmed: Option<&str>,
     ) -> Result<(), AppError> {
-        sqlx::query("UPDATE portal_envios SET estado=?,error_envio=?,siguiente_intento=?,confirmado_en=?,intentos=intentos+1 WHERE id_publicacion=?").bind(state).bind(error).bind(next).bind(confirmed).bind(id).execute(db).await?;
+        sqlx::query("UPDATE portal_envios SET estado=?,error_envio=?,siguiente_intento=?,confirmado_en=?,intentos=intentos+CASE WHEN ?='sending' THEN 1 ELSE 0 END WHERE id_publicacion=?").bind(state).bind(error).bind(next).bind(confirmed).bind(state).bind(id).execute(db).await?;
         Ok(())
     }
-    pub async fn recover(&self, db: &mut SqliteConnection) -> Result<(), AppError> {
-        sqlx::query("UPDATE portal_envios SET estado='pending' WHERE estado='sending'")
-            .execute(db)
-            .await?;
-        Ok(())
+    pub async fn unfinished(&self, db: &mut SqliteConnection) -> Result<Vec<i64>, AppError> {
+        Ok(
+            sqlx::query_scalar("SELECT id_publicacion FROM portal_envios WHERE estado='sending'")
+                .fetch_all(db)
+                .await?,
+        )
     }
     pub async fn status(&self, db: &mut SqliteConnection, order: i64) -> Result<Value, AppError> {
-        let r=sqlx::query("SELECT p.*,c.codigo,(SELECT estado FROM portal_envios e JOIN portal_publicaciones q ON q.id=e.id_publicacion WHERE q.id_orden=p.id_orden ORDER BY q.id DESC LIMIT 1) estado_envio,(SELECT error_envio FROM portal_envios e JOIN portal_publicaciones q ON q.id=e.id_publicacion WHERE q.id_orden=p.id_orden ORDER BY q.id DESC LIMIT 1) error_envio,(SELECT confirmado_en FROM portal_envios e JOIN portal_publicaciones q ON q.id=e.id_publicacion WHERE q.id_orden=p.id_orden AND e.estado='confirmed' ORDER BY q.id DESC LIMIT 1) confirmado FROM portal_ordenes p LEFT JOIN portal_codigos c ON c.id_orden=p.id_orden AND c.activo=1 WHERE p.id_orden=?").bind(order).fetch_optional(db).await?;
+        let r = sqlx::query(
+            "SELECT p.*, c.codigo, e.estado estado_envio, e.error_envio,
+                    e.confirmado_en confirmado
+             FROM portal_ordenes p
+             LEFT JOIN portal_codigos c ON c.id_orden=p.id_orden AND c.activo=1
+             LEFT JOIN portal_publicaciones q ON q.id=(
+                 SELECT id FROM portal_publicaciones
+                 WHERE id_orden=p.id_orden AND codigo=c.codigo ORDER BY id DESC LIMIT 1
+             )
+             LEFT JOIN portal_envios e ON e.id_publicacion=q.id
+             WHERE p.id_orden=?",
+        )
+        .bind(order)
+        .fetch_optional(db)
+        .await?;
         Ok(match r {
             None => {
                 json!({"code":null,"revision":0,"enabled":true,"state":"unpublished","error":null,"confirmedAt":null})
             }
             Some(r) => {
-                json!({"code":r.get::<Option<String>,_>("codigo"),"revision":r.get::<i64,_>("revision"),"enabled":r.get::<bool,_>("habilitado"),"state":r.get::<Option<String>,_>("estado_envio").unwrap_or("unpublished".into()),"error":r.get::<Option<String>,_>("error_publicacion").or(r.get::<Option<String>,_>("error_envio")),"confirmedAt":r.get::<Option<String>,_>("confirmado")})
+                let projection_error: Option<String> = r.get("error_publicacion");
+                let state = if projection_error.is_some() {
+                    "error".into()
+                } else {
+                    r.get::<Option<String>, _>("estado_envio")
+                        .unwrap_or("unpublished".into())
+                };
+                let confirmed: Option<String> = if state == "confirmed" {
+                    r.get("confirmado")
+                } else {
+                    None
+                };
+                json!({"code":r.get::<Option<String>,_>("codigo"),"revision":r.get::<i64,_>("revision"),"enabled":r.get::<bool,_>("habilitado"),"state":state,"error":projection_error.or(r.get::<Option<String>,_>("error_envio")),"confirmedAt":confirmed})
             }
         })
     }

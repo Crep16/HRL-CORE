@@ -232,6 +232,7 @@ fn calendar_timestamp(value: &str) -> Result<String, ProjectionError> {
 }
 
 pub struct PortalService {
+    pub(crate) runtime: super::portal_transport::PublisherRuntime,
     pub(crate) pool: SqlitePool,
     pub(crate) repository: Arc<PortalRepository>,
     pub(crate) queue: Arc<PublicationQueue>,
@@ -245,14 +246,16 @@ impl PortalService {
         queue: Arc<PublicationQueue>,
         access: Arc<AccessService>,
         audit: Arc<AuditService>,
-    ) -> Self {
-        Self {
+        root: Option<std::path::PathBuf>,
+    ) -> Result<Self, AppError> {
+        Ok(Self {
+            runtime: super::portal_transport::PublisherRuntime::new(root)?,
             pool,
             repository,
             queue,
             access,
             audit,
-        }
+        })
     }
     pub async fn status(&self, id: i64) -> Result<Value, AppError> {
         let _gate = self.access.lock().await;

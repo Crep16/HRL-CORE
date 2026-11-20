@@ -23,10 +23,11 @@ de HRL CORE. El seguimiento de tareas se consulta en Jira, proyecto
 | Respaldos portables | [respaldos-portables.md](respaldos-portables.md) |
 | Instalación y recuperación | [instalacion-recuperacion-local.md](instalacion-recuperacion-local.md) |
 | Contrato del portal y adaptación HRL CORE | [contrato/CONTRATO-FIRESTORE.md](contrato/CONTRATO-FIRESTORE.md) |
+| Conexión del publicador y recuperación | [contrato/INTEGRACION-HRL-CORE.md](contrato/INTEGRACION-HRL-CORE.md) |
 | Logos y variantes conservados | [brand/index.html](brand/index.html) |
 
 El DDL que ejecuta la aplicación se compila desde `src-tauri/migrations/`.
-La línea vigente es 001–005. Los archivos de `src-tauri/migrations/legacy/`
+La línea vigente es 001–006. Los archivos de `src-tauri/migrations/legacy/`
 se utilizan únicamente en pruebas históricas.
 
 Los informes y documentos históricos de estadía se conservan localmente en

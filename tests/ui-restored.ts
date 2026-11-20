@@ -32,7 +32,17 @@ const photoBytes=Array.from(Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAA
 const attachments=[photo];
 const attachmentBytes=new Map([[photo.id,photoBytes]]);
 const backups={folder:'Carpeta de pruebas / Respaldos',automatic:false,files:[] as {name:string;bytes:number}[]};
+const portalTest={config:{projectId:'hrl-web',apiKey:'test-key',publisherUid:'publisher',portalUrl:'https://portal.example.invalid',paused:true},connected:false,code:'K7QM-2XPA-9RTD',enabled:true,state:'pending',actions:[] as string[]};
+Object.assign(window,{portalTest});
 mockIPC((command,args)=>{
+  if(command==='portal_order_status')return {code:portalTest.code,revision:1,enabled:portalTest.enabled,state:portalTest.state,error:null,confirmedAt:portalTest.state==='confirmed'?'2026-11-19T17:30:00.123456Z':null,configured:true,paused:portalTest.config.paused,url:`${portalTest.config.portalUrl}/seguimiento/${portalTest.code}`};
+  if(command==='portal_order_action'){const action=(args as {action:string}).action;portalTest.actions.push(action);portalTest.enabled=action!=='withdraw';portalTest.state='pending';if(action==='rotate')portalTest.code='ABCD-EFGH-JKMN';return {code:portalTest.code,revision:2,enabled:portalTest.enabled,state:'pending',error:null,confirmedAt:null,configured:true,paused:portalTest.config.paused,url:`${portalTest.config.portalUrl}/seguimiento/${portalTest.code}`};}
+  if(command==='portal_settings')return structuredClone({config:portalTest.config,connected:portalTest.connected,error:null});
+  if(command==='configure_portal'){Object.assign(portalTest.config,(args as {config:typeof portalTest.config}).config,{paused:true});return null;}
+  if(command==='connect_portal'){portalTest.connected=true;portalTest.config.paused=true;return null;}
+  if(command==='pause_portal'){portalTest.config.paused=true;return null;}
+  if(command==='resume_portal'){portalTest.config.paused=false;return null;}
+  if(command==='disconnect_portal'){portalTest.config.paused=true;portalTest.connected=false;return null;}
   if(command==='logout_user'){draftGuardTest.logoutCalls++;return null;}
   if(command==='save_normalized_company'){
     draftGuardTest.saveCalls++;

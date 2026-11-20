@@ -4,6 +4,7 @@
 use crate::{db::Database, domain::contracts::*, error::AppError, services::BackendServices};
 use tauri::{Manager, State};
 use tokio::sync::OnceCell;
+pub mod portal;
 
 #[tauri::command]
 pub async fn backup_status(
@@ -157,7 +158,10 @@ impl BackendState {
             .get_or_try_init(|| async {
                 let directory = app.path().app_config_dir().map_err(|_| AppError::Crypto)?;
                 let database = Database::open_file(&directory.join("hrl_core_3fn.db")).await?;
-                BackendServices::with_os_key_store(database, &directory.join("keys")).await
+                let services =
+                    BackendServices::with_os_key_store(database, &directory.join("keys")).await?;
+                services.portal.start_worker();
+                Ok(services)
             })
             .await
     }
@@ -342,7 +346,12 @@ pub async fn hide_normalized_stage_name(
     app: tauri::AppHandle,
     state: State<'_, BackendState>,
 ) -> Result<Vec<String>, AppError> {
-    state.services(&app).await?.repairs.hide_stage_name(order_id, name).await
+    state
+        .services(&app)
+        .await?
+        .repairs
+        .hide_stage_name(order_id, name)
+        .await
 }
 
 #[tauri::command]

@@ -1,5 +1,26 @@
 # Arquitectura objetivo de HRL CORE
 
+## Transporte del portal
+
+`PortalService` orquesta configuración, autorización, reconciliación y envío.
+`FirebaseGateway` abstrae autenticación, renovación, escritura y consulta;
+`RestFirebase` usa HTTPS con tiempo límite y sin redirecciones. `TokenVault`
+abstrae la custodia y `DpapiVault` protege el refresh token en el perfil Windows.
+Los mocks permiten probar respuesta perdida, conflicto y revocación sin publicar
+datos reales. Se aplican encapsulamiento, composición y polimorfismo por traits.
+
+El trabajador se inicia una sola vez desde el estado Tauri y usa referencias
+débiles; termina al cerrar la base. El mutex del publicador serializa transporte
+y configuración. La espera de red queda fuera de las transacciones SQLite y del
+bloqueo de sesión. Guardar una orden no espera a Firebase.
+
+Cada transición persistida del envío se audita en su transacción, asociada al
+autor de la captura original. Si falla la confirmación local después de escribir
+en Firestore, se recupera el envío y se comprueban revisión y huella.
+`commands/portal.rs` delega sin SQL; la configuración pública pertenece a
+`domain/portal.rs`. El procedimiento y sus límites están en
+`docs/contrato/INTEGRACION-HRL-CORE.md`.
+
 ## Proyección pública del portal (19 de noviembre de 2026)
 
 El contrato de trabajo está en `docs/contrato/CONTRATO-FIRESTORE.md`. La propuesta
