@@ -1,4 +1,6 @@
-use chrono::{DateTime, SecondsFormat, TimeDelta, Utc};
+use chrono::{
+    DateTime, LocalResult, NaiveDate, NaiveDateTime, SecondsFormat, TimeDelta, TimeZone, Utc,
+};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
@@ -30,6 +32,36 @@ impl std::error::Error for ProjectionError {}
 pub struct PublicTimestamp(String);
 
 impl PublicTimestamp {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    pub fn from_workshop_time(value: &str, timezone: &str) -> Result<Self, ProjectionError> {
+        if DateTime::parse_from_rfc3339(value).is_ok() {
+            return Self::parse(value);
+        }
+        if value.len() == 10 {
+            NaiveDate::parse_from_str(value, "%Y-%m-%d")
+                .map_err(|_| ProjectionError("Fecha de calendario inválida."))?;
+            return Self::parse(&format!("{value}T00:00:00.000Z"));
+        }
+        let local = NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M")
+            .or_else(|_| NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M:%S%.f"))
+            .map_err(|_| ProjectionError("Revisa la fecha y hora del avance."))?;
+        let zone: chrono_tz::Tz = timezone
+            .parse()
+            .map_err(|_| ProjectionError("Revisa la zona horaria configurada en Empresa."))?;
+        match zone.from_local_datetime(&local) {
+            LocalResult::Single(date) => Self::parse(&date.to_rfc3339()),
+            LocalResult::Ambiguous(_, _) => Err(ProjectionError(
+                "La hora del avance se repite por el cambio de horario. Elige una hora fuera de ese cambio.",
+            )),
+            LocalResult::None => Err(ProjectionError(
+                "La hora del avance no existe por el cambio de horario. Revisa la fecha y hora.",
+            )),
+        }
+    }
+
     pub fn parse(value: &str) -> Result<Self, ProjectionError> {
         let date = DateTime::parse_from_rfc3339(value)
             .map_err(|_| {

@@ -15,6 +15,13 @@ pub struct PublicationRecord {
 }
 
 impl PortalRepository {
+    pub async fn timezone(&self, db: &mut SqliteConnection) -> Result<String, AppError> {
+        Ok(sqlx::query_scalar(
+            "SELECT coalesce((SELECT zona_horaria FROM empresa WHERE id=1),'America/Cancun')",
+        )
+        .fetch_one(db)
+        .await?)
+    }
     pub async fn has_confirmed(&self, db: &mut SqliteConnection) -> Result<bool, AppError> {
         Ok(sqlx::query_scalar(
             "SELECT EXISTS(SELECT 1 FROM portal_envios WHERE estado='confirmed')",

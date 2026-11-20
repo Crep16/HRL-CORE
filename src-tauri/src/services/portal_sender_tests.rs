@@ -415,3 +415,69 @@ fn portal_status_only_exposes_the_confirmation_of_the_latest_publication() {
         assert!(confirmed["confirmedAt"].is_string());
     });
 }
+
+#[test]
+fn portal_publishes_local_repair_events_as_utc_without_rewriting_the_history() {
+    tauri::async_runtime::block_on(async {
+        use crate::domain::{
+            company_contracts::SaveCompanyPayload,
+            repair_contracts::{Event, SaveRepairPayload},
+        };
+        let (pool, services, gateway, id) = connected().await;
+        let mut snapshot = services.repairs.load(id).await.unwrap();
+        snapshot.repair.events.push(Event {
+            id: 1,
+            date: "2026-11-19T17:30".into(),
+            title: "Avance local".into(),
+            detail: "Diagnóstico completado".into(),
+            stage: snapshot.repair.stages[0].clone(),
+            public: true,
+        });
+        services
+            .repairs
+            .save(SaveRepairPayload {
+                order_id: id,
+                revision: snapshot.revision,
+                repair: snapshot.repair,
+            })
+            .await
+            .unwrap();
+        assert!(services.portal.status(id).await.unwrap()["error"].is_null());
+        services.portal.resume().await.unwrap();
+        services.portal.pump().await.unwrap();
+        assert_eq!(
+            gateway.0.lock().unwrap().remote.as_ref().unwrap()["eventos"][0]["fecha"],
+            "2026-11-19T22:30:00.000Z"
+        );
+        assert_eq!(
+            services.repairs.load(id).await.unwrap().repair.events[0].date,
+            "2026-11-19T17:30"
+        );
+
+        let publication: i64 = sqlx::query_scalar("SELECT max(id) FROM portal_publicaciones")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let before = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), publication)
+            .await
+            .unwrap()
+            .document;
+        let mut company = super::company_settings();
+        company.timezone = "America/Tijuana".into();
+        services
+            .company
+            .save(SaveCompanyPayload {
+                value: company,
+                expected_revision: 0,
+            })
+            .await
+            .unwrap();
+        let after = PortalRepository
+            .load(&mut *pool.acquire().await.unwrap(), publication)
+            .await
+            .unwrap()
+            .document;
+        assert_eq!(before, after);
+    });
+}

@@ -1,4 +1,74 @@
 use super::*;
+
+#[test]
+fn local_event_times_use_the_workshop_timezone_and_preserve_explicit_offsets() {
+    for (local, zone, expected) in [
+        (
+            "2026-11-19T17:30",
+            "America/Cancun",
+            "2026-11-19T22:30:00.000Z",
+        ),
+        (
+            "2026-11-19T23:30:15.123",
+            "America/Cancun",
+            "2026-11-20T04:30:15.123Z",
+        ),
+        (
+            "2026-11-19T17:30",
+            "America/Mexico_City",
+            "2026-11-19T23:30:00.000Z",
+        ),
+        (
+            "2026-07-19T17:30",
+            "America/Tijuana",
+            "2026-07-20T00:30:00.000Z",
+        ),
+        (
+            "2026-11-19T17:30",
+            "America/Tijuana",
+            "2026-11-20T01:30:00.000Z",
+        ),
+        (
+            "2026-11-19T17:30",
+            "America/Hermosillo",
+            "2026-11-20T00:30:00.000Z",
+        ),
+        ("2026-11-19T17:30", "UTC", "2026-11-19T17:30:00.000Z"),
+        (
+            "2026-11-19T17:30:00-05:00",
+            "America/Tijuana",
+            "2026-11-19T22:30:00.000Z",
+        ),
+        (
+            "2026-11-19T17:30:00Z",
+            "America/Cancun",
+            "2026-11-19T17:30:00.000Z",
+        ),
+        ("2026-11-19", "America/Cancun", "2026-11-19T00:00:00.000Z"),
+    ] {
+        assert_eq!(
+            PublicTimestamp::from_workshop_time(local, zone).unwrap(),
+            PublicTimestamp::parse(expected).unwrap()
+        );
+    }
+}
+
+#[test]
+fn local_event_times_reject_unknown_zones_invalid_dates_and_dst_ambiguity() {
+    for (value, zone) in [
+        ("2026-11-19T17:30", "Invalid/Zone"),
+        ("2026-02-30T17:30", "America/Cancun"),
+        ("2026-11-19T25:30", "America/Cancun"),
+        ("2026-11-19T17:30:00.123456", "America/Cancun"),
+        ("2026-03-08T02:30", "America/Tijuana"),
+        ("2026-11-01T01:30", "America/Tijuana"),
+    ] {
+        assert!(
+            PublicTimestamp::from_workshop_time(value, zone).is_err(),
+            "{value} {zone}"
+        );
+    }
+}
 use crate::domain::repair_contracts::{Event, Warranty};
 use serde_json::{Value, json};
 

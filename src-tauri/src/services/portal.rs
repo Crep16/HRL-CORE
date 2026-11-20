@@ -98,6 +98,7 @@ impl PublicationQueue {
                 .and_then(|at| PublicProjection::withdraw(code, revision + 1, at))
         } else {
             let (repair, _) = RepairRepository.load(db, id).await?;
+            let timezone = self.repository.timezone(db).await?;
             let dates = self.repository.stage_dates(db, id).await?;
             (|| {
                 if order.delivered && delivery.is_none() {
@@ -132,7 +133,9 @@ impl PublicationQueue {
                 let mut events = repair.events.clone();
                 if visible("Línea de tiempo", true) {
                     for e in events.iter_mut().filter(|e| e.public) {
-                        e.date = calendar_timestamp(&e.date)?;
+                        e.date = PublicTimestamp::from_workshop_time(&e.date, &timezone)?
+                            .as_str()
+                            .to_owned();
                     }
                 }
                 let payment = if visible("Resumen de pago", true) {

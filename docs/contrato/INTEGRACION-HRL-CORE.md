@@ -52,6 +52,15 @@ con autorización explícita, el contenido local en una revisión superior a la 
   pago se reconstruye con el precio capturado y marcas de los libros inmutables.
 - La entrega efectiva registra su instante UTC y vence siete días después. Las
   entregas históricas que solo tienen fecha no reciben una hora inventada.
+- Las horas de avances capturadas sin zona se interpretan con la zona de Empresa
+  y se convierten a UTC con milisegundos para la publicación. Si Empresa aún no
+  está configurada, se usa la zona predeterminada de HRL CORE, America/Cancun.
+  Las fechas con offset explícito conservan su instante; las fechas que solo
+  indican día conservan la convención de calendario del contrato. Una hora
+  ambigua o inexistente por cambio de horario requiere corregir la captura.
+  No se reescribe el historial local ni una publicación ya preparada.
+  La corrección se verificó con 131 pruebas Rust aprobadas, incluyendo un avance
+  local enviado como UTC al gateway de prueba y conservación de su fecha local.
 
 ## Respaldos
 
