@@ -45,14 +45,25 @@ test('a delayed status cannot restore the previous code after rotation',async()=
   assert.equal(portal.statuses[1]?.code,rotated.code);
 });
 
-test('a previous confirmation cannot replace the latest pending status',async()=>{
+test('simultaneous status readers share a request and the next refresh reads again',async()=>{
   const responses:((value:unknown)=>void)[]=[];
   mockIPC(()=>new Promise(resolve=>responses.push(resolve)));
   const portal=usePortalStore(),previous=portal.status(1),latest=portal.status(1);
-  responses[1]!({...state,revision:2,enabled:false});await latest;
-  responses[0]!({...state,state:'confirmed',confirmedAt:'2026-11-19T17:30:00.000Z'});
-  await assert.rejects(previous,(error:{code:string})=>error.code==='CONFLICT');
+  assert.equal(responses.length,1);
+  responses[0]!({...state,revision:2,enabled:false});
+  const values=await Promise.all([previous,latest]);assert.deepEqual(values[0],values[1]);
   assert.equal(portal.statuses[1]?.state,'pending');assert.equal(portal.statuses[1]?.enabled,false);
+  const refresh=portal.status(1);assert.equal(responses.length,2);
+  responses[1]!({...state,revision:2,enabled:false,state:'confirmed'});await refresh;
+  assert.equal(portal.statuses[1]?.state,'confirmed');
+});
+
+test('failed shared status reads can be retried instead of caching their failure',async()=>{
+  let calls=0;mockIPC(()=>++calls===1?Promise.reject({code:'STORAGE_ERROR',message:'Error de prueba'}):state);
+  const portal=usePortalStore();
+  const results=await Promise.allSettled([portal.status(1),portal.status(1)]);
+  assert.ok(results.every(result=>result.status==='rejected'));assert.equal(calls,1);
+  await portal.status(1);assert.equal(calls,2);assert.equal(portal.statuses[1]?.code,state.code);
 });
 
 test('editing configuration while a refresh is pending preserves the draft',async()=>{

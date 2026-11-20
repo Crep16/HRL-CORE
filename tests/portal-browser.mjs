@@ -32,6 +32,8 @@ try{
   await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});await view('company');
   await wait('document.querySelector(".portal-settings")!==null');await evaluate('document.querySelector(".portal-settings").open=true');
   await wait('document.getElementById("portal-project")?.value==="hrl-web"');
+  await wait('document.querySelector(".company-preview .note-tracking img")?.naturalWidth>0');
+  assert.ok(!await evaluate('document.querySelector("#app-notices")?.textContent.includes("No se pudo preparar el QR")'));
   await field('portal-url','https://seguimiento.example.invalid');await click('Guardar configuración');
   await wait('document.querySelector("#app-notices")?.textContent.includes("Configuración guardada")');
   await wait('document.querySelector(".company-preview .note-tracking")?.textContent.includes("https://seguimiento.example.invalid")');

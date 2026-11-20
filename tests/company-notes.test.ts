@@ -25,7 +25,7 @@ const order: Order = {
   cost: '600.00', deposit: '750.00', notes: 'Notas de recepción', paid: true, delivered: false,
 };
 
-async function renderNote(kind: 'entry' | 'exit') {
+async function renderNote(kind: 'entry' | 'exit', inspect?: (model:{trackingError:{value:string};trackingQr:{value:string}})=>void) {
   const component = (await server.ssrLoadModule('/src/components/company/CompanyNote.vue')).default;
   const { defaultCompany } = await server.ssrLoadModule('/src/composables/useCompany.ts');
   const settings = defaultCompany();
@@ -40,6 +40,7 @@ async function renderNote(kind: 'entry' | 'exit') {
     async setup(props: unknown, context: unknown) {
       const model = await component.setup(props, context);
       await model.prepare();
+      inspect?.(model);
       return model;
     },
   };
@@ -90,4 +91,27 @@ test('note includes only the public URL in its locally generated QR',async()=>{
 test('a portal status error does not prevent preparing the local receipt',async()=>{
   mockIPC(command=>{if(command==='portal_order_status')throw {code:'STORAGE_ERROR',message:'Error de prueba'};return {technician:'',publicNote:'',warranties:[]};});
   const html=await renderNote('entry');assert.ok(html.includes('Notas de recepción'));assert.ok(!html.includes('data:image/png;base64,'));
+});
+
+test('preview and print prepare the same QR concurrently without cancelling each other',async()=>{
+  let requests=0;
+  mockIPC(command=>{
+    if(command==='portal_order_status'){
+      requests++;
+      return new Promise(resolve=>setTimeout(()=>resolve({code:'K7QM-2XPA-9RTD',enabled:true,state:'pending',url:'https://portal.example.invalid/seguimiento/K7QM-2XPA-9RTD'}),20));
+    }
+    return {technician:'',publicNote:'',warranties:[]};
+  });
+  const notes=await Promise.all([renderNote('entry'),renderNote('exit')]);
+  for(const html of notes){assert.ok(html.includes('data:image/png;base64,'));assert.ok(html.includes('K7QM-2XPA-9RTD'));}
+  assert.equal(requests,1);
+});
+
+test('a missing portal URL explains configuration and keeps the printed code',async()=>{
+  mockIPC(command=>command==='portal_order_status'?{code:'K7QM-2XPA-9RTD',enabled:true,state:'pending',configured:false}:{technician:'',publicNote:'',warranties:[]});
+  const html=await renderNote('entry',model=>{
+    assert.equal(model.trackingError.value,'Configura y guarda la dirección del portal en Empresa para incluir el QR.');
+    assert.equal(model.trackingQr.value,'');
+  });
+  assert.ok(html.includes('K7QM-2XPA-9RTD'));assert.ok(!html.includes('data:image/png;base64,'));
 });

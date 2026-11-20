@@ -86,6 +86,11 @@ consulta durante esa acción solicita volver a actualizar al terminar.
 Las consultas de configuración conservan los cambios escritos durante su espera
 y no pueden reemplazar una configuración guardada posteriormente.
 
+La vista previa y el comprobante comparten la consulta de estado si preparan el
+QR de la misma orden simultáneamente. Una consulta nueva vuelve a leer el estado;
+una rotación o cambio de sesión invalida la consulta anterior. Si falta la URL,
+se conserva el código en la nota y se indica guardar la dirección en Empresa.
+
 Pruebas de regresión: `tests/portal.test.ts` y
 `src-tauri/src/services/portal_sender_tests.rs`. El recorrido
 `tests/portal-browser.mjs` comprueba configuración, conexión, pausa/reanudación,

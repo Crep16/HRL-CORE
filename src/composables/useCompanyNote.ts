@@ -28,7 +28,11 @@ async function prepare() {
   try {
     const status=await portal.status(id);
     if(request!==summaryRequest||props.order?.databaseId!==id)return;
-    if(status?.enabled&&status.code){tracking.value=status;if(status.url){const qr=await toDataURL(status.url,{width:256,margin:4,errorCorrectionLevel:'M'});if(request===summaryRequest&&props.order?.databaseId===id)trackingQr.value=qr;}}
+    if(status?.enabled&&status.code){
+      tracking.value=status;
+      if(status.url){const qr=await toDataURL(status.url,{width:256,margin:4,errorCorrectionLevel:'M'});if(request===summaryRequest&&props.order?.databaseId===id)trackingQr.value=qr;}
+      else trackingError.value='Configura y guarda la dirección del portal en Empresa para incluir el QR.';
+    }
   }catch{if(request===summaryRequest)trackingError.value='No se pudo preparar el QR de seguimiento. Consulta el código en Reparaciones.';}
 }
 watch(() => [props.order?.databaseId,portal.settings?.config.portalUrl], () => {repairSummary.value=emptySummary();void prepare().catch(() => {});},{immediate:true});
