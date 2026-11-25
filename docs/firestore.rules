@@ -1,0 +1,78 @@
+rules_version = '2';
+
+// Contrato: docs/CONTRATO-FIRESTORE.md (v1 simplificada, borrador sin aprobar)
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // UID de la cuenta de Firebase Authentication del emisor (HRL CORE).
+    // Mientras diga REEMPLAZAR, nadie puede escribir.
+    function esEmisor() {
+      return request.auth != null && request.auth.uid == 'REEMPLAZAR_UID_HRL_CORE';
+    }
+
+    function control() {
+      return ['versionContrato', 'idPublico', 'revision', 'publicado', 'actualizadoEn'];
+    }
+
+    // Lista de campos permitidos. folio y pago quedan fuera hasta que se decidan.
+    function permitidos() {
+      return control().concat(['accesoHasta', 'equipo', 'estadoTecnico', 'etapas', 'eventos',
+                               'notaPublica', 'garantias']);
+    }
+
+    function controlValido(d, idPublico) {
+      return d.keys().hasAll(control())
+        && d.versionContrato == 1
+        && d.idPublico == idPublico
+        && d.revision is int && d.revision >= 1
+        && d.publicado is bool
+        && d.actualizadoEn == request.time          // hora del servidor, no del equipo
+        && (!('accesoHasta' in d) || d.accesoHasta is timestamp);
+    }
+
+    function seguimientoValido(d) {
+      return d.keys().hasOnly(permitidos())
+        && d.keys().hasAll(['equipo', 'estadoTecnico', 'etapas', 'eventos'])
+        && d.equipo is map && d.equipo.keys().hasOnly(['tipo', 'marca', 'modelo'])
+        && d.estadoTecnico is string && d.estadoTecnico.size() <= 100
+        && d.etapas is list && d.etapas.size() <= 30
+        && d.eventos is list && d.eventos.size() <= 200
+        && (!('notaPublica' in d) || (d.notaPublica is string && d.notaPublica.size() <= 4000))
+        && (!('garantias' in d) || (d.garantias is list && d.garantias.size() <= 20));
+    }
+
+    // Documento retirado: solo campos de control (y vencimiento), sin datos de seguimiento
+    function retiradoValido(d) {
+      return d.keys().hasOnly(control().concat(['accesoHasta']));
+    }
+
+    function documentoValido(d, idPublico) {
+      return controlValido(d, idPublico)
+        && (d.publicado ? seguimientoValido(d) : retiradoValido(d));
+    }
+
+    function vigente(d) {
+      return !('accesoHasta' in d) || request.time < d.accesoHasta;
+    }
+
+    match /seguimiento/{idPublico} {
+      // Quien tiene el enlace lee su documento (si no venció); nadie puede listar
+      allow get: if resource == null || vigente(resource.data);
+      allow list: if false;
+
+      allow create: if esEmisor() && documentoValido(request.resource.data, idPublico);
+
+      // Revisión estrictamente creciente: un envío atrasado o repetido se rechaza
+      allow update: if esEmisor()
+        && documentoValido(request.resource.data, idPublico)
+        && request.resource.data.revision > resource.data.revision;
+
+      // Se despublica con un documento retirado, no se borra
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

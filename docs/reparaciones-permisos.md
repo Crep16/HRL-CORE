@@ -18,8 +18,10 @@ de avances, notas, garantías, refacciones y pagos se confirman junto con ella.
 Una revisión desactualizada o un fallo del historial revierte todo el cambio.
 
 Los pagos adicionales del acceso autorizado usan el mismo libro SQLite que
-el abono inicial de recepción y no pueden superar el saldo. No se implementan
-correcciones o devoluciones, ni eliminación de registros anteriores.
+el abono inicial de recepción y no pueden superar el saldo. Las correcciones y
+devoluciones se registran en el libro de ajustes de la migración 010, sin editar
+ni eliminar los registros anteriores. Véanse `reglas-pagos.md` y
+`acceso-temporal.md` para las reglas vigentes del 29 de octubre.
 
 ## Seguimiento anterior
 

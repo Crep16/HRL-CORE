@@ -1,0 +1,294 @@
+HRL-CORE UI scripts from package.json
+Date: 2026-11-23
+
+===== npm.cmd run test:portal =====
+npm notice run hrl-core@0.1.0 test:portal
+npm notice run node --experimental-strip-types --test tests/portal.test.ts
+✔ portal discards a status response when the local session changes (10.7112ms)
+✔ portal configuration draft survives a refresh and credentials are not kept in the store (5.443ms)
+✔ portal sends the public action and keeps the confirmed status separate from a pending one (1.779ms)
+✔ QR is generated locally from the public URL (44.9779ms)
+✔ a delayed status cannot restore the previous code after rotation (2.1821ms)
+✔ simultaneous status readers share a request and the next refresh reads again (1.7822ms)
+✔ failed shared status reads can be retried instead of caching their failure (1.614ms)
+✔ editing configuration while a refresh is pending preserves the draft (1.7093ms)
+✔ an earlier settings response cannot undo a configuration saved later (1.9004ms)
+✔ a publication excludes duplicate actions and reads for the same order (1.7986ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1007.3363
+EXIT_CODE=0
+
+===== npm.cmd run test:company =====
+npm notice run hrl-core@0.1.0 test:company
+npm notice run node --experimental-strip-types --test tests/company-notes.test.ts
+[Vue warn]: Unhandled error during execution of setup function 
+  at <CompanyNote settings= {
+  name: 'Taller de prueba',
+  taxId: '',
+  phone: '',
+  whatsapp: '',
+  email: '',
+  website: '',
+  address: '',
+  hours: '',
+  logo: '',
+  logoName: '',
+  logoPrint: false,
+  logoWeb: true,
+  entryFooter: 'Conserva esta nota para recoger tu equipo.',
+  exitFooter: 'Gracias por tu confianza. La garantía aplica presentando esta nota.',
+  printAddress: true,
+  signature: true,
+  webReference: false,
+  clauses: [
+    {
+      id: 'entrada',
+      title: 'Condición de entrada',
+      text: 'Texto de entrada',
+      entry: true,
+      exit: false
+    },
+    {
+      id: 'salida',
+      title: 'Condición de salida',
+      text: 'Texto de salida',
+      entry: false,
+      exit: true
+    }
+  ],
+  clausePosition: 'foot',
+  numberClauses: true,
+  paper: 'letter',
+  orientation: 'portrait',
+  copies: 2,
+  prefix: 'ORD-',
+  nextNumber: 1,
+  laborDays: 30,
+  partsDays: 90,
+  country: 'México',
+  locale: 'es-MX',
+  currency: 'MXN',
+  timezone: 'America/Cancun',
+  showTax: false,
+  taxRate: 16,
+  taxName: 'IVA'
+} kind="exit" order= {
+  id: 'ORD-001',
+  databaseId: 1,
+  client: 'Cliente de prueba',
+  phone: '0000000000',
+  received: '2026-11-13',
+  status: 'Reparado',
+  serial: 'SERIE',
+  item: 'Laptop',
+  brand: 'Marca',
+  model: 'Modelo',
+  otherShop: false,
+  otherShopReason: '',
+  dropped: false,
+  dropReason: '',
+  password: 'secreto-que-no-debe-imprimirse',
+  work: 'Trabajo autorizado',
+  cost: '600.00',
+  deposit: '750.00',
+  notes: 'Notas de recepción',
+  paid: true,
+  delivered: false
+} >
+✔ exit note renders the public summary and warranty from delivery without printing secrets (1208.9216ms)
+✔ entry note contains its own clauses and reception notes (1.7483ms)
+✔ preparing a note rejects an unavailable or forbidden repair summary (2.4869ms)
+✔ note includes only the public URL in its locally generated QR (20.6295ms)
+✔ a portal status error does not prevent preparing the local receipt (1.5865ms)
+✔ preview and print prepare the same QR concurrently without cancelling each other (40.2005ms)
+✔ a missing portal URL explains configuration and keeps the printed code (1.4492ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1778.7579
+EXIT_CODE=0
+
+===== npm.cmd run test:ipc =====
+npm notice run hrl-core@0.1.0 test:ipc
+npm notice run node --experimental-strip-types --test tests/ipc-stores.test.ts
+✔ financial, logbook and public-summary queries reject responses from the previous session (5.2571ms)
+✔ persistent list, reference lookup and history use exact normalized IPC envelopes (3.4122ms)
+✔ late searches and previous sessions cannot replace the latest persistent list (1.1772ms)
+✔ denied persistent queries clear cached data and changed orders reject stale history (1.4808ms)
+✔ window synchronization delegates its profile to the normalized backend without frontend arguments (0.2575ms)
+✔ auth sends exact envelopes and loading excludes duplicate IPC; rejected login preserves session (0.9792ms)
+✔ temporary permission stays contextual and never alters permanent permissions (1.0077ms)
+✔ initial setup maps its full payload and requires no legacy first_setup command (0.7135ms)
+✔ recovery uses flat arguments, clears sessions and cached orders, and stores no replacement passwords (1.6031ms)
+✔ order requests retain exact retry id and payload, and secrets are excluded from global state (1.7691ms)
+✔ unsafe and fractional integers fail before IPC; unsafe responses preserve an uncertain outcome (1.0002ms)
+✔ session changes cannot restore stale login or order responses (0.885ms)
+✔ logout and uncertain recovery fail closed while Rust errors are normalized without leaking unknown errors (1.2404ms)
+✔ all serialized Rust AppError codes are represented in TypeScript (0.8784ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 243.6984
+EXIT_CODE=0
+
+===== npm.cmd run test:ui =====
+npm notice run hrl-core@0.1.0 test:ui
+npm notice run node --experimental-strip-types --test tests/phase4.test.ts
+✔ decimal strings round-trip exactly at cent and safe-integer boundaries (1.9679ms)
+✔ free-text history preserves previous details and supports explicitly clearing them (0.3749ms)
+✔ native window synchronization queues session changes and exposes retry without clearing authentication (3.469ms)
+✔ reception sends integer centavos and preserves the exact financial retry including the password (25.0588ms)
+✔ new receipt and payment inputs follow independent presentation permissions (1.5831ms)
+✔ draft leave guard preserves failed saves, prevents concurrent actions and cancels on disposal (0.4422ms)
+✔ reception navigation offers keeping, discarding and saving without discarding an uncertain receipt (2.2566ms)
+✔ login loads the active-name picker without creating a session and submits the selected name (1.3168ms)
+✔ a failed user list keeps manual login available and can be reloaded (0.8697ms)
+✔ setup is atomic after the two catalog steps, failed login clears personal secrets (1.1255ms)
+✔ recovery and temporary forms do not retain credentials after failed submissions (1.3539ms)
+✔ Vue renders the catalog fields with native limits and readonly saved orders (1612.254ms)
+✔ order arrows cross pages and the history note retains a guarded draft (2.0671ms)
+✔ restored workspace renders every original section through the normalized container (697.8519ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2648.9674
+EXIT_CODE=0
+
+===== npm.cmd run test:finances =====
+npm notice run hrl-core@0.1.0 test:finances
+npm notice run node --experimental-strip-types --test tests/finances-model.test.ts
+✔ financial totals keep currencies and excluded collections separate (1.1946ms)
+✔ payment periods include adjustments and refunds on their own local dates (14.474ms)
+✔ classification, search, scope and missing dates preserve documented filtering (0.7786ms)
+✔ each financial class filters independently and only completed orders contribute completed profit (0.339ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 126.1735
+EXIT_CODE=0
+
+===== npm.cmd run test:phase5 =====
+npm notice run hrl-core@0.1.0 test:phase5
+npm notice run node --experimental-strip-types --test tests/phase5.test.ts
+✔ camera reports denied, missing and busy devices while preserving the open dialog (1.9169ms)
+✔ camera stops a permission response that arrives after closing (0.4262ms)
+✔ capture preserves the pending file and description until discard or confirmed save (1.5852ms)
+✔ disposing a camera rejects a late capture and releases the active stream (0.546ms)
+✔ clause drafts validate before applying and restore keyboard focus (3.0881ms)
+✔ clause ordering and undo preserve identifiers, position and focused controls (0.8808ms)
+✔ finances renders payment and delivery breakdown without audit controls (735.2377ms)
+✔ repair warranty suggestions follow the selected company policy in the viewmodel (5.6281ms)
+✔ modal dismissal requires an outside press and restores focus, while saving blocks dismissal (2.002ms)
+✔ part and warranty dialogs preserve drafts and errors until a confirmed save (2.2483ms)
+✔ the moved container retains company drafts and blocks leaving during an operation (938.5727ms)
+✔ company leave guard preserves invalid and rejected drafts and confirms save or discard (231.019ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2192.0252
+EXIT_CODE=0
+
+===== npm.cmd run test:payments =====
+npm notice run hrl-core@0.1.0 test:payments
+npm notice run node --experimental-strip-types --test tests/payments-form.test.ts
+✔ payment confirmation accepts decimal text and the numeric value emitted by number inputs (11.1741ms)
+✔ invalid and excessive payments show a message without sending a financial request (1.6805ms)
+✔ an uncertain payment retries its exact identifier and amount after the form is changed (2.2863ms)
+✔ a definitive rejection shows the backend explanation and unlocks a corrected attempt (1.8681ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 188.2172
+EXIT_CODE=0
+
+===== npm.cmd run test:backups =====
+npm notice run hrl-core@0.1.0 test:backups
+npm notice run node --experimental-strip-types --test tests/backups.test.ts
+✔ only complete access opens backups and changing session removes its master password and status (5.5251ms)
+✔ backup form exposes a failed operation and manual creation refreshes its confirmed file list (1.1597ms)
+✔ closing waits for the confirmed automatic backup before destroying the window (3.8227ms)
+✔ failed backup keeps the window open and discarding the new copy is explicit (0.557ms)
+✔ draft guards prevent both backup and closing until the draft is resolved (0.3724ms)
+✔ native close waits for the draft choice and never closes after a rejected save (0.6597ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 194.4716
+EXIT_CODE=0
+
+===== npm.cmd run test:browser =====
+npm notice run hrl-core@0.1.0 test:browser
+npm notice run node tests/phase5-browser.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+[TypeError: fetch failed] {
+  [cause]: Error: connect ECONNREFUSED 127.0.0.1:9224
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1705:16) {
+    errno: -4078,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 9224
+  }
+}
+
+Node.js v24.15.0
+EXIT_CODE=1
+
+
+===== npm.cmd run test:browser (Vite 1421 + Chrome CDP 9224 iniciados) =====
+npm notice run hrl-core@0.1.0 test:browser
+npm notice run node tests/phase5-browser.mjs
+Nombre personalizado quitado del selector sin modificar el progreso ni el historial.
+Etapa pendiente eliminada con historial conservado, porcentaje actualizado y guardado rechazado recuperable.
+{"view":"clients","heading":"Órdenes","width":1280,"content":1280}
+{"view":"repairs","heading":"Reparaciones","width":1280,"content":1265}
+{"view":"company","heading":"Empresa","width":1280,"content":1265}
+{"view":"users","heading":"Usuarios","width":1280,"content":1280}
+{"view":"logbook","heading":"Finanzas","width":1280,"content":1265}
+Registro de abono confirmado desde el formulario.
+Borrador de cláusula, foco y guarda de navegación aprobados.
+{"evidence":true,"buttons":[{"text":"Abrir galería","disabled":false},{"text":"Tomar foto","disabled":false},{"text":"Seleccionar archivos","disabled":false}]}
+Apertura y cierre de cámara con foco restaurado aprobados.
+PDF y MP4: carga, copia de PDF, reproducción de video, retiro/restauración y tres anchos aprobados con IPC simulado.
+Antecedentes y descripción, retiro y restauración de evidencia aprobados.
+Respaldos: permiso Completo, clave maestra, creación manual, configuración y estado de restauración aprobados con IPC simulado.
+Selector de acceso: clic, búsqueda, flechas/Enter, selección directa, Escape y fallo recuperable aprobados.
+Revisión de navegador aprobada.
+EXIT_CODE=0

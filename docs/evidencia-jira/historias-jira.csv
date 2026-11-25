@@ -1,0 +1,32 @@
+"Summary","Issue Type","Description","Priority","Labels","Sprint","Epic Name"
+"RF01 - Acceso y usuarios","Epic","Requisito RF01.","","","","RF01 - Acceso y usuarios"
+"RF02 - Recepción de equipos","Epic","Requisito RF02.","","","","RF02 - Recepción de equipos"
+"RF03 - Evidencias","Epic","Requisito RF03.","","","","RF03 - Evidencias"
+"RF04 - Reparaciones","Epic","Requisito RF04.","","","","RF04 - Reparaciones"
+"RF05 - Cobros y saldos","Epic","Requisito RF05.","","","","RF05 - Cobros y saldos"
+"RF06 - Finanzas","Epic","Requisito RF06.","","","","RF06 - Finanzas"
+"RF07 - Notas de impresión","Epic","Requisito RF07.","","","","RF07 - Notas de impresión"
+"RF08 - Respaldos y recuperación","Epic","Requisito RF08.","","","","RF08 - Respaldos y recuperación"
+"RF09 - Portal del cliente","Epic","Requisito RF09.","","","","RF09 - Portal del cliente"
+"HU-01 - Como responsable del taller, quiero crear la primera cuenta para controlar el acceso a la instalación.","Story","Historia: Como responsable del taller, quiero crear la primera cuenta para controlar el acceso a la instalación.
+Criterio de aceptación: La configuración solicita clave maestra y administrador. La cuenta puede iniciar y cerrar sesión.","Alta","HU-01","1",""
+"HU-02 - Como gerente, quiero autorizar acciones concretas para distribuir responsabilidades.","Story","Historia: Como gerente, quiero autorizar acciones concretas para distribuir responsabilidades.
+Criterio de aceptación: La operación utiliza el permiso vigente y la autorización temporal queda limitada a su alcance.","Media","HU-02","1",""
+"HU-03 - Como recepcionista, quiero registrar un equipo y encontrar su orden cuando vuelva el cliente.","Story","Historia: Como recepcionista, quiero registrar un equipo y encontrar su orden cuando vuelva el cliente.
+Criterio de aceptación: Se genera un folio. La búsqueda devuelve la ficha por folio, cliente o serie.","Alta","HU-03","2",""
+"HU-04 - Como recepcionista, quiero adjuntar evidencia del estado físico y resguardar la credencial que entregue el cliente.","Story","Historia: Como recepcionista, quiero adjuntar evidencia del estado físico y resguardar la credencial que entregue el cliente.
+Criterio de aceptación: El archivo queda vinculado al folio. La contraseña queda fuera de listados y comprobantes.","Alta","HU-04","2",""
+"HU-05 - Como técnico, quiero registrar etapas, refacciones y garantías para mantener al día la reparación.","Story","Historia: Como técnico, quiero registrar etapas, refacciones y garantías para mantener al día la reparación.
+Criterio de aceptación: Al volver a abrir el folio se recuperan los avances y los elementos asociados.","Alta","HU-05","3",""
+"HU-06 - Como personal de mostrador, quiero registrar la entrega aunque el cliente conserve saldo.","Story","Historia: Como personal de mostrador, quiero registrar la entrega aunque el cliente conserve saldo.
+Criterio de aceptación: La orden muestra por separado su condición de entrega y el importe pendiente.","Media","HU-06","3",""
+"HU-07 - Como responsable de cobro, quiero registrar abonos y corregir diferencias para explicar el saldo.","Story","Historia: Como responsable de cobro, quiero registrar abonos y corregir diferencias para explicar el saldo.
+Criterio de aceptación: Se conserva el abono original. Ajuste y devolución se registran por separado con los permisos correspondientes.","Alta","HU-07","3",""
+"HU-08 - Como gerente, quiero consultar las ganancias estimadas para distinguir trabajos pagados de trabajos con deuda.","Story","Historia: Como gerente, quiero consultar las ganancias estimadas para distinguir trabajos pagados de trabajos con deuda.
+Criterio de aceptación: Los indicadores se agrupan por moneda y distinguen cobros, costos y saldos por condición de pago y entrega.","Media","HU-08","4",""
+"HU-09 - Como recepcionista, quiero preparar notas de entrada y salida con los datos del taller.","Story","Historia: Como recepcionista, quiero preparar notas de entrada y salida con los datos del taller.
+Criterio de aceptación: El folio y los campos autorizados figuran en la vista previa según el tipo de nota.","Media","HU-09","4",""
+"HU-10 - Como administrador, quiero recuperar el expediente y sus archivos después de una falla.","Story","Historia: Como administrador, quiero recuperar el expediente y sus archivos después de una falla.
+Criterio de aceptación: Una copia válida restaura los datos y recursos.","Media","HU-10","Cierre",""
+"HU-11 - Como responsable del seguimiento, quiero definir qué datos recibirá el portal del cliente.","Story","Historia: Como responsable del seguimiento, quiero definir qué datos recibirá el portal del cliente.
+Criterio de aceptación: El contrato distingue campos publicables y privados.","Alta","HU-11","Cierre",""

@@ -36,3 +36,12 @@ Delivery Gate del incremento:
   este registro no certifica la interfaz como entrega final de HRL-12.
 
 Referencia del uso de Argon2: https://docs.rs/argon2/0.5.3/argon2/ .
+
+## Decisión pendiente, 29 de octubre de 2026
+
+Al consultar quién debe realizar el restablecimiento manual de la clave maestra,
+el usuario indicó: «esto aun esta por decidirse». No se selecciona soporte
+externo ni restablecimiento desde una sesión administrativa. Se conserva la
+decisión de no tener recuperación automática y no se implementa un mecanismo
+de recuperación hasta definir el procedimiento. Este criterio de HRL-12 sigue
+pendiente; la decisión no impide continuar otros trabajos autorizados.

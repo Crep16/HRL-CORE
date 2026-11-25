@@ -79,3 +79,16 @@ La integración del seguimiento se documenta en `reparaciones-permisos.md`. Los 
 de Empresa se aplican a sus controles y guardado de interfaz; todavía no son
 una autorización de persistencia en Rust porque su almacenamiento sigue en
 localStorage. HRL-13 permanece abierto hasta completar esos flujos.
+
+## Actualización del 29 de octubre de 2026
+
+El párrafo anterior describe el estado del 27 de octubre. Empresa ya usa SQLite
+y autorización en Rust. Los permisos monetarios de abonos y devoluciones se
+configuran por separado para Limitado y Personalizado; el resto de su matriz
+permanece restringido. Véase `reglas-pagos.md`.
+
+Se incorpora el acceso temporal solicitado por el usuario. Quien posea una
+facultad puede autorizarla con su cuenta para el apartado abierto y, en
+Reparaciones, para una sola orden. Se conservan la sesión y autoría del operador
+y se auditan ambas identidades. Salir del apartado, cambiar de orden o cerrar
+sesión termina el préstamo. El detalle está en `acceso-temporal.md`.
